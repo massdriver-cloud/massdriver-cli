@@ -1,0 +1,7 @@
+# This file will is used to generate all of the schema-*.json files in a bundle
+# The root section will be the schema, uuid, title, description for all three schema-*.json files
+schema: draft-07
+#$id is auto generated based on folder name and {conn,input,arti} below
+uuid: {{ .Uuid }} 
+title: {{ .Name }}
+description: {{ .Description }}

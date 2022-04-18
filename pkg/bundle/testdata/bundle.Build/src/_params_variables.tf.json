@@ -1,0 +1,10 @@
+{
+  "variable": {
+    "age": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    }
+  }
+}

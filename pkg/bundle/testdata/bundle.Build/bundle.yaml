@@ -1,0 +1,18 @@
+uuid: FC2C7101-86A6-437B-B8C2-A2391FE8C847
+type: aws-vpc
+schema: draft-07
+title: "AWS VPC"
+description: Something
+access: public
+params:
+  required: ["name"]
+  properties:
+    name:
+      type: string
+      title: Name
+    age:
+      type: integer
+      title: Age
+connections: {}
+artifacts: {}
+ui: {}

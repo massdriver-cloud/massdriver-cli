@@ -1,7 +1,7 @@
 .PHONY: test
 test:
 	go test ./cmd
-	go test ./src/...
+	go test ./pkg/...
 	go build -o ./mass
 
 build:

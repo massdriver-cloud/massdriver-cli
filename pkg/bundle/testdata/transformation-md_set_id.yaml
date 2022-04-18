@@ -1,0 +1,14 @@
+params:
+  properties:
+    set_id:
+      type: array
+      items:
+        type: object
+        properties:
+          foo:
+            type: string
+    no_set_id:
+      type: object
+      properties:
+        bar:
+          type: string

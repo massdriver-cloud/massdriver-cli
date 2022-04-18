@@ -1,0 +1,12 @@
+params:
+  properties:
+    addPropFalse:
+      type: object
+    addPropTrue:
+      type: object
+      anyOf:
+        - lol
+        - rofl
+    addPropExists:
+      type: object
+      additionalProperties: true
