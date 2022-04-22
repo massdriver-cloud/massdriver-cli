@@ -1,9 +1,11 @@
 package bundle_test
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
@@ -59,19 +61,24 @@ func TestPublish(t *testing.T) {
 				}
 				gotBody = string(bytes)
 				gotHeaders = r.Header
+
+				w.Write([]byte(`{"upload_location":"https://some.site.test/endpoint"}`))
 				w.WriteHeader(http.StatusOK)
 			}))
 			defer testServer.Close()
 
 			bundle.MASSDRIVER_URL = testServer.URL
 
-			err := tc.bundle.Publish(tc.apiKey)
+			gotResponse, err := tc.bundle.Publish(tc.apiKey)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
 			if gotBody != tc.wantBody {
 				t.Errorf("got %v, want %v", gotBody, tc.wantBody)
+			}
+			if gotResponse != `https://some.site.test/endpoint` {
+				t.Errorf("got %v, want %v", gotResponse, `https://some.site.test/endpoint`)
 			}
 			for key, wantValue := range tc.wantHeaders {
 				if gotValue, ok := gotHeaders[key]; ok {
@@ -86,6 +93,47 @@ func TestPublish(t *testing.T) {
 				} else {
 					t.Errorf("missing header: %v", key)
 				}
+			}
+		})
+	}
+}
+
+func TestTarGzipDirectory(t *testing.T) {
+	type test struct {
+		name     string
+		dirPath  string
+		wantFile string
+	}
+	tests := []test{
+		{
+			name:     "simple",
+			dirPath:  "testdata/zipdir/bundle.yaml",
+			wantFile: "testdata/zipdir.tar.gz",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			wantBytes, err := ioutil.ReadFile(tc.wantFile)
+			if err != nil {
+				t.Fatalf("%d, unexpected error", err)
+			}
+
+			var got bytes.Buffer
+
+			err = bundle.TarGzipDirectory(tc.dirPath, &got)
+			if err != nil {
+				t.Fatalf("%d, unexpected error", err)
+			}
+
+			gotBytes := got.Bytes()
+			err = os.WriteFile("/tmp/dat1.tar.gz", gotBytes, 0644)
+			if err != nil {
+				t.Fatalf("%d, unexpected error", err)
+			}
+
+			if len(gotBytes) != len(wantBytes) {
+				t.Errorf("got %v, want %v", len(gotBytes), len(wantBytes))
 			}
 		})
 	}
