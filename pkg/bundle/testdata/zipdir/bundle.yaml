@@ -1,1 +1,19 @@
-hello: world
+uuid: FC2C7101-86A6-437B-B8C2-A2391FE8C847
+type: publish-test
+schema: draft-07
+title: "Publish Test"
+description: Something
+access: PRIVATE
+
+params:
+  required: ["name"]
+  properties:
+    name:
+      type: string
+      title: Name
+
+connections: {}
+
+artifacts: {}
+
+ui: {}

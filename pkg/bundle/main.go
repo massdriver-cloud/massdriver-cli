@@ -26,6 +26,7 @@ type Bundle struct {
 	Schema      string                 `json:"schema" yaml:"schema"`
 	Title       string                 `json:"title" yaml:"title"`
 	Description string                 `json:"description" yaml:"description"`
+	Ref         string                 `json:"ref" yaml:"ref"`
 	Type        string                 `json:"type" yaml:"type"`
 	Access      string                 `json:"access" yaml:"access"`
 	Steps       []BundleStep           `json:"steps" yaml:"steps"`

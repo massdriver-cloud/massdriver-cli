@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -20,37 +21,74 @@ import (
 var MASSDRIVER_URL string = "https://api.massdriver.cloud/"
 
 type BundlePublishPost struct {
-	Name              string                 `json:"name"`
-	Ref               string                 `json:"ref"`
-	ID                string                 `json:"id"`
-	Access            string                 `json:"access"`
-	ArtifactsSchema   map[string]interface{} `json:"artifacts_schema"`
-	ConnectionsSchema map[string]interface{} `json:"connections_schema"`
-	ParamsSchema      map[string]interface{} `json:"params_schema"`
-	UISchema          map[string]interface{} `json:"ui_schema"`
+	Name              string `json:"name"`
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	Kind              string `json:"kind"`
+	Type              string `json:"type"`
+	Ref               string `json:"ref"`
+	Uuid              string `json:"id"`
+	Access            string `json:"access"`
+	ArtifactsSchema   string `json:"artifacts_schema"`
+	ConnectionsSchema string `json:"connections_schema"`
+	ParamsSchema      string `json:"params_schema"`
+	UISchema          string `json:"ui_schema"`
 }
 
 type BundlePublishResponse struct {
 	UploadLocation string `json:"upload_location"`
 }
 
+type S3PresignEndpointResponse struct {
+	Error                 xml.Name `xml:"Error"`
+	Code                  string   `xml:"Code"`
+	Message               string   `xml:"Message"`
+	AWSAccessKeyId        string   `xml:"AWSAccessKeyId"`
+	StringToSign          string   `xml:"StringToSign"`
+	SignatureProvided     string   `xml:"SignatureProvided"`
+	StringToSignBytes     []byte   `xml:"StringToSignBytes"`
+	CanonicalRequest      string   `xml:"CanonicalRequest"`
+	CanonicalRequestBytes []byte   `xml:"CanonicalRequestBytes"`
+	RequestId             string   `xml:"RequestId"`
+	HostId                string   `xml:"HostId"`
+}
+
+type S3PresignEndpointResponseError struct {
+	Code                  string `xml:"Code"`
+	Message               string `xml:"Message"`
+	AWSAccessKeyId        string `xml:"AWSAccessKeyId"`
+	StringToSign          string `xml:"StringToSign"`
+	SignatureProvided     string `xml:"SignatureProvided"`
+	StringToSignBytes     []byte `xml:"StringToSignBytes"`
+	CanonicalRequest      string `xml:"CanonicalRequest"`
+	CanonicalRequestBytes []byte `xml:"CanonicalRequestBytes"`
+	RequestId             string `xml:"RequestId"`
+	HostId                string `xml:"HostId"`
+}
+
 func (b Bundle) Publish(apiKey string) (string, error) {
-	url, err := url.Parse(MASSDRIVER_URL)
+	mdUrl, err := url.Parse(MASSDRIVER_URL)
 	if err != nil {
 		return "", err
 	}
-	url.Path = "bundles"
+	mdUrl.Path = "bundles"
 
-	body, err := json.Marshal(b.generateBundlePublishBody())
+	body, err := b.generateBundlePublishBody()
 	if err != nil {
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(body))
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("PUT", mdUrl.String(), bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return "", err
 	}
 	req.Header.Set("X-Md-Api-Key", apiKey)
+	req.Header.Set("content-type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -58,13 +96,14 @@ func (b Bundle) Publish(apiKey string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.Status != "200 OK" {
-		return "", errors.New("received non-200 response from Massdriver: " + resp.Status)
-	}
-
 	respBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
+	}
+
+	if resp.Status != "200 OK" {
+		fmt.Println(string(respBodyBytes))
+		return "", errors.New("received non-200 response from Massdriver: " + resp.Status)
 	}
 
 	var respBody BundlePublishResponse
@@ -73,28 +112,49 @@ func (b Bundle) Publish(apiKey string) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("response Body: %v", respBody)
-
 	return respBody.UploadLocation, nil
 }
 
-func (b Bundle) generateBundlePublishBody() BundlePublishPost {
+func (b Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
 	var body BundlePublishPost
 
 	body.Name = b.Title
-	body.Ref = b.Type
-	body.ID = b.Uuid
+	body.Title = b.Title
+	body.Description = b.Description
+	body.Kind = "bundle"
+	body.Ref = b.Ref
+	body.Uuid = b.Uuid
 	body.Access = b.Access
-	body.ArtifactsSchema = b.Artifacts
-	body.ConnectionsSchema = b.Connections
-	body.ParamsSchema = b.Params
-	body.UISchema = b.Ui
+	body.Type = b.Type
 
-	return body
+	artifactsSchema, err := json.Marshal(b.Artifacts)
+	if err != nil {
+		return body, err
+	}
+	body.ArtifactsSchema = string(artifactsSchema)
+
+	connectionsSchema, err := json.Marshal(b.Connections)
+	if err != nil {
+		return body, err
+	}
+	body.ConnectionsSchema = string(connectionsSchema)
+
+	paramsSchema, err := json.Marshal(b.Params)
+	if err != nil {
+		return body, err
+	}
+	body.ParamsSchema = string(paramsSchema)
+
+	uiSchema, err := json.Marshal(b.Ui)
+	if err != nil {
+		return body, err
+	}
+	body.UISchema = string(uiSchema)
+
+	return body, nil
 }
 
-func UploadBytesToHTTPEndpoint(url string, object io.Reader) error {
-	// Use the presigned URL to put a object to S3
+func UploadToPresignedS3URL(url string, object io.Reader) error {
 	req, err := http.NewRequest("PUT", url, object)
 	if err != nil {
 		return err
@@ -106,16 +166,18 @@ func UploadBytesToHTTPEndpoint(url string, object io.Reader) error {
 	}
 	defer resp.Body.Close()
 
-	//
-	// Print out the response.
-	fmt.Println("Status", resp.StatusCode, resp.StatusCode)
-	o := &bytes.Buffer{}
-	io.Copy(o, resp.Body)
-	fmt.Println(o.String())
+	// Check for errors
+	if resp.StatusCode != 200 {
+		var respContent S3PresignEndpointResponse
+		var respBody bytes.Buffer
+		respBody.ReadFrom(resp.Body)
+		xml.Unmarshal(respBody.Bytes(), &respContent)
+		return errors.New("unable to upload content: " + respContent.Message)
+	}
 	return nil
 }
 
-func TarGzipDirectory(filePath string, buf io.Writer) error {
+func TarGzipBundle(filePath string, buf io.Writer) error {
 	// tar > gzip > buf
 	gzipWriter := gzip.NewWriter(buf)
 	tarWriter := tar.NewWriter(gzipWriter)
