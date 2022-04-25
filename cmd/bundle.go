@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
@@ -32,9 +34,11 @@ var bundleGenerateCmd = &cobra.Command{
 }
 
 var bundlePublishCmd = &cobra.Command{
-	Use:   "publish",
-	Short: "Publish a bundle to Massdriver",
-	RunE:  runBundleGenerate,
+	Use:          "publish [Path to bundle.yaml]",
+	Short:        "Publish a bundle to Massdriver",
+	Args:         cobra.ExactArgs(1),
+	RunE:         runBundlePublish,
+	SilenceUsage: true,
 }
 
 func init() {
@@ -46,6 +50,9 @@ func init() {
 	bundleCmd.AddCommand(bundleGenerateCmd)
 	bundleGenerateCmd.Flags().StringP("template-dir", "t", "./generators/xo-bundle-template", "Path to template directory")
 	bundleGenerateCmd.Flags().StringP("bundle-dir", "b", "./bundles", "Path to bundle directory")
+
+	bundleCmd.AddCommand(bundlePublishCmd)
+	bundlePublishCmd.Flags().StringP("api-key", "k", os.Getenv("MASSDRIVER_API_KEY"), "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -121,6 +128,44 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	err = generator.Generate(*templateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runBundlePublish(cmd *cobra.Command, args []string) error {
+	var err error
+	bundlePath := args[0]
+
+	apiKey, err := cmd.Flags().GetString("api-key")
+	if err != nil {
+		return err
+	}
+	if apiKey == "" {
+		fmt.Print("Error: Massdriver API Key must be specified\n\n")
+		cmd.Usage()
+		os.Exit(1)
+	}
+
+	b, err := bundle.ParseBundle(bundlePath)
+	if err != nil {
+		return err
+	}
+
+	uploadURL, err := b.Publish(apiKey)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = bundle.TarGzipBundle(bundlePath, &buf)
+	if err != nil {
+		return err
+	}
+
+	err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
 	if err != nil {
 		return err
 	}
