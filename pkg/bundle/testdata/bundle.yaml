@@ -1,8 +1,7 @@
-uuid: FC2C7101-86A6-437B-B8C2-A2391FE8C847
-type: aws-vpc
 schema: draft-07
-title: "AWS VPC"
+name: aws-vpc
 description: Something
+type: bundle
 access: public
 params:
   required: ["name"]

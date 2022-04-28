@@ -26,11 +26,10 @@ func TestPublish(t *testing.T) {
 		{
 			name: "simple",
 			bundle: bundle.Bundle{
-				Uuid:        "deadbeef-0000",
-				Title:       "The Bundle",
+				Name:        "the-bundle",
 				Description: "something",
 				Ref:         "github.com/some-repo",
-				Type:        "bundle-type",
+				Type:        "bundle",
 				Access:      "public",
 				Artifacts: map[string]interface{}{
 					"artifacts": "foo",
@@ -48,7 +47,7 @@ func TestPublish(t *testing.T) {
 				},
 			},
 			apiKey:   "s3cret",
-			wantBody: `{"name":"The Bundle","title":"The Bundle","description":"something","kind":"bundle","type":"bundle-type","ref":"github.com/some-repo","id":"deadbeef-0000","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","ref":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
 			wantHeaders: map[string][]string{
 				"X-Md-Api-Key": {"s3cret"},
 			},

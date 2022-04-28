@@ -22,9 +22,8 @@ type BundleStep struct {
 }
 
 type Bundle struct {
-	Uuid        string                 `json:"uuid" yaml:"uuid"`
 	Schema      string                 `json:"schema" yaml:"schema"`
-	Title       string                 `json:"title" yaml:"title"`
+	Name        string                 `json:"name" yaml:"name"`
 	Description string                 `json:"description" yaml:"description"`
 	Ref         string                 `json:"ref" yaml:"ref"`
 	Type        string                 `json:"type" yaml:"type"`
@@ -40,8 +39,8 @@ type Bundle struct {
 func (b *Bundle) Metadata(schemaType string) map[string]string {
 	return map[string]string{
 		"$schema":     generateSchemaUrl(b.Schema),
-		"$id":         generateIdUrl(b.Type, schemaType),
-		"title":       b.Title,
+		"$id":         generateIdUrl(b.Name, schemaType),
+		"name":        b.Name,
 		"description": b.Description,
 	}
 }
@@ -138,8 +137,8 @@ func mergeMaps(a map[string]interface{}, b map[string]string) map[string]interfa
 	return a
 }
 
-func generateIdUrl(mdType string, schemaType string) string {
-	return fmt.Sprintf(idUrlPattern, mdType, schemaType)
+func generateIdUrl(mdName string, schemaType string) string {
+	return fmt.Sprintf(idUrlPattern, mdName, schemaType)
 }
 
 func generateSchemaUrl(schema string) string {
