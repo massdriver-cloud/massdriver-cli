@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
@@ -150,6 +151,11 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	}
 
 	b, err := bundle.ParseBundle(bundlePath)
+	if err != nil {
+		return err
+	}
+
+	err = b.GenerateSchemas(path.Dir(bundlePath))
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package bundle
+package application
 
 import (
 	"archive/tar"
@@ -53,14 +53,14 @@ type S3PresignEndpointResponse struct {
 	HostId                string   `xml:"HostId"`
 }
 
-func (b Bundle) Publish(apiKey string) (string, error) {
+func (app Application) Publish(apiKey string) (string, error) {
 	mdUrl, err := url.Parse(MASSDRIVER_URL)
 	if err != nil {
 		return "", err
 	}
 	mdUrl.Path = "bundles"
 
-	body, err := b.generateBundlePublishBody()
+	body, err := app.generateBundlePublishBody()
 	if err != nil {
 		return "", err
 	}
@@ -102,37 +102,41 @@ func (b Bundle) Publish(apiKey string) (string, error) {
 	return respBody.UploadLocation, nil
 }
 
-func (b Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
+func (app Application) generateBundlePublishBody() (BundlePublishPost, error) {
 	var body BundlePublishPost
 
-	body.Name = b.Title
-	body.Title = b.Title
-	body.Description = b.Description
-	body.Kind = "bundle"
-	body.Ref = b.Ref
-	body.Uuid = b.Uuid
-	body.Access = b.Access
-	body.Type = b.Type
+	body.Name = app.Title
+	body.Title = app.Title
+	body.Description = app.Description
+	body.Kind = "application"
+	body.Ref = app.Ref
+	body.Uuid = app.Uuid
+	body.Access = "private"
+	body.Type = app.Type
 
-	artifactsSchema, err := json.Marshal(b.Artifacts)
+	artifactsSchema, err := json.Marshal(app.Artifacts)
 	if err != nil {
 		return body, err
 	}
 	body.ArtifactsSchema = string(artifactsSchema)
 
-	connectionsSchema, err := json.Marshal(b.Connections)
+	connections, err := app.GetConnections()
+	if err != nil {
+		return body, err
+	}
+	connectionsSchema, err := json.Marshal(connections)
 	if err != nil {
 		return body, err
 	}
 	body.ConnectionsSchema = string(connectionsSchema)
 
-	paramsSchema, err := json.Marshal(b.Params)
+	paramsSchema, err := json.Marshal(app.Params)
 	if err != nil {
 		return body, err
 	}
 	body.ParamsSchema = string(paramsSchema)
 
-	uiSchema, err := json.Marshal(b.Ui)
+	uiSchema, err := json.Marshal([]byte("{}"))
 	if err != nil {
 		return body, err
 	}
@@ -164,7 +168,7 @@ func UploadToPresignedS3URL(url string, object io.Reader) error {
 	return nil
 }
 
-func TarGzipBundle(filePath string, buf io.Writer) error {
+func TarGzipApplication(filePath string, buf io.Writer) error {
 	// tar > gzip > buf
 	gzipWriter := gzip.NewWriter(buf)
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -215,4 +219,52 @@ func TarGzipBundle(filePath string, buf io.Writer) error {
 	}
 
 	return nil
+}
+
+func (app Application) GetConnections() (map[string]interface{}, error) {
+	var connections map[string]interface{}
+	var properties map[string]interface{}
+
+	required := []string{
+		"cloud_authentication",
+		"kubernetes_cluster",
+	}
+
+	// Eventually this block will change when we pull from remote definitions
+	var cloud_authentication map[string]interface{}
+	var kubernetes_cluster map[string]interface{}
+	if err := json.Unmarshal([]byte(CloudAuthenticationConnection), &cloud_authentication); err != nil {
+		return connections, nil
+	}
+	if err := json.Unmarshal([]byte(KubernetesClusterConnection), &kubernetes_cluster); err != nil {
+		return connections, nil
+	}
+	properties["cloud_authentication"] = cloud_authentication
+	properties["kubernetes_cluster"] = kubernetes_cluster
+
+	// THESE NEXT BLOCKS ONLY WORK WHEN DEFINITIONS ARE PUBLIC
+	// properties["cloud_authentication"] = map[string]interface{}{
+	// 	"oneOf": []map[string]string{
+	// 		{"$ref": "https://types.massdriver.cloud/aws_authentication"},
+	// 		{"$ref": "https://types.massdriver.cloud/gcp_authentication"},
+	// 		{"$ref": "https://types.massdriver.cloud/azure_authentication"},
+	// 	},
+	// }
+	// properties["kubernetes_cluster"] = map[string]string{
+	// 	"$ref": "https://types.massdriver.cloud/kubernetes_cluster",
+	// }
+
+	// for _, dependency := range app.Dependencies {
+	// 	if *dependency.Required {
+	// 		required = append(required, dependency.Field)
+	// 	}
+	// 	properties[dependency.Field] = map[string]string{
+	// 		"$ref": dependency.Type,
+	// 	}
+	// }
+
+	connections["required"] = required
+	connections["properties"] = properties
+
+	return connections, nil
 }

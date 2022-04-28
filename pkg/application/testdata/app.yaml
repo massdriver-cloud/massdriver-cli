@@ -1,6 +1,8 @@
-bundle: retool/retool
+uuid: 133684ce-894e-4e01-8705-6e0d14c573f4
 title: Retool
 description: Self-hosted retool
+ref: github.com/user/app
+type: k8s-retool
 
 deployment: 
   type: chart
