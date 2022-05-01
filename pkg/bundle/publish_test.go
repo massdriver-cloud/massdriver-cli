@@ -104,22 +104,22 @@ func TestPublish(t *testing.T) {
 
 func TestTarGzipBundle(t *testing.T) {
 	type test struct {
-		name     string
-		dirPath  string
-		wantFile string
+		name       string
+		bundlePath string
+		wantPath   string
 	}
 	tests := []test{
 		{
-			name:     "simple",
-			dirPath:  "testdata/zipdir/bundle.yaml",
-			wantFile: "testdata/zipdir.tar.gz",
+			name:       "simple",
+			bundlePath: "testdata/zipdir/bundle.yaml",
+			wantPath:   "testdata/bundle",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.TarGzipBundle(tc.dirPath, &got)
+			err := bundle.TarGzipBundle(tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -138,12 +138,12 @@ func TestTarGzipBundle(t *testing.T) {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			wantMD5, err := dirhash.HashDir(path.Dir(tc.dirPath), "", dirhash.DefaultHash)
+			wantMD5, err := dirhash.HashDir(tc.wantPath, "", dirhash.DefaultHash)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			gotMD5, err := dirhash.HashDir(path.Join(testDir, "zipdir"), "", dirhash.DefaultHash)
+			gotMD5, err := dirhash.HashDir(path.Join(testDir, "bundle"), "", dirhash.DefaultHash)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

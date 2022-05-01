@@ -181,7 +181,6 @@ func TarGzipBundle(filePath string, buf io.Writer) error {
 		return err
 	}
 	dirPath := path.Dir(absolutePath)
-	prefix := path.Dir(dirPath) + "/"
 
 	// walk through every file in the folder
 	filepath.Walk(dirPath, func(file string, fi os.FileInfo, err error) error {
@@ -193,7 +192,7 @@ func TarGzipBundle(filePath string, buf io.Writer) error {
 
 		// must provide real name
 		// (see https://golang.org/src/archive/tar/common.go?#L626)
-		header.Name = strings.TrimPrefix(filepath.ToSlash(file), prefix)
+		header.Name = path.Join("bundle", strings.TrimPrefix(filepath.ToSlash(file), dirPath))
 
 		// write header
 		if err := tarWriter.WriteHeader(header); err != nil {
