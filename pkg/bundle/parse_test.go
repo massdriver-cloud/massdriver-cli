@@ -10,10 +10,9 @@ import (
 func TestParseBundle(t *testing.T) {
 	var got, _ = bundle.ParseBundle("./testdata/bundle.yaml")
 	var want = bundle.Bundle{
-		Uuid:        "FC2C7101-86A6-437B-B8C2-A2391FE8C847",
 		Schema:      "draft-07",
-		Type:        "aws-vpc",
-		Title:       "AWS VPC",
+		Type:        "bundle",
+		Name:        "aws-vpc",
 		Description: "Something",
 		Access:      "public",
 		Artifacts:   map[string]interface{}{},

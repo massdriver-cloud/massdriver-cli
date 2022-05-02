@@ -26,11 +26,10 @@ func TestPublish(t *testing.T) {
 		{
 			name: "simple",
 			bundle: bundle.Bundle{
-				Uuid:        "deadbeef-0000",
-				Title:       "The Bundle",
+				Name:        "the-bundle",
 				Description: "something",
 				Ref:         "github.com/some-repo",
-				Type:        "bundle-type",
+				Type:        "bundle",
 				Access:      "public",
 				Artifacts: map[string]interface{}{
 					"artifacts": "foo",
@@ -48,7 +47,7 @@ func TestPublish(t *testing.T) {
 				},
 			},
 			apiKey:   "s3cret",
-			wantBody: `{"name":"The Bundle","title":"The Bundle","description":"something","kind":"bundle","type":"bundle-type","ref":"github.com/some-repo","id":"deadbeef-0000","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","ref":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
 			wantHeaders: map[string][]string{
 				"X-Md-Api-Key": {"s3cret"},
 			},
@@ -105,22 +104,22 @@ func TestPublish(t *testing.T) {
 
 func TestTarGzipBundle(t *testing.T) {
 	type test struct {
-		name     string
-		dirPath  string
-		wantFile string
+		name       string
+		bundlePath string
+		wantPath   string
 	}
 	tests := []test{
 		{
-			name:     "simple",
-			dirPath:  "testdata/zipdir/bundle.yaml",
-			wantFile: "testdata/zipdir.tar.gz",
+			name:       "simple",
+			bundlePath: "testdata/zipdir/bundle.yaml",
+			wantPath:   "testdata/bundle",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.TarGzipBundle(tc.dirPath, &got)
+			err := bundle.TarGzipBundle(tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -139,12 +138,12 @@ func TestTarGzipBundle(t *testing.T) {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			wantMD5, err := dirhash.HashDir(path.Dir(tc.dirPath), "", dirhash.DefaultHash)
+			wantMD5, err := dirhash.HashDir(tc.wantPath, "", dirhash.DefaultHash)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			gotMD5, err := dirhash.HashDir(path.Join(testDir, "zipdir"), "", dirhash.DefaultHash)
+			gotMD5, err := dirhash.HashDir(path.Join(testDir, "bundle"), "", dirhash.DefaultHash)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

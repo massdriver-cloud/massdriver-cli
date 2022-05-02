@@ -22,12 +22,9 @@ var MASSDRIVER_URL string = "https://api.massdriver.cloud/"
 
 type BundlePublishPost struct {
 	Name              string `json:"name"`
-	Title             string `json:"title"`
 	Description       string `json:"description"`
-	Kind              string `json:"kind"`
 	Type              string `json:"type"`
 	Ref               string `json:"ref"`
-	Uuid              string `json:"id"`
 	Access            string `json:"access"`
 	ArtifactsSchema   string `json:"artifacts_schema"`
 	ConnectionsSchema string `json:"connections_schema"`
@@ -105,14 +102,11 @@ func (b Bundle) Publish(apiKey string) (string, error) {
 func (b Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
 	var body BundlePublishPost
 
-	body.Name = b.Title
-	body.Title = b.Title
+	body.Name = b.Name
 	body.Description = b.Description
-	body.Kind = "bundle"
+	body.Type = "bundle"
 	body.Ref = b.Ref
-	body.Uuid = b.Uuid
 	body.Access = b.Access
-	body.Type = b.Type
 
 	artifactsSchema, err := json.Marshal(b.Artifacts)
 	if err != nil {
@@ -174,7 +168,6 @@ func TarGzipBundle(filePath string, buf io.Writer) error {
 		return err
 	}
 	dirPath := path.Dir(absolutePath)
-	prefix := path.Dir(dirPath) + "/"
 
 	// walk through every file in the folder
 	filepath.Walk(dirPath, func(file string, fi os.FileInfo, err error) error {
@@ -186,7 +179,7 @@ func TarGzipBundle(filePath string, buf io.Writer) error {
 
 		// must provide real name
 		// (see https://golang.org/src/archive/tar/common.go?#L626)
-		header.Name = strings.TrimPrefix(filepath.ToSlash(file), prefix)
+		header.Name = path.Join("bundle", strings.TrimPrefix(filepath.ToSlash(file), dirPath))
 
 		// write header
 		if err := tarWriter.WriteHeader(header); err != nil {

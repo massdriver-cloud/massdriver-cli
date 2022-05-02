@@ -1,18 +1,19 @@
 uuid: FC2C7101-86A6-437B-B8C2-A2391FE8C847
-name: aws-vpc
+type: publish-test
 schema: draft-07
-type: bundle
+title: "Publish Test"
 description: Something
-access: public
+access: PRIVATE
+
 params:
   required: ["name"]
   properties:
     name:
       type: string
       title: Name
-    age:
-      type: integer
-      title: Age
+
 connections: {}
+
 artifacts: {}
+
 ui: {}
