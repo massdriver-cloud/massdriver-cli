@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseBundle(t *testing.T) {
-	var got, _ = bundle.ParseBundle("./testdata/bundle.yaml")
+	var got, _ = bundle.Parse("./testdata/bundle.yaml")
 	var want = bundle.Bundle{
 		Schema:      "draft-07",
 		Type:        "bundle",
@@ -45,7 +45,7 @@ func TestParseBundle(t *testing.T) {
 		Ui: map[string]interface{}{},
 	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
+	if !reflect.DeepEqual(*got, want) {
+		t.Errorf("got %v, want %v", *got, want)
 	}
 }

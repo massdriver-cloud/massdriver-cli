@@ -18,5 +18,5 @@ connections:
     default:
       type: string
       title: Default credential
-
-artifacts:
+artifacts: {}
+ui: {}

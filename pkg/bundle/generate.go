@@ -16,25 +16,6 @@ const UiSchemaFilename = "schema-ui.json"
 const idUrlPattern = "https://schemas.massdriver.cloud/schemas/bundles/%s/schema-%s.json"
 const jsonSchemaUrlPattern = "http://json-schema.org/%s/schema"
 
-type BundleStep struct {
-	Path        string `json:"path" yaml:"path"`
-	Provisioner string `json:"provisioner" yaml:"provisioner"`
-}
-
-type Bundle struct {
-	Schema      string                 `json:"schema" yaml:"schema"`
-	Name        string                 `json:"name" yaml:"name"`
-	Description string                 `json:"description" yaml:"description"`
-	Ref         string                 `json:"ref" yaml:"ref"`
-	Type        string                 `json:"type" yaml:"type"`
-	Access      string                 `json:"access" yaml:"access"`
-	Steps       []BundleStep           `json:"steps" yaml:"steps"`
-	Artifacts   map[string]interface{} `json:"artifacts" yaml:"artifacts"`
-	Params      map[string]interface{} `json:"params" yaml:"params"`
-	Connections map[string]interface{} `json:"connections" yaml:"connections"`
-	Ui          map[string]interface{} `json:"ui" yaml:"ui"`
-}
-
 // Metadata returns common metadata fields for each JSON Schema
 func (b *Bundle) Metadata(schemaType string) map[string]string {
 	return map[string]string{

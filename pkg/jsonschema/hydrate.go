@@ -95,27 +95,3 @@ func readJsonFile(filepath string) (map[string]interface{}, error) {
 
 	return result, err
 }
-
-// // utility function to extract the "keys" from an OrderedJSONElement Array
-// func getKeys(val *reflect.Value) []string {
-// 	var keys []string
-// 	for i := 0; i < (*val).Len(); i++ {
-// 		oje := (*val).Index(i).Interface().(OrderedJSONElement)
-// 		keys = append(keys, oje.Key.(string))
-// 	}
-// 	return keys
-// }
-
-// func addAdditionalPropertiesFalseBlock(oj *OrderedJSON) bool {
-// 	isObjectBlock := false
-// 	additionalPropertiesMissing := true
-// 	for _, v := range *oj {
-// 		if v.Key == "type" && v.Value == "object" {
-// 			isObjectBlock = true
-// 		}
-// 		if v.Key == "additionalProperties" {
-// 			additionalPropertiesMissing = false
-// 		}
-// 	}
-// 	return isObjectBlock && additionalPropertiesMissing
-// }
