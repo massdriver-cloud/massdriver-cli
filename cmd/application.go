@@ -5,97 +5,70 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"os"
-
-	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-var applicationPublishCmd = &cobra.Command{
-	Use:                   "publish",
-	Short:                 "Publish application to Massdriver",
-	RunE:                  RunApplicationCreate,
-	DisableFlagsInUseLine: true,
-}
-
-var applicationLintCmd = &cobra.Command{
-	Use:                   "lint",
-	Short:                 "Lint the local application definition to ensure proper formatting",
-	RunE:                  RunApplicationValidate,
-	DisableFlagsInUseLine: true,
-}
-
-var applicationParseCmd = &cobra.Command{
-	Use:                   "parse [Path to app.yaml]",
-	Short:                 "Parses and app.yaml file",
-	Args:                  cobra.ExactArgs(1),
-	RunE:                  RunApplicationParse,
-	DisableFlagsInUseLine: true,
-}
-
-var generateCmd = &cobra.Command{
-	Use:                   "generate",
-	Short:                 "DELETE ME",
-	RunE:                  RunGenerate,
-	DisableFlagsInUseLine: true,
-}
-
 // applicationCmd represents the application command
 var applicationCmd = &cobra.Command{
-	Use:     "application",
-	Aliases: []string{"app"},
-	Short:   "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "application",
+	Short: "Application development tools",
+	Long:  ``,
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+var applicationPublishCmd = &cobra.Command{
+	Use:          "publish [Path to app.yaml]",
+	Short:        "Publish an application to Massdriver",
+	Args:         cobra.ExactArgs(1),
+	RunE:         runApplicationPublish,
+	SilenceUsage: true,
 }
 
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationPublishCmd)
-	applicationPublishCmd.Flags().StringP("file", "f", "app.yaml", "Application config file")
-
-	applicationCmd.AddCommand(applicationLintCmd)
-	applicationLintCmd.Flags().StringP("file", "f", "app.yaml", "Application config file")
-	applicationLintCmd.Flags().StringP("schema", "s", "", "Schema file")
-
-	applicationCmd.AddCommand(applicationParseCmd)
+	applicationPublishCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 }
 
-func RunApplicationCreate(cmd *cobra.Command, args []string) error {
-	return nil
-}
+func runApplicationPublish(cmd *cobra.Command, args []string) error {
+	// var err error
+	// applicationPath := args[0]
 
-func RunApplicationValidate(cmd *cobra.Command, args []string) error {
-	config, _ := cmd.Flags().GetString("file")
-	schema, _ := cmd.Flags().GetString("file")
+	// c := client.NewClient()
 
-	valid, err := application.Lint(config, schema)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		os.Exit(1)
-	}
-	return nil
-}
+	// apiKey, err := cmd.Flags().GetString("api-key")
+	// if err != nil {
+	// 	return err
+	// }
+	// if apiKey != "" {
+	// 	c.WithApiKey(apiKey)
+	// }
 
-func RunApplicationParse(cmd *cobra.Command, args []string) error {
-	path := args[0]
+	// app, err := application.Parse(applicationPath)
+	// if err != nil {
+	// 	return err
+	// }
 
-	log.Info().Msg("Parsing application")
+	// b, err := app.ConvertToBundle(c)
+	// if err != nil {
+	// 	return err
+	// }
 
-	application.Parse(path)
+	// uploadURL, err := b.Publish(c)
+	// if err != nil {
+	// 	return err
+	// }
 
-	return nil
-}
+	// var buf bytes.Buffer
+	// err = application.TarGzipApplication(applicationPath, &buf)
+	// if err != nil {
+	// 	return err
+	// }
 
-func RunGenerate(cmd *cobra.Command, args []string) error {
-	application.Generate()
+	// err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
+	// if err != nil {
+	// 	return err
+	// }
+
 	return nil
 }

@@ -4,7 +4,7 @@ import "encoding/json"
 
 func GetJSONSchema(path string) (Schema, error) {
 	schema := Schema{}
-	sl := Load(path)
+	sl := Loader(path)
 
 	schemaSrc, err := sl.LoadJSON()
 	if err != nil {

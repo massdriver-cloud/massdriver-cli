@@ -1,0 +1,38 @@
+schema: draft-07
+name: my-app
+description: An application
+ref: github.com/user/app
+type: application
+access: private
+steps: []
+artifacts:
+  properties:
+    kubernetes-application:
+      $ref: massdriver/kubernetes-application
+  required:
+  - kubernetes-application
+params:
+  properties:
+    age:
+      title: Age
+      type: integer
+    name:
+      title: Name
+      type: string
+  required:
+  - name
+connections:
+  properties:
+    cloud-authentication:
+      $ref: massdriver/cloud-authentication
+    database:
+      $ref: massdriver/rdbms-authentication
+    kubernetes-cluster:
+      $ref: massdriver/kubernetes-cluster
+    queue:
+      $ref: massdriver/aws-sqs-queue
+  required:
+  - kubernetes-cluster
+  - cloud-authentication
+  - database
+ui: {}

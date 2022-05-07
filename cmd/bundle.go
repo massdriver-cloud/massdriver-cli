@@ -3,10 +3,11 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/generator"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 
@@ -52,7 +53,7 @@ func init() {
 	bundleGenerateCmd.Flags().StringP("bundle-dir", "b", "./bundles", "Path to bundle directory")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
-	bundlePublishCmd.Flags().StringP("api-key", "k", os.Getenv("MASSDRIVER_API_KEY"), "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
+	bundlePublishCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -71,19 +72,25 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 
 	log.Info().Str("bundle", bundlePath).Msg("building bundle")
 
-	bundle, err := bundle.ParseBundle(bundlePath)
+	b, err := bundle.Parse(bundlePath)
 	if err != nil {
-		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while building bundle")
+		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while parsing bundle")
 		return err
 	}
 
-	err = bundle.GenerateSchemas(output)
+	err = b.Hydrate(bundlePath)
+	if err != nil {
+		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while hydrating bundle")
+		return err
+	}
+
+	err = b.GenerateSchemas(output)
 	if err != nil {
 		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while generating bundle schema files")
 		return err
 	}
 
-	for _, step := range bundle.Steps {
+	for _, step := range b.Steps {
 		switch step.Provisioner {
 		case "terraform":
 			err = terraform.GenerateFiles(output, step.Path)
@@ -139,22 +146,32 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	var err error
 	bundlePath := args[0]
 
+	c := client.NewClient()
+
 	apiKey, err := cmd.Flags().GetString("api-key")
 	if err != nil {
 		return err
 	}
-	if apiKey == "" {
-		fmt.Print("Error: Massdriver API Key must be specified\n\n")
-		cmd.Usage()
-		os.Exit(1)
+	if apiKey != "" {
+		c.WithApiKey(apiKey)
 	}
 
-	b, err := bundle.ParseBundle(bundlePath)
+	b, err := bundle.Parse(bundlePath)
 	if err != nil {
 		return err
 	}
 
-	uploadURL, err := b.Publish(apiKey)
+	err = b.Hydrate(bundlePath)
+	if err != nil {
+		return err
+	}
+
+	err = b.GenerateSchemas(path.Dir(bundlePath))
+	if err != nil {
+		return err
+	}
+
+	uploadURL, err := b.Publish(c)
 	if err != nil {
 		return err
 	}

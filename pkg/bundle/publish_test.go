@@ -5,22 +5,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"os/exec"
-	"path"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
-	"golang.org/x/mod/sumdb/dirhash"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 )
 
 func TestPublish(t *testing.T) {
 	type test struct {
-		name        string
-		bundle      bundle.Bundle
-		apiKey      string
-		wantBody    string
-		wantHeaders map[string][]string
+		name     string
+		bundle   bundle.Bundle
+		wantBody string
 	}
 	tests := []test{
 		{
@@ -46,34 +41,28 @@ func TestPublish(t *testing.T) {
 					"ui": "baz",
 				},
 			},
-			apiKey:   "s3cret",
 			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","ref":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
-			wantHeaders: map[string][]string{
-				"X-Md-Api-Key": {"s3cret"},
-			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var gotBody string
-			var gotHeaders map[string][]string
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				bytes, err := ioutil.ReadAll(r.Body)
 				if err != nil {
 					t.Fatalf("%d, unexpected error", err)
 				}
 				gotBody = string(bytes)
-				gotHeaders = r.Header
 
 				w.Write([]byte(`{"upload_location":"https://some.site.test/endpoint"}`))
 				w.WriteHeader(http.StatusOK)
 			}))
 			defer testServer.Close()
 
-			bundle.MASSDRIVER_URL = testServer.URL
+			c := client.NewClient().WithEndpoint(testServer.URL)
 
-			gotResponse, err := tc.bundle.Publish(tc.apiKey)
+			gotResponse, err := tc.bundle.Publish(c)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -83,73 +72,6 @@ func TestPublish(t *testing.T) {
 			}
 			if gotResponse != `https://some.site.test/endpoint` {
 				t.Errorf("got %v, want %v", gotResponse, `https://some.site.test/endpoint`)
-			}
-			for key, wantValue := range tc.wantHeaders {
-				if gotValue, ok := gotHeaders[key]; ok {
-					if len(gotValue) != len(wantValue) {
-						t.Errorf("got %v, want %v", gotValue, wantValue)
-					}
-					for i, v := range wantValue {
-						if v != gotValue[i] {
-							t.Errorf("got %v, want %v", gotValue, wantValue)
-						}
-					}
-				} else {
-					t.Errorf("missing header: %v", key)
-				}
-			}
-		})
-	}
-}
-
-func TestTarGzipBundle(t *testing.T) {
-	type test struct {
-		name       string
-		bundlePath string
-		wantPath   string
-	}
-	tests := []test{
-		{
-			name:       "simple",
-			bundlePath: "testdata/zipdir/bundle.yaml",
-			wantPath:   "testdata/bundle",
-		},
-	}
-
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			var got bytes.Buffer
-			err := bundle.TarGzipBundle(tc.bundlePath, &got)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			// Create a temp dir, write out the archive, then shell out the untar
-			testDir := t.TempDir()
-			zipOut := path.Join(testDir, "out.tar.gz")
-			gotBytes := got.Bytes()
-			err = os.WriteFile(zipOut, gotBytes, 0644)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-			cmd := exec.Command("tar", "-xzf", zipOut, "-C", testDir)
-			err = cmd.Run()
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			wantMD5, err := dirhash.HashDir(tc.wantPath, "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			gotMD5, err := dirhash.HashDir(path.Join(testDir, "bundle"), "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			if len(gotMD5) != len(wantMD5) {
-				t.Errorf("got %v, want %v", len(gotMD5), len(wantMD5))
 			}
 		})
 	}

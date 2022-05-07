@@ -1,12 +1,12 @@
-package application_test
+package jsonschema_test
 
 import (
 	"testing"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 )
 
-func TestLoad(t *testing.T) {
+func TestLoader(t *testing.T) {
 	type test struct {
 		name  string
 		input string
@@ -27,7 +27,7 @@ func TestLoad(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			sl := application.Load(tc.input)
+			sl := jsonschema.Loader(tc.input)
 			schema, _ := sl.LoadJSON()
 			got := schema.(map[string]interface{})["$id"]
 
