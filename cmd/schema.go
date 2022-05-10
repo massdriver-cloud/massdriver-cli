@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 
 	"github.com/spf13/cobra"
@@ -35,7 +37,7 @@ func init() {
 	schemaValidateCmd.Flags().StringP("schema", "s", "./schema.json", "Path to JSON Schema")
 
 	schemaDereferenceCmd.Flags().StringP("schema", "s", "./schema.json", "Path to JSON Schema")
-	schemaDereferenceCmd.Flags().StringP("dir", "d", ".", "Path to output directory")
+	schemaDereferenceCmd.Flags().StringP("out", "o", "", "File to output derefenced schema to (default is stdout)")
 }
 
 func runSchemaValidate(cmd *cobra.Command, args []string) error {
@@ -47,7 +49,20 @@ func runSchemaValidate(cmd *cobra.Command, args []string) error {
 
 func runSchemaDereference(cmd *cobra.Command, args []string) error {
 	schema, _ := cmd.Flags().GetString("schema")
-	dir, _ := cmd.Flags().GetString("dir")
-	err := jsonschema.WriteDereferencedSchema(schema, dir)
-	return err
+	out, _ := cmd.Flags().GetString("out")
+
+	var outFile *os.File
+
+	if out == "" || out == "-" {
+		outFile = os.Stdout
+	} else {
+		var err error
+		outFile, err = os.OpenFile(out, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+	}
+
+	return jsonschema.WriteDereferencedSchema(schema, outFile, nil)
 }

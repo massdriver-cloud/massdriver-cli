@@ -53,12 +53,21 @@ func init() {
 	bundleGenerateCmd.Flags().StringP("bundle-dir", "b", "./bundles", "Path to bundle directory")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
-	bundlePublishCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	var err error
 	bundlePath := args[0]
+
+	c := client.NewClient()
+
+	apiKey, err := cmd.Flags().GetString("api-key")
+	if err != nil {
+		return err
+	}
+	if apiKey != "" {
+		c.WithApiKey(apiKey)
+	}
 
 	// default the output to the path of the bundle.yaml file
 	output, err := cmd.Flags().GetString("output")
@@ -78,7 +87,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = b.Hydrate(bundlePath)
+	err = b.Hydrate(bundlePath, c)
 	if err != nil {
 		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while hydrating bundle")
 		return err
@@ -161,7 +170,7 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = b.Hydrate(bundlePath)
+	err = b.Hydrate(bundlePath, c)
 	if err != nil {
 		return err
 	}
@@ -186,6 +195,8 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Bundle published successfully!")
 
 	return nil
 }

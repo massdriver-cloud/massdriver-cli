@@ -58,7 +58,7 @@ func (b *Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
 
 	body.Name = b.Name
 	body.Description = b.Description
-	body.Type = "bundle"
+	body.Type = b.Type
 	body.Ref = b.Ref
 	body.Access = b.Access
 

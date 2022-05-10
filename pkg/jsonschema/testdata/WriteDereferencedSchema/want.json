@@ -1,0 +1,1 @@
+{"$id":"https://schemas.massdriver.cloud/definitions/artifacts/aws-authentication.json","$schema":"http://json-schema.org/draft-07/schema","anyOf":[{"foo":"bar"}],"description":"AWS authentication with credentials or a role ARN","title":"AWS Authentication","type":"object"}

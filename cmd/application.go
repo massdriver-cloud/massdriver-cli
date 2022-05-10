@@ -5,7 +5,18 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
+	"fmt"
+	"os"
+	"path"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 // applicationCmd represents the application command
@@ -27,48 +38,110 @@ func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationPublishCmd)
-	applicationPublishCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 }
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
-	// var err error
-	// applicationPath := args[0]
+	var err error
+	appPath := args[0]
 
-	// c := client.NewClient()
+	c := client.NewClient()
 
-	// apiKey, err := cmd.Flags().GetString("api-key")
-	// if err != nil {
-	// 	return err
-	// }
-	// if apiKey != "" {
-	// 	c.WithApiKey(apiKey)
-	// }
+	apiKey, err := cmd.Flags().GetString("api-key")
+	if err != nil {
+		return err
+	}
+	if apiKey != "" {
+		c.WithApiKey(apiKey)
+	}
 
-	// app, err := application.Parse(applicationPath)
-	// if err != nil {
-	// 	return err
-	// }
+	app, err := application.Parse(appPath)
+	if err != nil {
+		return err
+	}
 
-	// b, err := app.ConvertToBundle(c)
-	// if err != nil {
-	// 	return err
-	// }
+	// Create a temporary working directory
+	workingDir, err := os.MkdirTemp("", app.Name)
+	if err != nil {
+		return (err)
+	}
+	//defer os.RemoveAll(workingDir)
 
-	// uploadURL, err := b.Publish(c)
-	// if err != nil {
-	// 	return err
-	// }
+	// Write app.yaml
+	appYaml, err := os.Create(path.Join(workingDir, "app.yaml"))
+	if err != nil {
+		return err
+	}
+	defer appYaml.Close()
+	appYamlBytes, err := yaml.Marshal(*app)
+	if err != nil {
+		return err
+	}
+	appYaml.Write(appYamlBytes)
 
-	// var buf bytes.Buffer
-	// err = application.TarGzipApplication(applicationPath, &buf)
-	// if err != nil {
-	// 	return err
-	// }
+	// Write bundle.yaml
+	b := app.ConvertToBundle()
+	bundlePath := path.Join(workingDir, "bundle.yaml")
+	bundleYaml, err := os.Create(bundlePath)
+	if err != nil {
+		return err
+	}
+	defer bundleYaml.Close()
+	bundleYamlBytes, err := yaml.Marshal(*b)
+	if err != nil {
+		return err
+	}
+	bundleYaml.Write(bundleYamlBytes)
+	fmt.Println(string(bundleYamlBytes))
 
-	// err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
-	// if err != nil {
-	// 	return err
-	// }
+	// Make src directory
+	err = os.MkdirAll(path.Join(workingDir, "src"), 0744)
+	if err != nil {
+		return err
+	}
+
+	err = b.Hydrate(bundlePath, c)
+	if err != nil {
+		return err
+	}
+
+	err = b.GenerateSchemas(workingDir)
+	if err != nil {
+		return err
+	}
+
+	for _, step := range b.Steps {
+		switch step.Provisioner {
+		case "terraform":
+			err = terraform.GenerateFiles(workingDir, step.Path)
+			if err != nil {
+				log.Error().Err(err).Str("bundle", bundlePath).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
+				return err
+			}
+		case "exec":
+			// No-op (Golang doesn't not fallthrough unless explicitly stated)
+		default:
+			log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
+			return fmt.Errorf("unknown provisioner: %v", step.Provisioner)
+		}
+	}
+
+	uploadURL, err := b.Publish(c)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	err = bundle.TarGzipBundle(bundlePath, &buf)
+	if err != nil {
+		return err
+	}
+
+	err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Application published successfully!")
 
 	return nil
 }

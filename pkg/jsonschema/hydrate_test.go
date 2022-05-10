@@ -3,8 +3,11 @@ package jsonschema_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 )
 
@@ -93,22 +96,31 @@ func TestHydrate(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	Name:  `Adds "additionalProperties":false to object types`,
-		// 	Input: jsonDecode(`{"properties": {"a": "b"}, "type": "object"}`),
-		// 	Expected: jsonschema.OrderedJSON([]jsonschema.OrderedJSONElement{
-		// 		{Key: "properties", Value: jsonschema.OrderedJSON([]jsonschema.OrderedJSONElement{
-		// 			{Key: "a", Value: "b"},
-		// 		})},
-		// 		{Key: "type", Value: "object"},
-		// 		{Key: "additionalProperties", Value: false},
-		// 	}),
-		// },
+		{
+			Name:  "Hydrates remote (massdriver) ref",
+			Input: jsonDecode(`{"$ref": "massdriver/test-schema"}`),
+			Expected: map[string]string{
+				"foo": "bar",
+			},
+		},
 	}
 
 	for _, test := range cases {
 		t.Run(test.Name, func(t *testing.T) {
-			got, _ := jsonschema.Hydrate(test.Input, ".")
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				urlPath := r.URL.Path
+				switch urlPath {
+				case "/artifact-definitions/massdriver/test-schema":
+					w.Write([]byte(`{"foo":"bar"}`))
+				default:
+					t.Fatalf("unknown schema: %v", urlPath)
+				}
+			}))
+			defer testServer.Close()
+
+			c := client.NewClient().WithEndpoint(testServer.URL)
+
+			got, _ := jsonschema.Hydrate(test.Input, ".", c)
 
 			if fmt.Sprint(got) != fmt.Sprint(test.Expected) {
 				t.Errorf("got %v, want %v", got, test.Expected)

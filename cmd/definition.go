@@ -41,11 +41,10 @@ func init() {
 	rootCmd.AddCommand(definitionCmd)
 
 	definitionCmd.AddCommand(definitionGetCmd)
-	definitionGetCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 
 	definitionCmd.AddCommand(definitionPublishCmd)
 	definitionPublishCmd.Flags().StringP("file", "f", "", "File containing artifact definition schema (use - for stdin)")
-	definitionPublishCmd.Flags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
+	definitionPublishCmd.MarkFlagRequired("file")
 }
 
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
@@ -92,16 +91,23 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 		c.WithApiKey(apiKey)
 	}
 
-	defFile, err := os.Open(defPath)
-	if err != nil {
-		fmt.Println(err)
+	var defFile *os.File
+	if defPath == "-" {
+		defFile = os.Stdin
+	} else {
+		defFile, err := os.Open(defPath)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer defFile.Close()
 	}
-	defer defFile.Close()
 
 	byteValue, _ := ioutil.ReadAll(defFile)
 	var art definition.Definition
 
 	json.Unmarshal([]byte(byteValue), &art)
+
+	fmt.Println("Definition published successfully!")
 
 	return art.Publish(c)
 }

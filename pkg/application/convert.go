@@ -1,6 +1,8 @@
 package application
 
 import (
+	"encoding/json"
+
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 )
 
@@ -13,28 +15,57 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 	b.Name = app.Name
 	b.Description = app.Description
 	b.Ref = app.Ref
-	b.Access = app.Access
 	b.Type = "application"
-	b.Params = app.Params
+	b.Access = app.Access
+
+	b.Steps = []bundle.BundleStep{
+		{
+			Path:        "src",
+			Provisioner: "terraform",
+		},
+	}
+
+	if app.Deployment.Type == "simple" {
+		b.Params = make(map[string]interface{})
+		json.Unmarshal([]byte(simpleParams), &b.Params)
+	} else {
+		b.Params = app.Params
+	}
+
 	b.Connections = make(map[string]interface{})
 	b.Artifacts = make(map[string]interface{})
+	b.Ui = make(map[string]interface{})
 
 	// default connections are kubernetes and cloud auth
-	connectionsRequired := []string{"kubernetes-cluster", "cloud-authentication"}
+	//connectionsRequired := []string{"kubernetes-cluster", "cloud-authentication"}
+	connectionsRequired := []string{"kubernetes-cluster"}
 	connectionsProperties := make(map[string]interface{})
 
-	connectionsProperties["kubernetes-cluster"] = map[string]string{
+	connectionsProperties["kubernetes-cluster"] = map[string]interface{}{
 		"$ref": "massdriver/kubernetes-cluster",
 	}
-	connectionsProperties["cloud-authentication"] = map[string]string{
-		"$ref": "massdriver/cloud-authentication",
+	// connectionsProperties["cloud-authentication"] = map[string]interface{}{
+	// 	"oneOf": []interface{}{
+	// 		map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
+	// 		map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
+	// 		map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
+	// 	},
+	// }
+	connectionsProperties["aws-authentication"] = map[string]interface{}{
+		"$ref": "massdriver/aws-iam-role",
+	}
+	connectionsProperties["azure-authentication"] = map[string]interface{}{
+		"$ref": "massdriver/azure-service-principal",
+	}
+	connectionsProperties["gcp-authentication"] = map[string]interface{}{
+		"$ref": "massdriver/gcp-service-account",
 	}
 
 	for _, dep := range app.Dependencies {
 		if dep.Required {
 			connectionsRequired = append(connectionsRequired, dep.Field)
 		}
-		connectionsProperties[dep.Field] = map[string]string{
+		connectionsProperties[dep.Field] = map[string]interface{}{
 			"$ref": dep.Type,
 		}
 	}
@@ -43,15 +74,22 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 	b.Connections["properties"] = connectionsProperties
 
 	// default artifact is kubernetes-application
-	artifactsRequired := []string{"kubernetes-application"}
-	artifactsProperties := make(map[string]interface{})
+	// TODO: RE-ENABLE THIS WHEN WE HAVE A WORKING ARTIFACT
+	// artifactsRequired := []string{"kubernetes-application"}
+	// artifactsProperties := make(map[string]interface{})
 
-	artifactsProperties["kubernetes-application"] = map[string]string{
-		"$ref": "massdriver/kubernetes-application",
-	}
+	// artifactsProperties["kubernetes-application"] = map[string]interface{}{
+	// 	"$ref": "massdriver/kubernetes-application",
+	// }
 
-	b.Artifacts["required"] = artifactsRequired
-	b.Artifacts["properties"] = artifactsProperties
+	// b.Artifacts["required"] = artifactsRequired
+	// b.Artifacts["properties"] = artifactsProperties
+
+	b.Artifacts["properties"] = make(map[string]interface{})
+
+	// NOT NEEDED
+	uiOrder := []interface{}{"*"}
+	b.Ui["ui:order"] = uiOrder
 
 	return b
 }

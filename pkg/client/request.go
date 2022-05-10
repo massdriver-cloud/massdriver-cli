@@ -35,7 +35,9 @@ func (req *Request) toHTTPRequest(c *MassdriverClient) (*http.Request, error) {
 		return nil, err
 	}
 
-	httpReq.Header.Set("X-Md-Api-Key", c.apiKey)
+	if c.apiKey != "" {
+		httpReq.Header.Set("X-Md-Api-Key", c.apiKey)
+	}
 	// for now assuming everything is json
 	httpReq.Header.Set("Content-Type", "application/json")
 

@@ -37,7 +37,7 @@ func TestConvertToBundle(t *testing.T) {
 					},
 				},
 				Params: map[string]interface{}{
-					"params": map[string]string{
+					"params": map[string]interface{}{
 						"hello": "world",
 					},
 				},
@@ -48,26 +48,46 @@ func TestConvertToBundle(t *testing.T) {
 				Ref:         "github.com/some-repo",
 				Access:      "public",
 				Type:        "application",
+				Steps: []bundle.BundleStep{
+					{
+						Path:        "src",
+						Provisioner: "terraform",
+					},
+				},
 				Params: map[string]interface{}{
-					"params": map[string]string{
+					"params": map[string]interface{}{
 						"hello": "world",
 					},
 				},
 				Connections: map[string]interface{}{
-					"required": []string{"kubernetes-cluster", "cloud-authentication", "another-field"},
+					"required": []string{"kubernetes-cluster", "another-field"},
 					"properties": map[string]interface{}{
-						"another-field":        map[string]string{"$ref": "bar"},
-						"cloud-authentication": map[string]string{"$ref": "massdriver/cloud-authentication"},
-						"some-field":           map[string]string{"$ref": "foo"},
-						"kubernetes-cluster":   map[string]string{"$ref": "massdriver/kubernetes-cluster"},
+						"another-field": map[string]interface{}{"$ref": "bar"},
+						// "cloud-authentication": map[string]interface{}{
+						// 	"oneOf": []interface{}{
+						// 		map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
+						// 		map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
+						// 		map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
+						// 	},
+						// },
+						"some-field":           map[string]interface{}{"$ref": "foo"},
+						"kubernetes-cluster":   map[string]interface{}{"$ref": "massdriver/kubernetes-cluster"},
+						"aws-authentication":   map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
+						"azure-authentication": map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
+						"gcp-authentication":   map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
 					},
 				},
 				Artifacts: map[string]interface{}{
-					"required": []string{"kubernetes-application"},
-					"properties": map[string]interface{}{
-						"kubernetes-application": map[string]string{"$ref": "massdriver/kubernetes-application"},
-					},
+					"properties": map[string]interface{}{},
 				},
+				Ui: map[string]interface{}{
+					"ui:order": []interface{}{"*"},
+				},
+				// 	"required": []string{"kubernetes-application"},
+				// 	"properties": map[string]interface{}{
+				// 		"kubernetes-application": map[string]interface{}{"$ref": "massdriver/kubernetes-application"},
+				// 	},
+				// },
 			},
 		},
 	}

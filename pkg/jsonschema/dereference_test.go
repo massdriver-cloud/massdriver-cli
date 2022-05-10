@@ -1,37 +1,27 @@
 package jsonschema_test
 
 import (
-	"io/ioutil"
+	"bytes"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 )
 
 func TestWriteDereferencedSchema(t *testing.T) {
-	dir, err := ioutil.TempDir("", "xo-artifacts")
-	if err != nil {
-		t.Errorf("%d, unexpected error", err)
-	}
+	got := bytes.Buffer{}
 
-	err = jsonschema.WriteDereferencedSchema("./testdata/WriteDereferencedSchema/aws-authentication.json", dir)
+	err := jsonschema.WriteDereferencedSchema("./testdata/WriteDereferencedSchema/artifact.json", &got, nil)
 	if err != nil {
 		t.Errorf("Encountered error dereferencing schema: %v", err)
 	}
 
-	gotDir, _ := os.ReadDir(dir)
-
-	got := []string{}
-	for _, dirEntry := range gotDir {
-		got = append(got, dirEntry.Name())
+	want, err := os.ReadFile("./testdata/WriteDereferencedSchema/want.json")
+	if err != nil {
+		t.Errorf("Encountered error dereferencing schema: %v", err)
 	}
 
-	want := []string{"aws-authentication.dereferenced.json"}
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
+	if got.String() != string(want) {
+		t.Errorf("got %v, want %v", got.String(), string(want))
 	}
-
-	defer os.RemoveAll(dir)
 }

@@ -6,7 +6,7 @@
     "description": "AWS authentication with credentials or a role ARN",
     "anyOf": [
         {
-            "$ref": "./aws-credentials.json"
+            "$ref": "./foobar.json"
         }
     ]
 }

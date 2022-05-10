@@ -2,12 +2,12 @@ package jsonschema
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"io/ioutil"
-	"os"
-	"path"
 	"path/filepath"
 	"regexp"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 )
 
 var schemaTypePattern = regexp.MustCompile(`^.*\/(.*).json$`)
@@ -18,7 +18,7 @@ type RefdSchema struct {
 	Definition interface{}
 }
 
-func WriteDereferencedSchema(schemaFilePath string, outDir string) error {
+func WriteDereferencedSchema(schemaFilePath string, outFile io.Writer, c *client.MassdriverClient) error {
 	dereferencedSchema := RefdSchema{}
 	rawJson := map[string]interface{}{}
 	cwd := filepath.Dir(schemaFilePath)
@@ -28,7 +28,7 @@ func WriteDereferencedSchema(schemaFilePath string, outDir string) error {
 	}
 
 	json.Unmarshal(data, &rawJson)
-	definition, err := Hydrate(rawJson, cwd)
+	definition, err := Hydrate(rawJson, cwd, c)
 	if err != nil {
 		return err
 	}
@@ -41,21 +41,12 @@ func WriteDereferencedSchema(schemaFilePath string, outDir string) error {
 		}
 	}
 
-	schemaFileName := fmt.Sprintf("%s.dereferenced.json", dereferencedSchema.Type())
-	path := path.Join(outDir, schemaFileName)
-
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	json, err := json.Marshal(dereferencedSchema.Definition)
 	if err != nil {
 		return err
 	}
 
-	_, err = file.Write(json)
+	_, err = outFile.Write(json)
 
 	return err
 }

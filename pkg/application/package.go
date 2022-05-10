@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"gopkg.in/yaml.v2"
 )
 
@@ -66,26 +67,28 @@ func Package(filePath string, buf io.Writer) error {
 	}
 
 	// SCHEMAS
-	// schemas := map[string]map[string]interface{}{
-	// 	"artifacts":   b.Artifacts,
-	// 	"connections": b.Connections,
-	// 	"params":      b.Params,
-	// }
-	// for k, v := range schemas {
-	// 	var buffer bytes.Buffer
-	// 	bundle.GenerateSchema(v, b.Metadata(k), &buffer)
-	// 	schemaHeader := &tar.Header{
-	// 		Name: "bundle/schema-" + k + ".json",
-	// 		Mode: 0600,
-	// 		Size: int64(len(buffer.Bytes())),
-	// 	}
-	// 	if err := tarWriter.WriteHeader(schemaHeader); err != nil {
-	// 		return err
-	// 	}
-	// 	if _, err := io.Copy(tarWriter, bytes.NewReader(buffer.Bytes())); err != nil {
-	// 		return err
-	// 	}
-	// }
+	schemas := map[string]map[string]interface{}{
+		// "artifacts": b.Artifacts,
+		// "connections": b.Connections,
+		"params": b.Params,
+	}
+	for name, schema := range schemas {
+		var buffer bytes.Buffer
+		if err = bundle.GenerateSchema(schema, b.Metadata(name), &buffer); err != nil {
+			return err
+		}
+		schemaHeader := &tar.Header{
+			Name: "bundle/schema-" + name + ".json",
+			Mode: 0600,
+			Size: int64(len(buffer.Bytes())),
+		}
+		if err := tarWriter.WriteHeader(schemaHeader); err != nil {
+			return err
+		}
+		if _, err := io.Copy(tarWriter, bytes.NewReader(buffer.Bytes())); err != nil {
+			return err
+		}
+	}
 
 	// // walk through every file in the folder
 	// filepath.Walk(dirPath, func(file string, fi os.FileInfo, err error) error {

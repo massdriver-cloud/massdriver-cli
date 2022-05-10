@@ -4,13 +4,11 @@ description: An application
 ref: github.com/user/app
 type: application
 access: private
-steps: []
+steps:
+- path: src
+  provisioner: terraform
 artifacts:
-  properties:
-    kubernetes-application:
-      $ref: massdriver/kubernetes-application
-  required:
-  - kubernetes-application
+  properties: {}
 params:
   properties:
     age:
@@ -23,16 +21,21 @@ params:
   - name
 connections:
   properties:
-    cloud-authentication:
-      $ref: massdriver/cloud-authentication
+    aws-authentication:
+      $ref: massdriver/aws-iam-role
+    azure-authentication:
+      $ref: massdriver/azure-service-principal
     database:
       $ref: massdriver/rdbms-authentication
+    gcp-authentication:
+      $ref: massdriver/gcp-service-account
     kubernetes-cluster:
       $ref: massdriver/kubernetes-cluster
     queue:
       $ref: massdriver/aws-sqs-queue
   required:
   - kubernetes-cluster
-  - cloud-authentication
   - database
-ui: {}
+ui:
+  ui:order:
+  - '*'

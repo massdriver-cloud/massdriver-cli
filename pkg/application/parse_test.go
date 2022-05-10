@@ -19,12 +19,12 @@ func TestParseBundle(t *testing.T) {
 			Type: "chart",
 		},
 		Params: map[string]interface{}{
-			"properties": map[interface{}]interface{}{
-				"name": map[interface{}]interface{}{
+			"properties": map[string]interface{}{
+				"name": map[string]interface{}{
 					"type":  "string",
 					"title": "Name",
 				},
-				"age": map[interface{}]interface{}{
+				"age": map[string]interface{}{
 					"type":  "integer",
 					"title": "Age",
 				},
