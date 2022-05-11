@@ -38,10 +38,10 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 
 	// default connections are kubernetes and cloud auth
 	//connectionsRequired := []string{"kubernetes-cluster", "cloud-authentication"}
-	connectionsRequired := []string{"kubernetes-cluster"}
+	connectionsRequired := []string{"kubernetes_cluster"}
 	connectionsProperties := make(map[string]interface{})
 
-	connectionsProperties["kubernetes-cluster"] = map[string]interface{}{
+	connectionsProperties["kubernetes_cluster"] = map[string]interface{}{
 		"$ref": "massdriver/kubernetes-cluster",
 	}
 	// connectionsProperties["cloud-authentication"] = map[string]interface{}{
@@ -51,13 +51,13 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 	// 		map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
 	// 	},
 	// }
-	connectionsProperties["aws-authentication"] = map[string]interface{}{
+	connectionsProperties["aws_authentication"] = map[string]interface{}{
 		"$ref": "massdriver/aws-iam-role",
 	}
-	connectionsProperties["azure-authentication"] = map[string]interface{}{
+	connectionsProperties["azure_authentication"] = map[string]interface{}{
 		"$ref": "massdriver/azure-service-principal",
 	}
-	connectionsProperties["gcp-authentication"] = map[string]interface{}{
+	connectionsProperties["gcp_authentication"] = map[string]interface{}{
 		"$ref": "massdriver/gcp-service-account",
 	}
 
@@ -87,9 +87,14 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 
 	b.Artifacts["properties"] = make(map[string]interface{})
 
-	// NOT NEEDED
-	uiOrder := []interface{}{"*"}
-	b.Ui["ui:order"] = uiOrder
+	// UI
+	if app.Deployment.Type == "simple" {
+		b.Ui = make(map[string]interface{})
+		json.Unmarshal([]byte(simpleUi), &b.Ui)
+	} else {
+		uiOrder := []interface{}{"*"}
+		b.Ui["ui:order"] = uiOrder
+	}
 
 	return b
 }

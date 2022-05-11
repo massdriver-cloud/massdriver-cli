@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-var paramsTransformations = []func(map[string]interface{}) error{AddSetIdToObjectArrays, DisableAdditionalPropertiesInObjects}
+var paramsTransformations = []func(map[string]interface{}) error{DisableAdditionalPropertiesInObjects}
 var connectionsTransformations = []func(map[string]interface{}) error{DisableAdditionalPropertiesInObjects}
 var artifactsTransformations = []func(map[string]interface{}) error{DisableAdditionalPropertiesInObjects}
 var uiTransformations = []func(map[string]interface{}) error{}

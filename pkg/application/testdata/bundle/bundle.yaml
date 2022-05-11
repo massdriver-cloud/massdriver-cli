@@ -21,20 +21,20 @@ params:
   - name
 connections:
   properties:
-    aws-authentication:
+    aws_authentication:
       $ref: massdriver/aws-iam-role
-    azure-authentication:
+    azure_authentication:
       $ref: massdriver/azure-service-principal
     database:
       $ref: massdriver/rdbms-authentication
-    gcp-authentication:
+    gcp_authentication:
       $ref: massdriver/gcp-service-account
-    kubernetes-cluster:
+    kubernetes_cluster:
       $ref: massdriver/kubernetes-cluster
     queue:
       $ref: massdriver/aws-sqs-queue
   required:
-  - kubernetes-cluster
+  - kubernetes_cluster
   - database
 ui:
   ui:order:

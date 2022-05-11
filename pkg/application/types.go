@@ -29,13 +29,46 @@ type ApplicationDependenciesEnvs struct {
 	Value string `json:"value" yaml:"value"`
 }
 
+var simpleUi = `
+{
+	"ui:order": [
+		"name",
+		"namespace",
+		"image",
+		"resource_requests",
+		"autoscaling",
+		"envs",
+		"port",
+		"ingress"
+	],
+	"autoscaling": {
+		"items": {
+			"ui:order": [
+				"enabled",
+				"minReplicas",
+				"maxReplicas",
+				"targetCPUUtilizationPercentage"
+			]
+		}
+	},
+	"ingress": {
+		"items": {
+			"ui:order": [
+				"enabled",
+				"host",
+				"path"
+			]
+		}
+	}
+}
+		`
 var simpleParams = `
 {
 	"required": [
 		"name",
 		"namespace",
 		"image",
-		"resources"
+		"resource_requests"
 	],
 	"properties": {
 		"name": {
@@ -69,7 +102,7 @@ var simpleParams = `
 				}
 			}
 		},
-		"resources": {
+		"resource_requests": {
 			"type": "object",
 			"title": "Resources",
 			"required": [

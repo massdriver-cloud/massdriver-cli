@@ -60,7 +60,7 @@ func TestConvertToBundle(t *testing.T) {
 					},
 				},
 				Connections: map[string]interface{}{
-					"required": []string{"kubernetes-cluster", "another-field"},
+					"required": []string{"kubernetes_cluster", "another-field"},
 					"properties": map[string]interface{}{
 						"another-field": map[string]interface{}{"$ref": "bar"},
 						// "cloud-authentication": map[string]interface{}{
@@ -71,10 +71,10 @@ func TestConvertToBundle(t *testing.T) {
 						// 	},
 						// },
 						"some-field":           map[string]interface{}{"$ref": "foo"},
-						"kubernetes-cluster":   map[string]interface{}{"$ref": "massdriver/kubernetes-cluster"},
-						"aws-authentication":   map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
-						"azure-authentication": map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
-						"gcp-authentication":   map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
+						"kubernetes_cluster":   map[string]interface{}{"$ref": "massdriver/kubernetes-cluster"},
+						"aws_authentication":   map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
+						"azure_authentication": map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
+						"gcp_authentication":   map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
 					},
 				},
 				Artifacts: map[string]interface{}{
