@@ -64,7 +64,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return (err)
 	}
-	//defer os.RemoveAll(workingDir)
+	defer os.RemoveAll(workingDir)
 
 	// Write app.yaml
 	appYaml, err := os.Create(path.Join(workingDir, "app.yaml"))
@@ -91,7 +91,6 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	bundleYaml.Write(bundleYamlBytes)
-	fmt.Println(string(bundleYamlBytes))
 
 	// Make src directory
 	err = os.MkdirAll(path.Join(workingDir, "src"), 0744)
