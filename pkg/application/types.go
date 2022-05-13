@@ -12,16 +12,18 @@ type Application struct {
 }
 
 type ApplicationDeployment struct {
-	Type  string `json:"type" yaml:"type"`
-	Chart string `json:"chart" yaml:"chart"`
+	Type       string `json:"type" yaml:"type"`
+	Path       string `json:"path,omitempty" yaml:"path,omitempty"`
+	Chart      string `json:"chart,omitempty" yaml:"chart,omitempty"`
+	Repository string `json:"repository,omitempty" yaml:"repository,omitempty"`
 }
 
 type ApplicationDependencies struct {
 	Type     string                        `json:"type" yaml:"type"`
 	Field    string                        `json:"field" yaml:"field"`
-	Required bool                          `json:"required" yaml:"required,omitempty"`
+	Required bool                          `json:"required,omitempty" yaml:"required,omitempty"`
 	Env      []ApplicationDependenciesEnvs `json:"env" yaml:"env"`
-	Policy   string                        `json:"policy" yaml:"policy"`
+	Policy   string                        `json:"policy,omitempty" yaml:"policy,omitempty"`
 }
 
 type ApplicationDependenciesEnvs struct {
@@ -29,8 +31,7 @@ type ApplicationDependenciesEnvs struct {
 	Value string `json:"value" yaml:"value"`
 }
 
-var simpleUi = `
-{
+var SimpleUi = `{
 	"ui:order": [
 		"name",
 		"namespace",
@@ -60,10 +61,8 @@ var simpleUi = `
 			]
 		}
 	}
-}
-		`
-var simpleParams = `
-{
+}`
+var SimpleParams = `{
 	"required": [
 		"name",
 		"namespace",
@@ -206,5 +205,4 @@ var simpleParams = `
 			}
 		}
 	}
-}
-`
+}`

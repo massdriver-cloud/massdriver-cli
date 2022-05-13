@@ -1,0 +1,1 @@
+{"$id":"https://schemas.massdriver.cloud/schemas/bundles/my-app/schema-params.json","$schema":"http://json-schema.org/draft-07/schema","description":"An application","name":"my-app","properties":{"name":{"title":"Name","type":"string"}},"required":["name"]}

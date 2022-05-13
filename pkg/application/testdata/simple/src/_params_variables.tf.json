@@ -1,0 +1,8 @@
+{
+  "variable": {
+    "simple": {
+      "type": "string",
+      "default": null
+    }
+  }
+}

@@ -27,7 +27,7 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 
 	if app.Deployment.Type == "simple" {
 		b.Params = make(map[string]interface{})
-		json.Unmarshal([]byte(simpleParams), &b.Params)
+		json.Unmarshal([]byte(SimpleParams), &b.Params)
 	} else {
 		b.Params = app.Params
 	}
@@ -90,7 +90,7 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 	// UI
 	if app.Deployment.Type == "simple" {
 		b.Ui = make(map[string]interface{})
-		json.Unmarshal([]byte(simpleUi), &b.Ui)
+		json.Unmarshal([]byte(SimpleUi), &b.Ui)
 	} else {
 		uiOrder := []interface{}{"*"}
 		b.Ui["ui:order"] = uiOrder

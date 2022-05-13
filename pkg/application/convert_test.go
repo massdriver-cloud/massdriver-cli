@@ -95,25 +95,6 @@ func TestConvertToBundle(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			// testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// 	schemaFile := r.URL.Path
-			// 	switch schemaFile {
-			// 	case "/artifact-definitions/massdriver/kubernetes-cluster":
-			// 		w.Write([]byte(`{"kube":"cluster"}`))
-			// 	case "/artifact-definitions/massdriver/cloud-authentication":
-			// 		w.Write([]byte(`{"cloud":"authentication"}`))
-			// 	case "/artifact-definitions/foo":
-			// 		w.Write([]byte(`{"hello":"world"}`))
-			// 	case "/artifact-definitions/bar":
-			// 		w.Write([]byte(`{"lol":"rofl"}`))
-			// 	default:
-			// 		t.Fatalf("unknown schema: %v", schemaFile)
-			// 	}
-			// }))
-			// defer testServer.Close()
-
-			// c := client.NewClient().WithEndpoint(testServer.URL)
-
 			got := tc.app.ConvertToBundle()
 
 			if !reflect.DeepEqual(*got, *tc.want) {

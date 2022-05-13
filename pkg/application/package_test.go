@@ -2,12 +2,12 @@ package application_test
 
 import (
 	"bytes"
-	"os"
-	"os/exec"
-	"path"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -20,29 +20,46 @@ func TestPackage(t *testing.T) {
 	tests := []test{
 		{
 			name:            "simple",
-			applicationPath: "testdata/zipdir/app.yaml",
-			wantPath:        "testdata/bundle",
+			applicationPath: "testdata/appsimple.yaml",
+			wantPath:        "testdata/simple",
+		},
+		{
+			name:            "custom",
+			applicationPath: "testdata/appcustom.yaml",
+			wantPath:        "testdata/custom",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := application.Package(tc.applicationPath, &got)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
+
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				schemaFile := r.URL.Path
+				switch schemaFile {
+				case "/artifact-definitions/massdriver/kubernetes-cluster":
+					w.Write([]byte(`{"kube":"cluster"}`))
+				case "/artifact-definitions/massdriver/aws-iam-role":
+					w.Write([]byte(`{"aws":"authentication"}`))
+				case "/artifact-definitions/massdriver/gcp-service-account":
+					w.Write([]byte(`{"gcp":"authentication"}`))
+				case "/artifact-definitions/massdriver/azure-service-principal":
+					w.Write([]byte(`{"azure":"authentication"}`))
+				default:
+					t.Fatalf("unknown schema: %v", schemaFile)
+				}
+			}))
+			defer testServer.Close()
+
+			c := client.NewClient().WithEndpoint(testServer.URL)
 
 			// Create a temp dir, write out the archive, then shell out to untar
 			testDir := t.TempDir()
-			zipOut := path.Join(testDir, "out.tar.gz")
-			gotBytes := got.Bytes()
-			err = os.WriteFile(zipOut, gotBytes, 0644)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-			cmd := exec.Command("tar", "-xzf", zipOut, "-C", testDir)
-			err = cmd.Run()
+
+			application.SimpleParams = `{"properties":{"simple":{"type":"string"}}}`
+			application.SimpleUi = `{"properties":{"simple":"ui"}}`
+
+			_, err := application.PackageApplication(tc.applicationPath, c, testDir, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -52,7 +69,7 @@ func TestPackage(t *testing.T) {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			gotMD5, err := dirhash.HashDir(path.Join(testDir, "bundle"), "", dirhash.DefaultHash)
+			gotMD5, err := dirhash.HashDir(testDir, "", dirhash.DefaultHash)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
