@@ -42,12 +42,45 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 			if _, err := io.Copy(tarWriter, data); err != nil {
 				return err
 			}
+		} else if fi.IsDir() && fi.Name() == "chart" {
+			packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
+
+			filepath.Walk(absolutePath + "/chart", func(file string, fi os.FileInfo, err error) error {
+				if !fi.IsDir() {
+					data, err := os.Open(file)
+					if err != nil {
+						return err
+					}
+					if _, err := io.Copy(tarWriter, data); err != nil {
+						return err
+					}
+				}
+			}
 		}
 		return nil
 	})
 
 	return nil
 }
+
+// func packageChart(chartPath string, destPath string) error {
+// 	var err error = filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
+// 		var relPath string = strings.TrimPrefix(path, chartPath)
+// 		if relPath == "" {
+// 			return nil
+// 		}
+// 		if info.IsDir() {
+// 			return os.Mkdir(filepath.Join(destPath, relPath), 0755)
+// 		} else {
+// 			var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+// 			if err1 != nil {
+// 				return err1
+// 			}
+// 			return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777)
+// 		}
+// 	})
+// 	return err
+// }
 
 func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 
