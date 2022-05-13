@@ -51,11 +51,6 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 
 func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 
-	// absolutePath, err := filepath.Abs(filePath)
-	// if err != nil {
-	// 	return err
-	// }
-
 	filePtr, err := os.Open(filePath)
 	if err != nil {
 		return err
