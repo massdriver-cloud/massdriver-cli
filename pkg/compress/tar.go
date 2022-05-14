@@ -8,7 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"fmt"
 )
 
 func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
@@ -41,7 +40,6 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 		// if not a dir, write file content
 		if !fi.IsDir() {
 			data, err := os.Open(file)
-			fmt.Println("file ", file)
 			if err != nil {
 				return err
 			}
