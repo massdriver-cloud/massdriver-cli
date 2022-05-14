@@ -86,7 +86,7 @@ func TarFile(filePath string, destinationPrefix string, tarWriter *tar.Writer) e
 	}
 
 	if fileInfo.IsDir() {
-		return errors.New("specified path is not a absolueSourceFilePath")
+		return errors.New("specified path is not a file")
 	}
 
 	header, err := tar.FileInfoHeader(fileInfo, filePath)
@@ -102,7 +102,7 @@ func TarFile(filePath string, destinationPrefix string, tarWriter *tar.Writer) e
 	if err := tarWriter.WriteHeader(header); err != nil {
 		return err
 	}
-	// if not a dir, write absolueSourceFilePath content
+	// if not a dir, write file content
 
 	if _, err := io.Copy(tarWriter, filePtr); err != nil {
 		return err
