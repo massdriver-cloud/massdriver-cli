@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"fmt"
 )
 
 func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
@@ -19,15 +20,19 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 
 	// walk through every file in the folder
 	filepath.Walk(absolutePath, func(file string, fi os.FileInfo, err error) error {
+		relativeDestinationFilePath := path.Join(prefix, strings.TrimPrefix(filepath.ToSlash(file), absolutePath))
 		// generate tar header
 		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
 			return err
 		}
+		if ShouldIgnore(relativeDestinationFilePath) {
+			return nil
+		}
 
 		// must provide real name
 		// (see https://golang.org/src/archive/tar/common.go?#L626)
-		header.Name = path.Join(prefix, strings.TrimPrefix(filepath.ToSlash(file), absolutePath))
+		header.Name = relativeDestinationFilePath
 
 		// write header
 		if err := tarWriter.WriteHeader(header); err != nil {
@@ -36,6 +41,7 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 		// if not a dir, write file content
 		if !fi.IsDir() {
 			data, err := os.Open(file)
+			fmt.Println("file ", file)
 			if err != nil {
 				return err
 			}
@@ -85,4 +91,15 @@ func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 	}
 
 	return nil
+}
+
+func ShouldIgnore(relativeFilePath string) bool {
+	// .terraform, .terraform.lock.hcl
+	return strings.HasPrefix(relativeFilePath, "bundle/src/.terraform") ||
+		  // terraform.tfstate, terraform.tfstate.backup, etc...
+			strings.Contains(relativeFilePath, ".tfstate") ||
+			// Massdriver gives the vars
+			strings.Contains(relativeFilePath, ".tfvars") ||
+			strings.HasPrefix(relativeFilePath, "bundle/schema") ||
+			strings.Contains(relativeFilePath, ".md")
 }
