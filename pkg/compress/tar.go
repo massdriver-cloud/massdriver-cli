@@ -100,6 +100,5 @@ func ShouldIgnore(relativeFilePath string) bool {
 			strings.Contains(relativeFilePath, ".tfstate") ||
 			// Massdriver gives the vars
 			strings.Contains(relativeFilePath, ".tfvars") ||
-			strings.HasPrefix(relativeFilePath, "bundle/schema") ||
 			strings.Contains(relativeFilePath, ".md")
 }
