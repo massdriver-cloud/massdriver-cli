@@ -54,7 +54,11 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		if err != nil {
 			return nil, err
 		}
-		err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
+		err = os.MkdirAll(path.Join(workingDir + "/chart", "templates"), 0744)
+		if err != nil {
+			return nil, err
+		}
+		err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, ""))
 		if err != nil {
 			return nil, err
 		}
@@ -101,12 +105,20 @@ func packageChart(chartPath string, destPath string) error {
 			return nil
 		}
 		if info.IsDir() {
-			return os.Mkdir(filepath.Join(destPath, relPath), 0755)
+			fmt.Println("isDir, returning")
+			return nil
+		} else if strings.HasPrefix(path, "chart/.helmignore") {
+			return nil
+			// return os.Mkdir(filepath.Join(destPath, relPath), 0755)
 		} else {
-			var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+			// var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+			fmt.Println("opening path: " + path)
+			fmt.Println("opening relPath: " + relPath)
+			var data, err1 = ioutil.ReadFile(path)
 			if err1 != nil {
 				return err1
 			}
+			fmt.Println("write file " + destPath)
 			return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777)
 		}
 	})
