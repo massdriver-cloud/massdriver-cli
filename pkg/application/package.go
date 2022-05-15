@@ -91,6 +91,12 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 			return nil, fmt.Errorf("unknown provisioner: %v", step.Provisioner)
 		}
 	}
+
+	err = bundle.PackageBundle(bundlePath, buf)
+	if err != nil {
+		return nil, err
+	}
+
 	return b, nil
 }
 
