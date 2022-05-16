@@ -3,31 +3,31 @@ terraform {
   required_providers {
     massdriver = {
       source  = "massdriver-cloud/massdriver"
-      version = "~> 1.0.0"
+      version = "~> 1.0"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.0"
-    }
-
+    # aws = {
+    #   source  = "hashicorp/aws"
+    #   version = "~> 4.0"
+    # }
+    # azurerm = {
+    #   source  = "hashicorp/azurerm"
+    #   version = "~> 3.0"
+    # }
     # google = {
     #   source  = "hashicorp/google"
-    #   version = "~> 4.9"
+    #   version = "~> 4.0"
     # }  
-
     # google-beta = {
     #   source  = "hashicorp/google-beta"
-    #   version = "~> 4.9"
+    #   version = "~> 4.0"
     # }  
-
     # helm = {
     #   source  = "hashicorp/helm"
-    #   version = "~> 2.4.1"
+    #   version = "~> 2.0"
     # }    
-
     # kubernetes = {
     #   source  = "hashicorp/kubernetes"
-    #   version = "~> 2.4.1"
+    #   version = "~> 2.0"
     # }     
   }
 }
@@ -41,6 +41,15 @@ terraform {
 #   default_tags {
 #     tags = var.md_metadata.default_tags
 #   }
+# }
+
+# provider "azurerm" {
+#   features {}
+
+#   client_id       = var.azure_service_principal.data.client_id
+#   tenant_id       = var.azure_service_principal.data.tenant_id
+#   client_secret   = var.azure_service_principal.data.client_secret
+#   subscription_id = var.azure_service_principal.data.subscription_id
 # }
 
 # provider "google" {

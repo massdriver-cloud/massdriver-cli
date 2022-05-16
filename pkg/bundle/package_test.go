@@ -20,7 +20,7 @@ func TestPackageBundle(t *testing.T) {
 	tests := []test{
 		{
 			name:       "simple",
-			bundlePath: "testdata/zipdir/bundle.yaml",
+			bundlePath: "testdata/zipdir/massdriver.yaml",
 			wantPath:   "testdata/bundle",
 		},
 	}

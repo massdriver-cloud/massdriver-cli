@@ -1,4 +1,4 @@
-# {{ .Type }}
+# {{ .Name }}
 
 {{ .Description }}
 

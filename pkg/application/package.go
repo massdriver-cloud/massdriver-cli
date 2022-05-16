@@ -34,9 +34,9 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 	}
 	appYaml.Write(appYamlBytes)
 
-	// Write bundle.yaml
+	// Write massdriver.yaml
 	b := app.ConvertToBundle()
-	bundlePath := path.Join(workingDir, "bundle.yaml")
+	bundlePath := path.Join(workingDir, "massdriver.yaml")
 	bundleYaml, err := os.Create(bundlePath)
 	if err != nil {
 		return nil, err

@@ -45,7 +45,7 @@ func TestGenerate(t *testing.T) {
 
 	templatePath := fmt.Sprintf("%s/%s", bundleData.BundleDir, bundleData.Name)
 
-	bundleYamlPath := fmt.Sprintf("%s/bundle.yaml", templatePath)
+	bundleYamlPath := fmt.Sprintf("%s/massdriver.yaml", templatePath)
 	expectedContent := "name: aws-vpc"
 
 	assertFileCreatedAndContainsText(t, bundleYamlPath, expectedContent)
