@@ -133,17 +133,18 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templateData := &generator.TemplateData{
+	templateData := generator.TemplateData{
 		BundleDir:   bundleDir,
 		TemplateDir: templateDir,
+		Type:        "bundle",
 	}
 
-	err = generator.RunPrompt(templateData)
+	err = generator.RunPrompt(&templateData)
 	if err != nil {
 		return err
 	}
 
-	err = generator.Generate(*templateData)
+	err = generator.Generate(&templateData)
 	if err != nil {
 		return err
 	}

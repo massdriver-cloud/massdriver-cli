@@ -15,10 +15,10 @@ func TestGenerate(t *testing.T) {
 	//The testing/testFS package isn't quite there yet and afero although cool seems like it has implications
 	//for the broader application.
 	bundleData := generator.TemplateData{
-		Name:        "AWS VPC",
-		Type:        "aws-vpc",
+		Name:        "aws-vpc",
 		Access:      "Private",
 		Description: "a vpc",
+		Type:        "bundle",
 		TemplateDir: "./testdata/templates",
 		BundleDir:   "./testdata/bundle",
 	}
@@ -38,12 +38,15 @@ func TestGenerate(t *testing.T) {
 
 	os.Mkdir(bundleData.BundleDir, 0777)
 
-	generator.Generate(bundleData)
+	err := generator.Generate(&bundleData)
+	if err != nil {
+		t.Fatalf("%d, unexpected error", err)
+	}
 
-	templatePath := fmt.Sprintf("%s/%s", bundleData.BundleDir, bundleData.Type)
+	templatePath := fmt.Sprintf("%s/%s", bundleData.BundleDir, bundleData.Name)
 
 	bundleYamlPath := fmt.Sprintf("%s/bundle.yaml", templatePath)
-	expectedContent := "title: AWS VPC"
+	expectedContent := "name: aws-vpc"
 
 	assertFileCreatedAndContainsText(t, bundleYamlPath, expectedContent)
 
