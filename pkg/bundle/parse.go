@@ -7,7 +7,7 @@ import (
 )
 
 // ParseBundle parses a bundle from a YAML file
-// bundle, err := ParseBundle("./massdriver.yaml")
+// bundle, err := ParseBundle("./bundle.yaml")
 func Parse(path string) (*Bundle, error) {
 	bundle := new(Bundle)
 

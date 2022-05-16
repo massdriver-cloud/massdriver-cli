@@ -12,7 +12,7 @@ import (
 )
 
 func TestGenerateSchemas(t *testing.T) {
-	var bundle, _ = bundle.Parse("./testdata/bundle.Build/massdriver.yaml")
+	var bundle, _ = bundle.Parse("./testdata/bundle.Build/bundle.yaml")
 	_ = bundle.GenerateSchemas("./tmp/")
 
 	gotDir, _ := os.ReadDir("./tmp")
@@ -32,7 +32,7 @@ func TestGenerateSchemas(t *testing.T) {
 }
 
 func TestGenerateSchema(t *testing.T) {
-	var b, _ = bundle.Parse("./testdata/bundle.Build/massdriver.yaml")
+	var b, _ = bundle.Parse("./testdata/bundle.Build/bundle.yaml")
 	var inputIo bytes.Buffer
 
 	bundle.GenerateSchema(b.Params, b.Metadata("params"), &inputIo)
