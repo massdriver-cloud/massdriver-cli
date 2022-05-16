@@ -19,3 +19,4 @@ mass
 # vendor/
 
 .vscode
+bin
