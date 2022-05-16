@@ -20,7 +20,7 @@ func TestGenerate(t *testing.T) {
 		Description: "a vpc",
 		Type:        "bundle",
 		TemplateDir: "./testdata/templates",
-		BundleDir:   "./testdata/bundle",
+		OutputDir:   "./testdata/bundle",
 	}
 
 	assertFileCreatedAndContainsText := func(t testing.TB, filename, expectedContent string) {
@@ -36,14 +36,14 @@ func TestGenerate(t *testing.T) {
 		}
 	}
 
-	os.Mkdir(bundleData.BundleDir, 0777)
+	os.Mkdir(bundleData.OutputDir, 0777)
 
 	err := generator.Generate(&bundleData)
 	if err != nil {
 		t.Fatalf("%d, unexpected error", err)
 	}
 
-	templatePath := fmt.Sprintf("%s/%s", bundleData.BundleDir, bundleData.Name)
+	templatePath := fmt.Sprintf("%s/%s", bundleData.OutputDir, bundleData.Name)
 
 	bundleYamlPath := fmt.Sprintf("%s/bundle.yaml", templatePath)
 	expectedContent := "name: aws-vpc"
@@ -62,6 +62,6 @@ func TestGenerate(t *testing.T) {
 	assertFileCreatedAndContainsText(t, mainTFPath, expectedContent)
 
 	t.Cleanup(func() {
-		os.RemoveAll(bundleData.BundleDir)
+		os.RemoveAll(bundleData.OutputDir)
 	})
 }

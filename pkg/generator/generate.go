@@ -14,28 +14,28 @@ type TemplateData struct {
 	Access      string
 	Type        string
 	TemplateDir string
-	BundleDir   string
+	OutputDir   string
 }
 
 func Generate(data *TemplateData) error {
-	bundleDir := fmt.Sprintf("%s/%s", data.BundleDir, data.Name)
+	outputDir := fmt.Sprintf("%s/%s", data.OutputDir, data.Name)
 	currentDirectory := ""
 
 	err := filepath.WalkDir(data.TemplateDir, func(path string, info fs.DirEntry, err error) error {
 
 		if info.IsDir() {
 			if isRootPath(path, data.TemplateDir) {
-				os.MkdirAll(bundleDir, 0777)
+				os.MkdirAll(outputDir, 0777)
 				return nil
 			}
 
-			subDirectory := fmt.Sprintf("%s/%s", bundleDir, info.Name())
+			subDirectory := fmt.Sprintf("%s/%s", outputDir, info.Name())
 			os.Mkdir(subDirectory, 0777)
 			currentDirectory = fmt.Sprintf("%s/", info.Name())
 			return nil
 		}
 
-		renderPath := fmt.Sprintf("%s/%s%s", bundleDir, currentDirectory, info.Name())
+		renderPath := fmt.Sprintf("%s/%s%s", outputDir, currentDirectory, info.Name())
 		err = renderTemplate(path, renderPath, data)
 		if err != nil {
 			return err
