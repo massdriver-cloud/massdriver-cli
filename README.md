@@ -9,5 +9,5 @@ Note: --template-dir will be embedded in the near future.
 ```shell
 mass bundle generate --template-dir path/to/generators/bundle/terraform
 cd YOUR_BUNDLE
-mass bundle build massdriver.yaml
+mass bundle build
 ````
