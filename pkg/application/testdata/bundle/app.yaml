@@ -5,10 +5,8 @@ ref: github.com/user/app
 access: private
 
 deployment: 
-  type: chart
-  repo:
-    name: app
-    url: https://charts.app.com
+  type: custom
+  path: lol
 
 params:
   required: ["name"]

@@ -1,0 +1,16 @@
+schema: draft-07
+name: my-app
+description: An application
+ref: github.com/user/app
+access: private
+deployment:
+  type: custom
+  path: ./test-chart
+params:
+  properties:
+    name:
+      title: Name
+      type: string
+  required:
+  - name
+dependencies: []

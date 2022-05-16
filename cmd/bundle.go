@@ -133,17 +133,18 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templateData := &generator.TemplateData{
+	templateData := generator.TemplateData{
 		BundleDir:   bundleDir,
 		TemplateDir: templateDir,
+		Type:        "bundle",
 	}
 
-	err = generator.RunPrompt(templateData)
+	err = generator.RunPrompt(&templateData)
 	if err != nil {
 		return err
 	}
 
-	err = generator.Generate(*templateData)
+	err = generator.Generate(&templateData)
 	if err != nil {
 		return err
 	}
@@ -180,13 +181,13 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	uploadURL, err := b.Publish(c)
+	var buf bytes.Buffer
+	err = bundle.PackageBundle(bundlePath, &buf)
 	if err != nil {
 		return err
 	}
 
-	var buf bytes.Buffer
-	err = bundle.TarGzipBundle(bundlePath, &buf)
+	uploadURL, err := b.Publish(c)
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,7 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-func TestTarGzipBundle(t *testing.T) {
+func TestPackageBundle(t *testing.T) {
 	type test struct {
 		name       string
 		bundlePath string
@@ -28,7 +28,7 @@ func TestTarGzipBundle(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.TarGzipBundle(tc.bundlePath, &got)
+			err := bundle.PackageBundle(tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

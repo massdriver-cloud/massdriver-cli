@@ -6,31 +6,19 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
-
-	"github.com/google/uuid"
 )
 
 type TemplateData struct {
-	Type        string
+	Name        string
 	Description string
 	Access      string
-	Name        string
+	Type        string
 	TemplateDir string
 	BundleDir   string
 }
 
-func (g TemplateData) Uuid() string {
-	uuid, err := uuid.NewUUID()
-
-	if err != nil {
-		panic(nil)
-	}
-
-	return uuid.String()
-}
-
-func Generate(data TemplateData) error {
-	bundleDir := fmt.Sprintf("%s/%s", data.BundleDir, data.Type)
+func Generate(data *TemplateData) error {
+	bundleDir := fmt.Sprintf("%s/%s", data.BundleDir, data.Name)
 	currentDirectory := ""
 
 	err := filepath.WalkDir(data.TemplateDir, func(path string, info fs.DirEntry, err error) error {
@@ -49,7 +37,6 @@ func Generate(data TemplateData) error {
 
 		renderPath := fmt.Sprintf("%s/%s%s", bundleDir, currentDirectory, info.Name())
 		err = renderTemplate(path, renderPath, data)
-
 		if err != nil {
 			return err
 		}
@@ -60,7 +47,7 @@ func Generate(data TemplateData) error {
 	return err
 }
 
-func renderTemplate(path, renderPath string, data TemplateData) error {
+func renderTemplate(path, renderPath string, data *TemplateData) error {
 	tmpl, err := template.ParseFiles(path)
 	if err != nil {
 		return err

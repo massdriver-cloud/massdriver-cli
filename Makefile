@@ -21,3 +21,4 @@ install.macos: build
 .PHONY: install.linux
 install.linux: build
 	cp bin/mass-linux-amd64 ${INSTALL_PATH}/mass
+
