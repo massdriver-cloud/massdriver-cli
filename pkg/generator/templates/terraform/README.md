@@ -9,7 +9,7 @@ This repo includes Terraform pre-commit hooks.
 [Install precommmit](https://pre-commit.com/index.html#installation) on your system.
 
 ```shell
-cp pre-commit-config.yaml .pre-commit-config.yaml
+mv pre-commit-config.yaml .pre-commit-config.yaml
 pre-commit install
 ```
 
