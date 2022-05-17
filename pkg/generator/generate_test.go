@@ -4,26 +4,22 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
+	"regexp"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/generator"
 )
 
 func TestGenerate(t *testing.T) {
-	//TODO: We should be mocking the filesystem here.
-	//The testing/testFS package isn't quite there yet and afero although cool seems like it has implications
-	//for the broader application.
 	bundleData := generator.TemplateData{
 		Name:        "aws-vpc",
 		Access:      "Private",
 		Description: "a vpc",
 		Type:        "bundle",
-		TemplateDir: "./testdata/templates",
 		OutputDir:   "./testdata/bundle",
 	}
 
-	assertFileCreatedAndContainsText := func(t testing.TB, filename, expectedContent string) {
+	assertFileCreatedAndContainsText := func(t testing.TB, filename string, expectedPattern *regexp.Regexp) {
 		t.Helper()
 		content, err := ioutil.ReadFile(filename)
 
@@ -31,7 +27,7 @@ func TestGenerate(t *testing.T) {
 			t.Errorf("Failed to create %s", filename)
 		}
 
-		if !strings.Contains(string(content), expectedContent) {
+		if !expectedPattern.MatchString(string(content)) {
 			t.Errorf("Data failed to render in template %s", filename)
 		}
 	}
@@ -43,22 +39,20 @@ func TestGenerate(t *testing.T) {
 		t.Fatalf("%d, unexpected error", err)
 	}
 
-	templatePath := fmt.Sprintf("%s/%s", bundleData.OutputDir, bundleData.Name)
+	templatePath := bundleData.OutputDir
 
-	bundleYamlPath := fmt.Sprintf("%s/bundle.yaml", templatePath)
-	expectedContent := "name: aws-vpc"
+	bundleYamlPath := fmt.Sprintf("%s/massdriver.yaml", templatePath)
+	expectedContent := regexp.MustCompile("name.*aws-vpc")
 
 	assertFileCreatedAndContainsText(t, bundleYamlPath, expectedContent)
 
 	readmePath := fmt.Sprintf("%s/README.md", templatePath)
-	expectedContent = "a vpc"
-
+	expectedContent = regexp.MustCompile("# aws-vpc")
 	assertFileCreatedAndContainsText(t, readmePath, expectedContent)
 
-	terraformPath := fmt.Sprintf("%s/terraform", templatePath)
+	terraformPath := fmt.Sprintf("%s/src", templatePath)
 	mainTFPath := fmt.Sprintf("%s/main.tf", terraformPath)
-	expectedContent = "random_pet"
-
+	expectedContent = regexp.MustCompile("random_pet")
 	assertFileCreatedAndContainsText(t, mainTFPath, expectedContent)
 
 	t.Cleanup(func() {

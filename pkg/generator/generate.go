@@ -1,70 +1,50 @@
 package generator
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"text/template"
 )
+
+// note the all: option in go 1.18 will load hidden files so we dont have to include `cp` instructions in readme for pre-commit.
+//go:embed templates/*
+var templatesFs embed.FS
 
 type TemplateData struct {
 	Name        string
 	Description string
 	Access      string
 	Type        string
-	TemplateDir string
 	OutputDir   string
 }
 
 func Generate(data *TemplateData) error {
-	outputDir := fmt.Sprintf("%s/%s", data.OutputDir, data.Name)
-	currentDirectory := ""
+	templateFiles, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
 
-	err := filepath.WalkDir(data.TemplateDir, func(path string, info fs.DirEntry, err error) error {
-
+	err := fs.WalkDir(templateFiles, ".", func(path string, info fs.DirEntry, err error) error {
+		outputPath := fmt.Sprintf("%s/%s", data.OutputDir, path)
 		if info.IsDir() {
-			if isRootPath(path, data.TemplateDir) {
-				os.MkdirAll(outputDir, 0777)
-				return nil
+			if path == "." {
+				return os.MkdirAll(data.OutputDir, 0777)
 			}
 
-			subDirectory := fmt.Sprintf("%s/%s", outputDir, info.Name())
-			os.Mkdir(subDirectory, 0777)
-			currentDirectory = fmt.Sprintf("%s/", info.Name())
-			return nil
+			return os.Mkdir(outputPath, 0777)
 		}
 
-		renderPath := fmt.Sprintf("%s/%s%s", outputDir, currentDirectory, info.Name())
-		err = renderTemplate(path, renderPath, data)
+		var tmpl *template.Template
+		var outputFile *os.File
+		tmpl, _ = template.ParseFS(templateFiles, path)
+		outputFile, err = os.Create(outputPath)
+
 		if err != nil {
 			return err
 		}
 
-		return nil
+		defer outputFile.Close()
+		return tmpl.Execute(outputFile, data)
 	})
 
 	return err
-}
-
-func renderTemplate(path, renderPath string, data *TemplateData) error {
-	tmpl, err := template.ParseFiles(path)
-	if err != nil {
-		return err
-	}
-
-	fileToWrite, err := os.Create(renderPath)
-	if err != nil {
-		return err
-	}
-
-	tmpl.Execute(fileToWrite, data)
-
-	fileToWrite.Close()
-
-	return nil
-}
-
-func isRootPath(rootPath, currentPath string) bool {
-	return rootPath == currentPath
 }

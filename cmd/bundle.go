@@ -48,7 +48,6 @@ func init() {
 	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is massdriver.yaml directory)")
 
 	bundleCmd.AddCommand(bundleGenerateCmd)
-	bundleGenerateCmd.Flags().StringP("template-dir", "t", "./generators/xo-bundle-template", "Path to template directory")
 	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
@@ -133,15 +132,9 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templateDir, err := cmd.Flags().GetString("template-dir")
-	if err != nil {
-		return err
-	}
-
 	templateData := generator.TemplateData{
-		OutputDir:   outputDir,
-		TemplateDir: templateDir,
-		Type:        "bundle",
+		OutputDir: outputDir,
+		Type:      "bundle",
 	}
 
 	err = generator.RunPrompt(&templateData)
