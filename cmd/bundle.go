@@ -22,10 +22,10 @@ var bundleCmd = &cobra.Command{
 }
 
 var bundleBuildCmd = &cobra.Command{
-	Use:   "build [Path to bundle.yaml]",
+	Use:   "build [Path to massdriver.yaml]",
 	Short: "Builds bundle JSON Schemas",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runBundleBuild,
+
+	RunE: runBundleBuild,
 }
 
 var bundleGenerateCmd = &cobra.Command{
@@ -35,9 +35,8 @@ var bundleGenerateCmd = &cobra.Command{
 }
 
 var bundlePublishCmd = &cobra.Command{
-	Use:          "publish [Path to bundle.yaml]",
+	Use:          "publish [Path to massdriver.yaml]",
 	Short:        "Publish a bundle to Massdriver",
-	Args:         cobra.ExactArgs(1),
 	RunE:         runBundlePublish,
 	SilenceUsage: true,
 }
@@ -46,18 +45,23 @@ func init() {
 	rootCmd.AddCommand(bundleCmd)
 
 	bundleCmd.AddCommand(bundleBuildCmd)
-	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is bundle.yaml directory)")
+	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is massdriver.yaml directory)")
 
 	bundleCmd.AddCommand(bundleGenerateCmd)
-	bundleGenerateCmd.Flags().StringP("template-dir", "t", "./generators/xo-bundle-template", "Path to template directory")
-	bundleGenerateCmd.Flags().StringP("bundle-dir", "b", "./bundles", "Path to bundle directory")
+	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	var err error
-	bundlePath := args[0]
+	var bundlePath string
+
+	if len(args) == 0 {
+		bundlePath = "massdriver.yaml"
+	} else {
+		bundlePath = args[0]
+	}
 
 	c := client.NewClient()
 
@@ -69,7 +73,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		c.WithApiKey(apiKey)
 	}
 
-	// default the output to the path of the bundle.yaml file
+	// default the output to the path of the massdriver.yaml file
 	output, err := cmd.Flags().GetString("output")
 	if err != nil {
 		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while building bundle")
@@ -123,20 +127,14 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 func runBundleGenerate(cmd *cobra.Command, args []string) error {
 	var err error
 
-	bundleDir, err := cmd.Flags().GetString("bundle-dir")
-	if err != nil {
-		return err
-	}
-
-	templateDir, err := cmd.Flags().GetString("template-dir")
+	outputDir, err := cmd.Flags().GetString("output-dir")
 	if err != nil {
 		return err
 	}
 
 	templateData := generator.TemplateData{
-		BundleDir:   bundleDir,
-		TemplateDir: templateDir,
-		Type:        "bundle",
+		OutputDir: outputDir,
+		Type:      "bundle",
 	}
 
 	err = generator.RunPrompt(&templateData)
@@ -154,7 +152,13 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 
 func runBundlePublish(cmd *cobra.Command, args []string) error {
 	var err error
-	bundlePath := args[0]
+	var bundlePath string
+
+	if len(args) == 0 {
+		bundlePath = "massdriver.yaml"
+	} else {
+		bundlePath = args[0]
+	}
 
 	c := client.NewClient()
 

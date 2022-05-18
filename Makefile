@@ -16,9 +16,10 @@ build: bin
 
 .PHONY: install.macos
 install.macos: build
+	rm -f ${INSTALL_PATH}/mass
 	cp bin/mass-darwin-arm64 ${INSTALL_PATH}/mass
 
 .PHONY: install.linux
 install.linux: build
-	cp bin/mass-linux-amd64 ${INSTALL_PATH}/mass
+	cp -f bin/mass-linux-amd64 ${INSTALL_PATH}/mass
 
