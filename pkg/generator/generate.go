@@ -9,7 +9,7 @@ import (
 )
 
 // note the all: option in go 1.18 will load hidden files so we dont have to include `cp` instructions in readme for pre-commit.
-//go:embed templates/*
+//go:embed templates/* templates/terraform/.pre-commit-config.yaml templates/terraform/.gitignore
 var templatesFs embed.FS
 
 type TemplateData struct {

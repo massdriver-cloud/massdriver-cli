@@ -10,7 +10,7 @@ mkdir aws-pubsub-topic
 cd aws-pubsub-topic
 mass bundle generate
 git init
-pre-commit install -c pre-commit-config.yaml
+pre-commit install
 git add src
 mass bundle build
 git commit . -m 'wip'
