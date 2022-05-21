@@ -23,11 +23,11 @@ dependencies:
     required: true
     env: 
       - name: DATABASE_URL
-        value: ${data.authentication.connection_string}
+        path: .data.authentication.connection_string
   - type: massdriver/aws-sqs-queue
     field: queue
     required: false
     env: 
       - name: MY_QUEUE_ARN
-        value: ${data.infrastructure.arn}
+        path: .data.infrastructure.arn
     policy: read

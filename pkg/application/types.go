@@ -27,8 +27,8 @@ type ApplicationDependencies struct {
 }
 
 type ApplicationDependenciesEnvs struct {
-	Name  string `json:"name" yaml:"name"`
-	Value string `json:"value" yaml:"value"`
+	Name string `json:"name" yaml:"name"`
+	Path string `json:"path" yaml:"path"`
 }
 
 var SimpleUi = `{
@@ -162,20 +162,21 @@ var SimpleParams = `{
 			"title": "Environment Variables",
 			"type": "array",
 			"description": "Additional environment variables to set",
+			"default": [],
 			"items": {
 				"type": "object",
 				"required": [
 					"name",
-					"value"
+					"path"
 				],
 				"properties": {
 					"name": {
 						"type": "string",
 						"title": "Name"
 					},
-					"value": {
+					"path": {
 						"type": "string",
-						"title": "Value"
+						"title": "JSON Path"
 					}
 				}
 			}

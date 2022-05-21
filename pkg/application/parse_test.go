@@ -99,8 +99,8 @@ func TestParse(t *testing.T) {
 						Required: true,
 						Env: []application.ApplicationDependenciesEnvs{
 							{
-								Name:  "DATABASE_URL",
-								Value: "${data.authentication.connection_string}",
+								Name: "DATABASE_URL",
+								Path: ".data.authentication.connection_string",
 							},
 						},
 					},
@@ -110,8 +110,8 @@ func TestParse(t *testing.T) {
 						Required: false,
 						Env: []application.ApplicationDependenciesEnvs{
 							{
-								Name:  "MY_QUEUE_ARN",
-								Value: "${data.infrastructure.arn}",
+								Name: "MY_QUEUE_ARN",
+								Path: ".data.infrastructure.arn",
 							},
 						},
 						Policy: "read",
