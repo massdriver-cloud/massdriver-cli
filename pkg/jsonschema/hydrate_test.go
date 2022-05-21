@@ -45,13 +45,6 @@ func TestHydrate(t *testing.T) {
 			},
 		},
 		{
-			Name:  "Does not hydrate HTTPS refs",
-			Input: jsonDecode(`{"$ref": "https://elsewhere.com/schema.json"}`),
-			Expected: map[string]string{
-				"$ref": "https://elsewhere.com/schema.json",
-			},
-		},
-		{
 			Name:  "Does not hydrate fragment (#) refs",
 			Input: jsonDecode(`{"$ref": "#/its-in-this-file"}`),
 			Expected: map[string]string{
@@ -127,6 +120,43 @@ func TestHydrate(t *testing.T) {
 			}
 		})
 	}
+
+	// Easier to test HTTP refs separately
+	t.Run("HTTP Refs", func(t *testing.T) {
+		var recursivePtr *string
+		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			urlPath := r.URL.Path
+			switch urlPath {
+			case "/recursive":
+				w.Write([]byte(*recursivePtr))
+				fmt.Println("in recursive")
+			case "/endpoint":
+				w.Write([]byte(`{"foo":"bar"}`))
+				fmt.Println("in endpoint")
+			default:
+				t.Fatalf("unknown schema: %v", urlPath)
+			}
+		}))
+		defer testServer.Close()
+
+		c := client.NewClient().WithEndpoint(testServer.URL)
+
+		recursive := fmt.Sprintf(`{"baz":{"$ref":"%s/endpoint"}}`, testServer.URL)
+		recursivePtr = &recursive
+
+		input := jsonDecode(fmt.Sprintf(`{"$ref":"%s/recursive"}`, testServer.URL))
+
+		got, _ := jsonschema.Hydrate(input, ".", c)
+		expected := map[string]interface{}{
+			"baz": map[string]string{
+				"foo": "bar",
+			},
+		}
+
+		if fmt.Sprint(got) != fmt.Sprint(expected) {
+			t.Errorf("got %v, want %v", got, expected)
+		}
+	})
 }
 
 func jsonDecode(data string) map[string]interface{} {
