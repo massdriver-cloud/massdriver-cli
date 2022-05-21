@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -63,11 +64,30 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 					return hydratedSchema, err
 				}
 			} else if httpPattern.MatchString(schemaRefValue) {
-				fmt.Println("HTTP/HTTPS refs not supported")
+				// HTTP ref. Pull the schema down via HTTP GET and hydrate
+				resp, err := http.Get(schemaRefValue)
+				if err != nil {
+					return hydratedSchema, err
+				}
+				defer resp.Body.Close()
+
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					return hydratedSchema, err
+				}
+				err = json.Unmarshal(body, &referencedSchema)
+				if err != nil {
+					return hydratedSchema, err
+				}
+
+				hydratedSchema, err = replaceRef(schema, referencedSchema, schemaRefDir, c)
+				if err != nil {
+					return hydratedSchema, err
+				}
 			} else if fragmentPattern.MatchString(schemaRefValue) {
 				fmt.Println("Fragment refs not supported")
 			} else if massdriverDefinitionPattern.MatchString(schemaRefValue) {
-				// this must be a remote schema, so fetch from massdriver
+				// this must be a published schema, so fetch from massdriver
 				var err error
 				referencedSchema, err = definition.GetDefinition(c, schemaRefValue)
 				if err != nil {
