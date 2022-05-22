@@ -22,6 +22,12 @@ var applicationCmd = &cobra.Command{
 	Long:  ``,
 }
 
+var applicationGenerateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Generates a new application template",
+	RunE:  runApplicationGenerate,
+}
+
 var applicationPublishCmd = &cobra.Command{
 	Use:          "publish [Path to app.yaml]",
 	Short:        "Publish an application to Massdriver",
@@ -33,7 +39,24 @@ var applicationPublishCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
+	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
+}
+
+func runApplicationGenerate(cmd *cobra.Command, args []string) error {
+	templateData := application.ApplicationTemplateData{}
+
+	err := application.RunPrompt(&templateData)
+	if err != nil {
+		return err
+	}
+
+	err = application.Generate(&templateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
