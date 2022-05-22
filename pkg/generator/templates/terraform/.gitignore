@@ -5,6 +5,9 @@
 *.tfstate
 *.tfstate.*
 
+# terraform lock files
+.terraform.lock.hcl
+
 # Crash log files
 crash.log
 crash.*.log
@@ -32,3 +35,13 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Massdriver generated files
+
+schema-artifacts.json
+schema-connections.json
+schema-params.json
+schema-ui.json
+src/_connections_variables.tf.json
+src/_md_variables.tf.json
+src/_params_variables.tf.json
