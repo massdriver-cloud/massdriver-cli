@@ -27,13 +27,13 @@ func TestConvertToBundle(t *testing.T) {
 						Type:     "foo",
 						Field:    "some-field",
 						Required: false,
-						Env:      []application.ApplicationDependenciesEnvs{},
+						Envs:      []application.ApplicationDependenciesEnvs{},
 					},
 					{
 						Type:     "bar",
 						Field:    "another-field",
 						Required: true,
-						Env:      []application.ApplicationDependenciesEnvs{},
+						Envs:      []application.ApplicationDependenciesEnvs{},
 					},
 				},
 				Params: map[string]interface{}{
