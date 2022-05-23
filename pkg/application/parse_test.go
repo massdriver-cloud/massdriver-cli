@@ -97,7 +97,7 @@ func TestParse(t *testing.T) {
 						Type:     "massdriver/rdbms-authentication",
 						Field:    "database",
 						Required: true,
-						Env: []application.ApplicationDependenciesEnvs{
+						Envs: []application.ApplicationDependenciesEnvs{
 							{
 								Name: "DATABASE_URL",
 								Path: ".data.authentication.connection_string",
@@ -108,7 +108,7 @@ func TestParse(t *testing.T) {
 						Type:     "massdriver/aws-sqs-queue",
 						Field:    "queue",
 						Required: false,
-						Env: []application.ApplicationDependenciesEnvs{
+						Envs: []application.ApplicationDependenciesEnvs{
 							{
 								Name: "MY_QUEUE_ARN",
 								Path: ".data.infrastructure.arn",
