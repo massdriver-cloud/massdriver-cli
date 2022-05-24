@@ -36,7 +36,7 @@ connections:
   # - aws_authentication
   # properties:
   #   aws_authentication:
-  #     $ref: ../../definitions/artifacts/aws-iam-role.json
+  #     $ref: massdriver/aws-iam-role
 
 # schema-artifacts.json
 # Named list of output artifacts  (map[name]artifact)
@@ -46,7 +46,7 @@ artifacts:
   #   - mrc
   # properties:
   #   mrc:
-  #     $ref: ../../definitions/artifacts/aws-regional-cloud.json
+  #     $ref: massdriver/aws-regional-cloud
 
 # schema-ui.json
 # List of form customizations for params-schema
