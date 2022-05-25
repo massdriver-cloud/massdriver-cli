@@ -19,7 +19,9 @@ Terraform hooks will now be run on each commit.
 
 ### GitHub Action for Publishing to Massdriver
 
-A github workflow for publishing has been configured in `.github/workflows/publish.yaml`
+A github workflow for publishing has been configured in `.github/workflows/publish.yaml`.
+
+You'll need to set your `MASSDRIVER_API_KEY` in GitHub secrets.
 
 ### Configuring a bundle
 
