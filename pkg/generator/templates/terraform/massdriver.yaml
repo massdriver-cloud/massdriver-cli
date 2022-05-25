@@ -34,18 +34,21 @@ connections:
   properties: {}
   # required:
   # - aws_authentication
+  # - network
   # properties:
   #   aws_authentication:
   #     $ref: massdriver/aws-iam-role
+  #   network:
+  #     $ref: massdriver/aws-regional-cloud
 
 # schema-artifacts.json
 # Named list of output artifacts  (map[name]artifact)
 artifacts:
   properties: {}
   # required:
-  #   - mrc
+  #   - network
   # properties:
-  #   mrc:
+  #   network:
   #     $ref: massdriver/aws-regional-cloud
 
 # schema-ui.json
