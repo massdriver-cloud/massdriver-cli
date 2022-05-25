@@ -19,12 +19,14 @@ Generate a new bundle:
 mass bundle generate -o ./my-bundle
 ```
 
-Build the bundle locally:
+### Params & Connections
+
+TBD
+
+### Building a bundle
+
+Next you'll need to build your bundle. This will convert your params and connections into terraform variables for local development. This is also run during CI/CD to publish your bundle to Massdriver.
 
 ```shell
 mass bundle build
 ```
-
-### Configuring a bundle
-
-TBD
