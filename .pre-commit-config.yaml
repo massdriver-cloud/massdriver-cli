@@ -1,7 +1,7 @@
 fail_fast: false
 repos:
   - repo: https://github.com/dnephin/pre-commit-golang
-    rev: master
+    rev: v0.5.0
     hooks:
       - id: go-fmt
       - id: go-vet
@@ -16,3 +16,14 @@ repos:
       - id: go-unit-tests
       - id: go-build
       - id: go-mod-tidy
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: detect-aws-credentials
+      - id: no-commit-to-branch
+        args: [-b, main]
