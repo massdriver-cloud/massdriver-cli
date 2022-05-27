@@ -7,3 +7,14 @@ repos:
       # - id: terraform_validate
       # - id: terraform_docs
       # - id: terrascan
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: detect-aws-credentials
+      - id: no-commit-to-branch
+        args: [-b, main]
