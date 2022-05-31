@@ -1,5 +1,13 @@
 package application
 
+type ApplicationTemplateData struct {
+	Name        string
+	Description string
+	Access      string
+	Chart       string
+	Location    string
+}
+
 type Application struct {
 	Schema       string                    `json:"schema" yaml:"schema"`
 	Name         string                    `json:"name" yaml:"name"`
@@ -29,6 +37,14 @@ type ApplicationDependencies struct {
 type ApplicationDependenciesEnvs struct {
 	Name string `json:"name" yaml:"name"`
 	Path string `json:"path" yaml:"path"`
+}
+
+type ChartYaml struct {
+	ApiVersion  string `yaml:"apiVersion"`
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	Type        string `yaml:"type"`
+	Version     string `yaml:"version"`
 }
 
 var SimpleUi = `{

@@ -107,7 +107,12 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 
 	json.Unmarshal([]byte(byteValue), &art)
 
+	err = art.Publish(c)
+	if err != nil {
+		return err
+	}
+
 	fmt.Println("Definition published successfully!")
 
-	return art.Publish(c)
+	return nil
 }
