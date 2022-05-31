@@ -24,10 +24,14 @@ dependencies:
     envs:
       - name: DATABASE_URL
         path: .data.authentication.connection_string
+    policies:
+     - read-bq
+     - read-gcs
   - type: massdriver/aws-sqs-queue
     field: queue
     required: false
     envs:
       - name: MY_QUEUE_ARN
         path: .data.infrastructure.arn
-    policy: read
+    policies:
+      - read
