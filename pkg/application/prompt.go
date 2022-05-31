@@ -9,7 +9,7 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
-var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{5,}`)
+var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
 var prompts = []func(t *ApplicationTemplateData) error{
 	getName,
@@ -36,7 +36,7 @@ func RunPrompt(t *ApplicationTemplateData) error {
 func getName(t *ApplicationTemplateData) error {
 	validate := func(input string) error {
 		if !bundleTypeFormat.MatchString(input) {
-			return errors.New("name must be greater than 4 characters and can only include lowercase letters and dashes")
+			return errors.New("name must be 2 or more characters and can only include lowercase letters and dashes")
 		}
 		return nil
 	}

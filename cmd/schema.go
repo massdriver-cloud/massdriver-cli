@@ -25,6 +25,7 @@ var schemaDereferenceCmd = &cobra.Command{
 	Use:   "dereference",
 	Short: "Dereferences a schema, resolving all local $ref's",
 	Long:  ``,
+	Args:  cobra.ExactArgs(1),
 	RunE:  runSchemaDereference,
 }
 
@@ -36,7 +37,6 @@ func init() {
 	schemaValidateCmd.Flags().StringP("document", "d", "document.json", "Path to JSON document")
 	schemaValidateCmd.Flags().StringP("schema", "s", "./schema.json", "Path to JSON Schema")
 
-	schemaDereferenceCmd.Flags().StringP("schema", "s", "./schema.json", "Path to JSON Schema")
 	schemaDereferenceCmd.Flags().StringP("out", "o", "", "File to output derefenced schema to (default is stdout)")
 }
 
@@ -48,7 +48,7 @@ func runSchemaValidate(cmd *cobra.Command, args []string) error {
 }
 
 func runSchemaDereference(cmd *cobra.Command, args []string) error {
-	schema, _ := cmd.Flags().GetString("schema")
+	schema := args[0]
 	out, _ := cmd.Flags().GetString("out")
 
 	var outFile *os.File

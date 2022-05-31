@@ -39,6 +39,14 @@ type ApplicationDependenciesEnvs struct {
 	Path string `json:"path" yaml:"path"`
 }
 
+type ChartYaml struct {
+	ApiVersion  string `yaml:"apiVersion"`
+	Name        string `yaml:"name"`
+	Description string `yaml:"description"`
+	Type        string `yaml:"type"`
+	Version     string `yaml:"version"`
+}
+
 var SimpleUi = `{
 	"ui:order": [
 		"name",

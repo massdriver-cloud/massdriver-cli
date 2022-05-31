@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
 )
@@ -46,6 +47,23 @@ func Generate(data *ApplicationTemplateData) error {
 	client.UntarDir = tempDir //data.Location
 
 	_, err = client.Run(data.Chart)
+	if err != nil {
+		return err
+	}
+
+	// regenerate Chart.yaml to match their config
+	chart := ChartYaml{
+		ApiVersion:  "v2",
+		Name:        data.Name,
+		Description: data.Description,
+		Type:        "application",
+		Version:     "1.0.0",
+	}
+	chartBytes, err := yaml.Marshal(chart)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644)
 	if err != nil {
 		return err
 	}
