@@ -103,6 +103,7 @@ func TestParse(t *testing.T) {
 								Path: ".data.authentication.connection_string",
 							},
 						},
+						Policies: []string{"read-bq", "read-gcs"},
 					},
 					{
 						Type:     "massdriver/aws-sqs-queue",
@@ -114,7 +115,7 @@ func TestParse(t *testing.T) {
 								Path: ".data.infrastructure.arn",
 							},
 						},
-						Policy: "read",
+						Policies: []string{"read"},
 					},
 				},
 			},
