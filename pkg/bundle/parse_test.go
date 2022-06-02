@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseBundle(t *testing.T) {
-	var got, _ = bundle.Parse("./testdata/bundle.yaml")
+	var got, _ = bundle.Parse("./testdata/massdriver.yaml")
 	var want = bundle.Bundle{
 		Schema:      "draft-07",
 		Type:        "bundle",
