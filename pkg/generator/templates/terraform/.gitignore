@@ -1,12 +1,58 @@
+
+# Created by https://www.toptal.com/developers/gitignore/api/terraform,osx,windows,linux
+# Edit at https://www.toptal.com/developers/gitignore?templates=terraform,osx,windows,linux
+
+### Linux ###
+*~
+
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+
+### OSX ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Terraform ###
 # Local .terraform directories
 **/.terraform/*
 
 # .tfstate files
 *.tfstate
 *.tfstate.*
-
-# terraform lock files
-.terraform.lock.hcl
 
 # Crash log files
 crash.log
@@ -36,6 +82,34 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+### Windows ###
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# End of https://www.toptal.com/developers/gitignore/api/terraform,osx,windows,linux
+
 # Massdriver generated files
 schema-artifacts.json
 schema-connections.json
@@ -44,3 +118,6 @@ schema-ui.json
 src/_connections_variables.tf.json
 src/_md_variables.tf.json
 src/_params_variables.tf.json
+# Massdriver ignore files
+# terraform lock files
+.terraform.lock.hcl
