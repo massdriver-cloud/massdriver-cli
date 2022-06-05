@@ -1,127 +1,50 @@
 package bundle
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
+	"embed"
+	"io/fs"
 	"os"
 	"path"
+	"text/template"
 )
 
-const ArtifactsSchemaFilename = "schema-artifacts.json"
-const ConnectionsSchemaFilename = "schema-connections.json"
-const ParamsSchemaFilename = "schema-params.json"
-const UiSchemaFilename = "schema-ui.json"
+// note to all: option in go 1.18 will load hidden files so we dont have to include `cp` instructions in readme for pre-commit.
+//go:embed templates/* templates/terraform/.pre-commit-config.yaml templates/terraform/.gitignore templates/terraform/.github/workflows/publish.yaml templates/terraform/src/_artifacts.tf templates/terraform/src/_providers.tf
+var templatesFs embed.FS
 
-const idUrlPattern = "https://schemas.massdriver.cloud/schemas/bundles/%s/schema-%s.json"
-const jsonSchemaUrlPattern = "http://json-schema.org/%s/schema"
-
-// Metadata returns common metadata fields for each JSON Schema
-func (b *Bundle) Metadata(schemaType string) map[string]string {
-	return map[string]string{
-		"$schema":     generateSchemaUrl(b.Schema),
-		"$id":         generateIdUrl(b.Name, schemaType),
-		"name":        b.Name,
-		"description": b.Description,
-	}
+type TemplateData struct {
+	Name        string
+	Description string
+	Access      string
+	Type        string
+	OutputDir   string
 }
 
-func createFile(dir string, fileName string) (*os.File, error) {
-	return os.Create(path.Join(dir, fileName))
-}
+func Generate(data *TemplateData) error {
+	templateFiles, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
 
-// Build generates all bundle files in the given bundle
-func (b *Bundle) GenerateSchemas(dir string) error {
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return err
-	}
+	err := fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
+		outputPath := path.Join(data.OutputDir, filePath)
+		if info.IsDir() {
+			if filePath == "." {
+				return os.MkdirAll(data.OutputDir, 0777)
+			}
 
-	paramsSchemaFile, err := createFile(dir, ParamsSchemaFilename)
-	if err != nil {
-		return err
-	}
+			return os.Mkdir(outputPath, 0777)
+		}
 
-	connectionsSchemaFile, err := createFile(dir, ConnectionsSchemaFilename)
-	if err != nil {
-		return err
-	}
+		var tmpl *template.Template
+		var outputFile *os.File
+		tmpl, _ = template.ParseFS(templateFiles, filePath)
+		outputFile, err = os.Create(outputPath)
 
-	artifactsSchemaFile, err := createFile(dir, ArtifactsSchemaFilename)
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	uiSchemaFile, err := createFile(dir, UiSchemaFilename)
-	if err != nil {
-		return err
-	}
+		defer outputFile.Close()
+		return tmpl.Execute(outputFile, data)
+	})
 
-	err = GenerateSchema(b.Params, b.Metadata("params"), paramsSchemaFile)
-	if err != nil {
-		return err
-	}
-	err = GenerateSchema(b.Connections, b.Metadata("connections"), connectionsSchemaFile)
-	if err != nil {
-		return err
-	}
-	err = GenerateSchema(b.Artifacts, b.Metadata("artifacts"), artifactsSchemaFile)
-	if err != nil {
-		return err
-	}
-
-	emptyMetadata := make(map[string]string)
-	err = GenerateSchema(b.Ui, emptyMetadata, uiSchemaFile)
-	if err != nil {
-		return err
-	}
-
-	err = paramsSchemaFile.Close()
-	if err != nil {
-		return err
-	}
-	err = connectionsSchemaFile.Close()
-	if err != nil {
-		return err
-	}
-	err = artifactsSchemaFile.Close()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// generateSchema generates a specific schema-*.json file
-func GenerateSchema(schema map[string]interface{}, metadata map[string]string, buffer io.Writer) error {
-	var err error
-	var mergedSchema = mergeMaps(schema, metadata)
-
-	json, err := json.Marshal(mergedSchema)
-	if err != nil {
-		return err
-	}
-
-	_, err = fmt.Fprint(buffer, string(json))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func mergeMaps(a map[string]interface{}, b map[string]string) map[string]interface{} {
-	for k, v := range b {
-		a[k] = v
-	}
-
-	return a
-}
-
-func generateIdUrl(mdName string, schemaType string) string {
-	return fmt.Sprintf(idUrlPattern, mdName, schemaType)
-}
-
-func generateSchemaUrl(schema string) string {
-	return fmt.Sprintf(jsonSchemaUrlPattern, schema)
+	return err
 }

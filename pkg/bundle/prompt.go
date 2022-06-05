@@ -1,4 +1,4 @@
-package generator
+package bundle
 
 import (
 	"errors"
@@ -15,6 +15,7 @@ var prompts = []func(t *TemplateData) error{
 	getName,
 	getAccessLevel,
 	getDescription,
+	getOutputDir,
 }
 
 func RunPrompt(t *TemplateData) error {
@@ -84,5 +85,21 @@ func getDescription(t *TemplateData) error {
 	}
 
 	t.Description = result
+	return nil
+}
+
+func getOutputDir(t *TemplateData) error {
+	prompt := promptui.Prompt{
+		Label:   `Output directory`,
+		Default: t.Name,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return err
+	}
+
+	t.OutputDir = result
 	return nil
 }
