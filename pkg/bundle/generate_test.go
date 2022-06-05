@@ -1,49 +1,56 @@
 package bundle_test
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"os"
-	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 )
 
-func TestGenerateSchemas(t *testing.T) {
-	var bundle, _ = bundle.Parse("./testdata/bundle.Build/massdriver.yaml")
-	_ = bundle.GenerateSchemas("./tmp/")
-
-	gotDir, _ := os.ReadDir("./tmp")
-	got := []string{}
-
-	for _, dirEntry := range gotDir {
-		got = append(got, dirEntry.Name())
+func TestGenerate(t *testing.T) {
+	bundleData := bundle.TemplateData{
+		Name:        "aws-vpc",
+		Access:      "Private",
+		Description: "a vpc",
+		Type:        "bundle",
 	}
 
-	want := []string{"schema-artifacts.json", "schema-connections.json", "schema-params.json", "schema-ui.json"}
+	assertFileCreatedAndContainsText := func(t testing.TB, filename string, expectedPattern *regexp.Regexp) {
+		t.Helper()
+		content, err := ioutil.ReadFile(filename)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
+		if err != nil {
+			t.Errorf("Failed to create %s", filename)
+		}
+
+		if !expectedPattern.MatchString(string(content)) {
+			t.Errorf("Data failed to render in template %s", filename)
+		}
 	}
 
-	defer os.RemoveAll("./tmp")
-}
+	testDir := t.TempDir()
+	bundleData.OutputDir = testDir
 
-func TestGenerateSchema(t *testing.T) {
-	var b, _ = bundle.Parse("./testdata/bundle.Build/massdriver.yaml")
-	var inputIo bytes.Buffer
-
-	bundle.GenerateSchema(b.Params, b.Metadata("params"), &inputIo)
-	var gotJson = &map[string]interface{}{}
-	_ = json.Unmarshal(inputIo.Bytes(), gotJson)
-
-	wantBytes, _ := ioutil.ReadFile("./testdata/bundle.Build/schema-params.json")
-	var wantJson = &map[string]interface{}{}
-	_ = json.Unmarshal(wantBytes, wantJson)
-
-	if !reflect.DeepEqual(gotJson, wantJson) {
-		t.Errorf("got %v, want %v", gotJson, wantJson)
+	err := bundle.Generate(&bundleData)
+	if err != nil {
+		t.Fatalf("%d, unexpected error", err)
 	}
+
+	templatePath := bundleData.OutputDir
+
+	bundleYamlPath := fmt.Sprintf("%s/massdriver.yaml", templatePath)
+	expectedContent := regexp.MustCompile("name.*aws-vpc")
+
+	assertFileCreatedAndContainsText(t, bundleYamlPath, expectedContent)
+
+	readmePath := fmt.Sprintf("%s/README.md", templatePath)
+	expectedContent = regexp.MustCompile("# aws-vpc")
+	assertFileCreatedAndContainsText(t, readmePath, expectedContent)
+
+	terraformPath := fmt.Sprintf("%s/src", templatePath)
+	mainTFPath := fmt.Sprintf("%s/main.tf", terraformPath)
+	expectedContent = regexp.MustCompile("random_pet")
+	assertFileCreatedAndContainsText(t, mainTFPath, expectedContent)
 }

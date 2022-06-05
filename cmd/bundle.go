@@ -8,7 +8,6 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/generator"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 
 	"github.com/rs/zerolog/log"
@@ -29,9 +28,10 @@ var bundleBuildCmd = &cobra.Command{
 }
 
 var bundleGenerateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Generates a new bundle",
-	RunE:  runBundleGenerate,
+	Use:     "generate",
+	Aliases: []string{"gen"},
+	Short:   "Generates a new bundle",
+	RunE:    runBundleGenerate,
 }
 
 var bundlePublishCmd = &cobra.Command{
@@ -132,17 +132,17 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templateData := generator.TemplateData{
+	templateData := bundle.TemplateData{
 		OutputDir: outputDir,
 		Type:      "bundle",
 	}
 
-	err = generator.RunPrompt(&templateData)
+	err = bundle.RunPrompt(&templateData)
 	if err != nil {
 		return err
 	}
 
-	err = generator.Generate(&templateData)
+	err = bundle.Generate(&templateData)
 	if err != nil {
 		return err
 	}
