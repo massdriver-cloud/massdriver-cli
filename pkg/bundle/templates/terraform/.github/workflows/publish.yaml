@@ -22,4 +22,4 @@ jobs:
       - name: Publish
         env:
           MASSDRIVER_API_KEY: ${{"{{"}} secrets.MASSDRIVER_API_KEY {{"}}"}}
-        run: tar -xzf mass-*.tar.gz -C /usr/local/bin && rm -rf mass-*.tar.gz .git* && mass bundle build massdriver.yaml && mass bundle publish massdriver.yaml
+        run: tar -xzf mass-*.tar.gz -C /usr/local/bin && rm -rf mass-*.tar.gz .git* && mass bundle build && mass bundle publish

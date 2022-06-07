@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const configFile = "massdriver.yaml"
+
 var bundleCmd = &cobra.Command{
 	Use:   "bundle",
 	Short: "Bundle development tools",
@@ -21,7 +23,7 @@ var bundleCmd = &cobra.Command{
 }
 
 var bundleBuildCmd = &cobra.Command{
-	Use:   "build [Path to massdriver.yaml]",
+	Use:   "build",
 	Short: "Builds bundle JSON Schemas",
 
 	RunE: runBundleBuild,
@@ -35,7 +37,7 @@ var bundleGenerateCmd = &cobra.Command{
 }
 
 var bundlePublishCmd = &cobra.Command{
-	Use:          "publish [Path to massdriver.yaml]",
+	Use:          "publish",
 	Short:        "Publish a bundle to Massdriver",
 	RunE:         runBundlePublish,
 	SilenceUsage: true,
@@ -55,13 +57,6 @@ func init() {
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	var err error
-	var bundlePath string
-
-	if len(args) == 0 {
-		bundlePath = "massdriver.yaml"
-	} else {
-		bundlePath = args[0]
-	}
 
 	c := client.NewClient()
 
@@ -76,30 +71,30 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	// default the output to the path of the massdriver.yaml file
 	output, err := cmd.Flags().GetString("output")
 	if err != nil {
-		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while building bundle")
+		log.Error().Err(err).Msg("an error occurred while building bundle")
 		return err
 	}
 	if output == "" {
-		output = filepath.Dir(bundlePath)
+		output = filepath.Dir(configFile)
 	}
 
-	log.Info().Str("bundle", bundlePath).Msg("building bundle")
+	log.Info().Msg("building bundle")
 
-	b, err := bundle.Parse(bundlePath)
+	b, err := bundle.Parse(configFile)
 	if err != nil {
-		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while parsing bundle")
+		log.Error().Err(err).Msg("an error occurred while parsing bundle")
 		return err
 	}
 
-	err = b.Hydrate(bundlePath, c)
+	err = b.Hydrate(configFile, c)
 	if err != nil {
-		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while hydrating bundle")
+		log.Error().Err(err).Msg("an error occurred while hydrating bundle")
 		return err
 	}
 
 	err = b.GenerateSchemas(output)
 	if err != nil {
-		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while generating bundle schema files")
+		log.Error().Err(err).Msg("an error occurred while generating bundle schema files")
 		return err
 	}
 
@@ -108,18 +103,16 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		case "terraform":
 			err = terraform.GenerateFiles(output, step.Path)
 			if err != nil {
-				log.Error().Err(err).Str("bundle", bundlePath).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
+				log.Error().Err(err).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
 				return err
 			}
-		case "exec":
-			// No-op (Golang doesn't not fallthrough unless explicitly stated)
 		default:
-			log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
+			log.Error().Msg("unknown provisioner: " + step.Provisioner)
 			return fmt.Errorf("unknown provisioner: %v", step.Provisioner)
 		}
 	}
 
-	log.Info().Str("bundle", bundlePath).Str("output", output).Msg("bundle built")
+	log.Info().Str("output", output).Msg("bundle built")
 
 	return err
 }
@@ -152,14 +145,6 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 
 func runBundlePublish(cmd *cobra.Command, args []string) error {
 	var err error
-	var bundlePath string
-
-	if len(args) == 0 {
-		bundlePath = "massdriver.yaml"
-	} else {
-		bundlePath = args[0]
-	}
-
 	c := client.NewClient()
 
 	apiKey, err := cmd.Flags().GetString("api-key")
@@ -170,23 +155,23 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		c.WithApiKey(apiKey)
 	}
 
-	b, err := bundle.Parse(bundlePath)
+	b, err := bundle.Parse(configFile)
 	if err != nil {
 		return err
 	}
 
-	err = b.Hydrate(bundlePath, c)
+	err = b.Hydrate(configFile, c)
 	if err != nil {
 		return err
 	}
 
-	err = b.GenerateSchemas(path.Dir(bundlePath))
+	err = b.GenerateSchemas(path.Dir(configFile))
 	if err != nil {
 		return err
 	}
 
 	var buf bytes.Buffer
-	err = bundle.PackageBundle(bundlePath, &buf)
+	err = bundle.PackageBundle(configFile, &buf)
 	if err != nil {
 		return err
 	}
