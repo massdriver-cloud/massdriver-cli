@@ -17,9 +17,14 @@ repos:
       - id: end-of-file-fixer
       - id: detect-aws-credentials
       - id: no-commit-to-branch
-        args: [-b, main]
+        args: [-b, main, -b, develop]
   - repo: local
     hooks:
+      - id: mass-bundle-build
+        name: Build the bundle
+        entry: mass bundle build
+        language: system
+        pass_filenames: false
       - id: valid-schema-params
         name: Validate schema params
         entry: mass schema validate -s https://json-schema.org/draft-07/schema -d ./schema-params.json
