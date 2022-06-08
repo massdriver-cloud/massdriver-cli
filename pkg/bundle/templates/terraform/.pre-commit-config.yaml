@@ -18,3 +18,30 @@ repos:
       - id: detect-aws-credentials
       - id: no-commit-to-branch
         args: [-b, main]
+  - repo: local
+    hooks:
+      - id: valid-schema-params
+        name: Validate schema params
+        entry: mass schema validate -s https://json-schema.org/draft-07/schema -d ./schema-params.json
+        language: system
+        pass_filenames: false
+      - id: valid-schema-connections
+        name: Validate schema connections
+        entry: mass schema validate -s https://json-schema.org/draft-07/schema -d ./schema-connections.json
+        language: system
+        pass_filenames: false
+      - id: valid-schema-artifacts
+        name: Validate schema artifacts
+        entry: mass schema validate -s https://json-schema.org/draft-07/schema -d ./schema-artifacts.json
+        language: system
+        pass_filenames: false
+      - id: dev-params-validation
+        name: Validate development input params
+        entry: mass schema validate -s ./schema-params.json -d ./src/dev.params.tfvars.json
+        language: system
+        pass_filenames: false
+      - id: conn-params-validation
+        name: Validate development connection params
+        entry: mass schema validate -s ./schema-connections.json -d ./src/dev.connections.tfvars.json
+        language: system
+        pass_filenames: false
