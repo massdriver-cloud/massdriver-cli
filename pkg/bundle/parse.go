@@ -6,8 +6,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type BundleOverrides struct {
+	Access string
+}
+
 // ParseBundle parses a bundle from a YAML file
-func Parse(path string) (*Bundle, error) {
+// overrides allow the CLI to override specific bundle metadata.
+// This is useful in a CI/CD scenario when you want to change the `access` if you are deploying to a sandbox org.
+func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 	bundle := new(Bundle)
 
 	data, err := ioutil.ReadFile(path)
@@ -20,5 +26,17 @@ func Parse(path string) (*Bundle, error) {
 		return nil, err
 	}
 
+	applyOverrides(bundle, overrides)
+
 	return bundle, nil
+}
+
+func applyOverrides(b *Bundle, overrides map[string]interface{}) {
+	if access, found := overrides["access"]; found {
+		// TODO: we need to add a meta schema for our metadata and validate the bundle
+		// Remove comment in PR via GH suggestion and open issue.
+		if access == "public" || access == "private" {
+			b.Access = access.(string)
+		}
+	}
 }
