@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseBundle(t *testing.T) {
-	var got, _ = bundle.Parse("./testdata/massdriver.yaml")
+	var got, _ = bundle.Parse("./testdata/massdriver.yaml", nil)
 	var want = bundle.Bundle{
 		Schema:      "draft-07",
 		Type:        "bundle",
@@ -50,5 +50,18 @@ func TestParseBundle(t *testing.T) {
 
 	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("got %v, want %v", *got, want)
+	}
+}
+
+func TestParseBundleWithAccessOverride(t *testing.T) {
+	overrides := map[string]interface{}{
+		"access": "private",
+	}
+	var bundle, _ = bundle.Parse("./testdata/massdriver.yaml", overrides)
+	got := bundle.Access
+	want := "private"
+
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
 	}
 }

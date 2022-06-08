@@ -51,6 +51,7 @@ func init() {
 	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
+	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -85,7 +86,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 
 	log.Info().Str("bundle", bundlePath).Msg("building bundle")
 
-	b, err := bundle.Parse(bundlePath)
+	b, err := bundle.Parse(bundlePath, nil)
 	if err != nil {
 		log.Error().Err(err).Str("bundle", bundlePath).Msg("an error occurred while parsing bundle")
 		return err
@@ -170,7 +171,12 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		c.WithApiKey(apiKey)
 	}
 
-	b, err := bundle.Parse(bundlePath)
+	overrides, err := getPublishOverrides(cmd)
+	if err != nil {
+		return err
+	}
+
+	b, err := bundle.Parse(bundlePath, overrides)
 	if err != nil {
 		return err
 	}
@@ -204,4 +210,17 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	fmt.Println("Bundle published successfully!")
 
 	return nil
+}
+
+func getPublishOverrides(cmd *cobra.Command) (map[string]interface{}, error) {
+	access, err := cmd.Flags().GetString("access")
+	if err != nil {
+		return nil, err
+	}
+
+	overrides := map[string]interface{}{
+		"access": access,
+	}
+
+	return overrides, nil
 }
