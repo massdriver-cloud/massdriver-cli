@@ -81,7 +81,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 
 	log.Info().Msg("building bundle")
 
-	b, err := bundle.Parse(bundlePath, nil)
+	b, err := bundle.Parse(configFile, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while parsing bundle")
 		return err
@@ -156,13 +156,12 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		c.WithApiKey(apiKey)
 	}
 
-
 	overrides, err := getPublishOverrides(cmd)
 	if err != nil {
 		return err
 	}
 
-	b, err := bundle.Parse(bundlePath, overrides)
+	b, err := bundle.Parse(configFile, overrides)
 	if err != nil {
 		return err
 	}
