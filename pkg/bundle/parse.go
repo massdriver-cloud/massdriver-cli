@@ -20,5 +20,15 @@ func Parse(path string) (*Bundle, error) {
 		return nil, err
 	}
 
+	setDefaultSteps(bundle)
+
 	return bundle, nil
+}
+
+// Sets the default steps to be a single src dir for terraform
+func setDefaultSteps(bundle *Bundle) {
+	if len(bundle.Steps) == 0 {
+		defaultStep := BundleStep{Path: "src", Provisioner: "terraform"}
+		bundle.Steps = []BundleStep{defaultStep}
+	}
 }
