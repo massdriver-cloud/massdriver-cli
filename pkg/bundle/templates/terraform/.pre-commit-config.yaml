@@ -1,23 +1,5 @@
 fail_fast: true
 repos:
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.71.0 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
-    hooks:
-      - id: terraform_fmt
-      # - id: terraform_validate
-      # - id: terraform_docs
-      # - id: terrascan
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
-    hooks:
-      - id: trailing-whitespace
-      - id: check-merge-conflict
-      - id: check-json
-      - id: check-yaml
-      - id: end-of-file-fixer
-      - id: detect-aws-credentials
-      - id: no-commit-to-branch
-        args: [-b, main, -b, develop]
   - repo: local
     hooks:
       - id: mass-bundle-build
@@ -50,3 +32,20 @@ repos:
         entry: mass schema validate -s ./schema-connections.json -d ./src/dev.connections.tfvars.json
         language: system
         pass_filenames: false
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.71.0 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+      # - id: terraform_docs
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: detect-aws-credentials
+      - id: no-commit-to-branch
+        args: [-b, main, -b, develop]
