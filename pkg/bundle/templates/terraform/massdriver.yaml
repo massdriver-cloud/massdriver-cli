@@ -6,10 +6,6 @@ ref: github.com/YOUR_NAME_HERE/{{ .Name }}
 access: "{{ .Access }}"
 type: "{{ .Type }}"
 
-steps:
-  - path: src
-    provisioner: terraform
-
 # schema-params.json
 # JSON Schema sans-fields above
 params:
