@@ -34,7 +34,6 @@ func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 func applyOverrides(b *Bundle, overrides map[string]interface{}) {
 	if access, found := overrides["access"]; found {
 		// TODO: we need to add a meta schema for our metadata and validate the bundle
-		// Remove comment in PR via GH suggestion and open issue.
 		if access == "public" || access == "private" {
 			b.Access = access.(string)
 		}
