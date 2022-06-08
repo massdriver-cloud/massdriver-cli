@@ -16,8 +16,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TODO: we need to add support for access overrides to applications as well
-// Remove comment in PR via GH suggestion and open issue.
 func PackageApplication(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
 	app, err := Parse(appPath)
 	if err != nil {
