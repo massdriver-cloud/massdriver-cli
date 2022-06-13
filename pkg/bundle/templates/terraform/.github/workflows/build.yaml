@@ -17,7 +17,6 @@ jobs:
           repo: "massdriver-cloud/massdriver-cli"
           file: "^mass-.*-linux-amd64\\.tar\\.gz$"
           regex: true
-          token: ${{ secrets.ORGANIZATION_GITHUB_TOKEN }}
 
       - name: Build
         env:
