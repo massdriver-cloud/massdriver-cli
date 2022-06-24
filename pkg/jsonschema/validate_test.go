@@ -7,7 +7,7 @@ import (
 )
 
 func TestValidateJSONDocument(t *testing.T) {
-	got, _ := jsonschema.Validate("testdata/schema.json", "testdata/valid-document.json")
+	got, _, _ := jsonschema.Validate("testdata/schema.json", "testdata/valid-document.json")
 	want := true
 
 	if got != want {
@@ -16,7 +16,7 @@ func TestValidateJSONDocument(t *testing.T) {
 }
 
 func TestInvalidateJSONDocument(t *testing.T) {
-	got, _ := jsonschema.Validate("testdata/valid-schema.json", "testdata/invalid-document.json")
+	got, _, _ := jsonschema.Validate("testdata/valid-schema.json", "testdata/invalid-document.json")
 	want := false
 
 	if got != want {

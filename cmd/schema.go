@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
@@ -41,13 +42,28 @@ func init() {
 }
 
 func runSchemaValidate(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	schema, _ := cmd.Flags().GetString("schema")
 	document, _ := cmd.Flags().GetString("document")
-	_, err := jsonschema.Validate(schema, document)
-	return err
+	valid, violations, err := jsonschema.Validate(schema, document)
+	if err != nil {
+		return err
+	}
+	if valid {
+		fmt.Println("The document is valid!")
+	} else {
+		fmt.Printf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", document, schema)
+		for _, violation := range violations {
+			fmt.Printf("\t- %v\n", violation)
+		}
+	}
+	return nil
 }
 
 func runSchemaDereference(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	schema := args[0]
 	out, _ := cmd.Flags().GetString("out")
 

@@ -1,38 +1,35 @@
 package jsonschema
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/rs/zerolog/log"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 // Validate the input object against the schema
-func Validate(schemaPath string, documentPath string) (bool, error) {
+func Validate(schemaPath string, documentPath string) (bool, []string, error) {
 	log.Debug().
 		Str("schemaPath", schemaPath).
 		Str("documentPath", documentPath).Msg("Validating schema.")
 
 	sl := Loader(schemaPath)
 	dl := Loader(documentPath)
+	var violations []string
 
 	result, err := gojsonschema.Validate(sl, dl)
 	if err != nil {
 		log.Error().Err(err).Msg("Validator failed.")
-		return false, err
+		return false, violations, err
 	}
 
 	if !result.Valid() {
-		msg := fmt.Sprintf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", documentPath, schemaPath)
+		//msg := fmt.Sprintf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", documentPath, schemaPath)
 		for _, desc := range result.Errors() {
-			msg = msg + fmt.Sprintf("\t- %s\n", desc)
+			//msg = msg + fmt.Sprintf("\t- %s\n", desc)
+			violations = append(violations, desc.String())
 		}
 
-		err = errors.New(msg)
-		log.Error().Err(err).Msg("Validation failed.")
-		return false, err
+		return false, violations, err
 	}
 
-	return true, nil
+	return true, violations, nil
 }

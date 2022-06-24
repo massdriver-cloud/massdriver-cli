@@ -57,6 +57,8 @@ func init() {
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	var err error
 
 	c := client.NewClient()
@@ -119,6 +121,8 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 }
 
 func runBundleGenerate(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	var err error
 
 	outputDir, err := cmd.Flags().GetString("output-dir")
@@ -145,6 +149,8 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func runBundlePublish(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	var err error
 	c := client.NewClient()
 
