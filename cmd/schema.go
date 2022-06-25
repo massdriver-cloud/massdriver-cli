@@ -37,6 +37,7 @@ func init() {
 
 	schemaValidateCmd.Flags().StringP("document", "d", "document.json", "Path to JSON document")
 	schemaValidateCmd.Flags().StringP("schema", "s", "./schema.json", "Path to JSON Schema")
+	schemaValidateCmd.Flags().BoolP("exit-error", "e", false, "Exit non-zero if the schema is invalid")
 
 	schemaDereferenceCmd.Flags().StringP("out", "o", "", "File to output derefenced schema to (default is stdout)")
 }
@@ -46,16 +47,21 @@ func runSchemaValidate(cmd *cobra.Command, args []string) error {
 
 	schema, _ := cmd.Flags().GetString("schema")
 	document, _ := cmd.Flags().GetString("document")
-	valid, violations, err := jsonschema.Validate(schema, document)
+	exitError, _ := cmd.Flags().GetBool("exit-error")
+
+	result, err := jsonschema.Validate(schema, document)
 	if err != nil {
 		return err
 	}
-	if valid {
+	if result.Valid() {
 		fmt.Println("The document is valid!")
 	} else {
 		fmt.Printf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", document, schema)
-		for _, violation := range violations {
+		for _, violation := range result.Errors() {
 			fmt.Printf("\t- %v\n", violation)
+		}
+		if exitError {
+			os.Exit(1)
 		}
 	}
 	return nil
