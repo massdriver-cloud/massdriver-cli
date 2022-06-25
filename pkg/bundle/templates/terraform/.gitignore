@@ -50,6 +50,9 @@ Temporary Items
 # Local .terraform directories
 **/.terraform/*
 
+# Terraform lock file
+.terraform.lock.hcl
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -118,6 +121,3 @@ schema-ui.json
 src/_connections_variables.tf.json
 src/_md_variables.tf.json
 src/_params_variables.tf.json
-# Massdriver ignore files
-# terraform lock files
-.terraform.lock.hcl

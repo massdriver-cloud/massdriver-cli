@@ -31,7 +31,7 @@ type ApplicationDependencies struct {
 	Field    string                        `json:"field" yaml:"field"`
 	Required bool                          `json:"required,omitempty" yaml:"required,omitempty"`
 	Envs     []ApplicationDependenciesEnvs `json:"envs" yaml:"envs"`
-	Policies   []string                    `json:"policies,omitempty" yaml:"policies,omitempty"`
+	Policies []string                      `json:"policies,omitempty" yaml:"policies,omitempty"`
 }
 
 type ApplicationDependenciesEnvs struct {

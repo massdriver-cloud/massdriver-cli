@@ -46,6 +46,8 @@ func init() {
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	templateData := application.ApplicationTemplateData{}
 
 	err := application.RunPrompt(&templateData)
@@ -62,6 +64,8 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	var err error
 	appPath := args[0]
 

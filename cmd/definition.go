@@ -48,6 +48,8 @@ func init() {
 }
 
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	c := client.NewClient()
 
 	defName := args[0]
@@ -76,6 +78,8 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 }
 
 func runDefinitionPublish(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
 	c := client.NewClient()
 
 	defPath, err := cmd.Flags().GetString("file")

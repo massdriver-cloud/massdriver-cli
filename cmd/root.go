@@ -7,6 +7,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
 
@@ -43,4 +44,15 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
+	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
+}
+
+func setupLogging(cmd *cobra.Command) {
+	verbose, _ := cmd.Flags().GetBool("verbose")
+
+	if verbose {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	}
 }
