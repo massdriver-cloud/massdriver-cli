@@ -92,10 +92,9 @@ func TestParse(t *testing.T) {
 						"name",
 					},
 				},
-				Dependencies: []application.ApplicationDependencies{
-					{
+				Dependencies: map[string]application.ApplicationDependencies{
+					"database": {
 						Type:     "massdriver/rdbms-authentication",
-						Field:    "database",
 						Required: true,
 						Envs: []application.ApplicationDependenciesEnvs{
 							{
@@ -105,9 +104,8 @@ func TestParse(t *testing.T) {
 						},
 						Policies: []string{"read-bq", "read-gcs"},
 					},
-					{
+					"queue": {
 						Type:     "massdriver/aws-sqs-queue",
-						Field:    "queue",
 						Required: false,
 						Envs: []application.ApplicationDependenciesEnvs{
 							{

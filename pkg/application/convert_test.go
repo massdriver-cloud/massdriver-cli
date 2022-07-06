@@ -22,16 +22,14 @@ func TestConvertToBundle(t *testing.T) {
 				Description: "description",
 				Ref:         "github.com/some-repo",
 				Access:      "public",
-				Dependencies: []application.ApplicationDependencies{
-					{
+				Dependencies: map[string]application.ApplicationDependencies{
+					"some-field": {
 						Type:     "foo",
-						Field:    "some-field",
 						Required: false,
 						Envs:     []application.ApplicationDependenciesEnvs{},
 					},
-					{
+					"another-field": {
 						Type:     "bar",
-						Field:    "another-field",
 						Required: true,
 						Envs:     []application.ApplicationDependenciesEnvs{},
 					},

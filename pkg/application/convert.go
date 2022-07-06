@@ -61,11 +61,11 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 		"$ref": "massdriver/gcp-service-account",
 	}
 
-	for _, dep := range app.Dependencies {
+	for depKey, dep := range app.Dependencies {
 		if dep.Required {
-			connectionsRequired = append(connectionsRequired, dep.Field)
+			connectionsRequired = append(connectionsRequired, depKey)
 		}
-		connectionsProperties[dep.Field] = map[string]interface{}{
+		connectionsProperties[depKey] = map[string]interface{}{
 			"$ref": dep.Type,
 		}
 	}
