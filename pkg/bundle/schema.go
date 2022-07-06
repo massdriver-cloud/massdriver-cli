@@ -97,12 +97,12 @@ func GenerateSchema(schema map[string]interface{}, metadata map[string]string, b
 	var err error
 	var mergedSchema = mergeMaps(schema, metadata)
 
-	json, err := json.Marshal(mergedSchema)
+	json, err := json.MarshalIndent(mergedSchema, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	_, err = fmt.Fprint(buffer, string(json))
+	_, err = fmt.Fprint(buffer, string(json)+"\n")
 	if err != nil {
 		return err
 	}

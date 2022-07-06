@@ -16,7 +16,7 @@ func TestParseBundle(t *testing.T) {
 		Description: "Something",
 		Access:      "public",
 		Steps: []bundle.BundleStep{
-			bundle.BundleStep{Path: "src", Provisioner: "terraform"},
+			{Path: "src", Provisioner: "terraform"},
 		},
 		Artifacts: map[string]interface{}{},
 		Params: map[string]interface{}{

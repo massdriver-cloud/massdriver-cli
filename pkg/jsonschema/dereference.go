@@ -46,7 +46,7 @@ func WriteDereferencedSchema(schemaFilePath string, outFile io.Writer, c *client
 		return err
 	}
 
-	_, err = outFile.Write(json)
+	_, err = outFile.Write(append(json, []byte("\n")...))
 
 	return err
 }

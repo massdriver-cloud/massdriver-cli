@@ -94,9 +94,9 @@ func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 func ShouldIgnore(relativeFilePath string) bool {
 	// .terraform, .terraform.lock.hcl
 	return strings.Contains(relativeFilePath, ".terraform") ||
-		  // terraform.tfstate, terraform.tfstate.backup, etc...
-			strings.Contains(relativeFilePath, ".tfstate") ||
-			// Massdriver gives the vars
-			strings.Contains(relativeFilePath, ".tfvars") ||
-			strings.Contains(relativeFilePath, ".md")
+		// terraform.tfstate, terraform.tfstate.backup, etc...
+		strings.Contains(relativeFilePath, ".tfstate") ||
+		// Massdriver gives the vars
+		strings.Contains(relativeFilePath, ".tfvars") ||
+		strings.Contains(relativeFilePath, ".md")
 }

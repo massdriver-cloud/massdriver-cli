@@ -15,7 +15,7 @@ func doc(str string) string {
 	jsonMap := make(map[string](interface{}))
 	json.Unmarshal([]byte(b), &jsonMap)
 
-	outBytes, _ := json.MarshalIndent(jsonMap, "", "  ")
+	outBytes, _ := json.MarshalIndent(jsonMap, "", "    ")
 	return string(outBytes)
 }
 
@@ -33,30 +33,33 @@ func TestGenerateFiles(t *testing.T) {
 			srcDir:     "src",
 			expected: map[string]string{
 				"_connections_variables.tf.json": `{
-  "variable": {
-    "foo": {
-      "type": "string"
+    "variable": {
+        "foo": {
+            "type": "string"
+        }
     }
-  }
-}`,
+}
+`,
 				"_params_variables.tf.json": `{
-  "variable": {
-    "age": {
-      "type": "number",
-      "default": null
-    },
-    "name": {
-      "type": "string"
+    "variable": {
+        "age": {
+            "type": "number",
+            "default": null
+        },
+        "name": {
+            "type": "string"
+        }
     }
-  }
-}`,
+}
+`,
 				"_md_variables.tf.json": `{
-  "variable": {
-    "md_metadata": {
-      "type": "any"
+    "variable": {
+        "md_metadata": {
+            "type": "any"
+        }
     }
-  }
-}`,
+}
+`,
 			},
 		},
 	}
@@ -107,8 +110,7 @@ func TestCompile(t *testing.T) {
 			"type": "number"
 		}
 	}
-}
-		`)},
+}`) + "\n"},
 		{
 			name:       "empty schema",
 			schemaPath: "file://./testdata/empty-schema.json",

@@ -41,11 +41,11 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	bytes, err := json.MarshalIndent(massdriverVariables, "", "  ")
+	bytes, err := json.MarshalIndent(massdriverVariables, "", "    ")
 	if err != nil {
 		return err
 	}
-	_, err = massdriverVariablesFile.Write(bytes)
+	_, err = massdriverVariablesFile.Write(append(bytes, []byte("\n")...))
 	if err != nil {
 		return err
 	}
@@ -68,12 +68,12 @@ func Compile(path string, out io.Writer) error {
 
 	variableFile := TFVariableFile{Variable: vars}
 
-	bytes, err := json.MarshalIndent(variableFile, "", "  ")
+	bytes, err := json.MarshalIndent(variableFile, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	_, err = out.Write(bytes)
+	_, err = out.Write(append(bytes, []byte("\n")...))
 
 	return err
 }
