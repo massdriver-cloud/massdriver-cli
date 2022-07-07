@@ -24,7 +24,7 @@ func NewRequest(method string, path string, body io.Reader) *Request {
 	return req
 }
 
-func (req *Request) toHTTPRequest(ctx context.Context, c *MassdriverClient) (*http.Request, error) {
+func (req *Request) ToHTTPRequest(ctx context.Context, c *MassdriverClient) (*http.Request, error) {
 	url, err := url.Parse(c.endpoint)
 	if err != nil {
 		return nil, err

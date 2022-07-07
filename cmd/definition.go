@@ -111,13 +111,13 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	byteValue, _ := ioutil.ReadAll(defFile)
 	var art definition.Definition
 
-	if err := json.Unmarshal(byteValue, &art); err != nil {
-		return err
+	if jsonErr := json.Unmarshal(byteValue, &art); err != nil {
+		return jsonErr
 	}
 
-	err = art.Publish(c)
-	if err != nil {
-		return err
+	pubErr := art.Publish(c)
+	if pubErr != nil {
+		return pubErr
 	}
 
 	fmt.Println("Definition published successfully!")

@@ -44,7 +44,7 @@ func (c *MassdriverClient) WithEndpoint(endpoint string) *MassdriverClient {
 }
 
 func (c *MassdriverClient) Do(ctx *context.Context, req *Request) (*http.Response, error) {
-	httpReq, err := req.toHTTPRequest(*ctx, c)
+	httpReq, err := req.ToHTTPRequest(*ctx, c)
 	if err != nil {
 		return nil, err
 	}

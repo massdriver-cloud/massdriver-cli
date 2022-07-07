@@ -62,7 +62,7 @@ func Generate(data *TemplateData) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644) // nolint: gosec
+	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644) // nolint:gosec,gomnd
 	if err != nil {
 		return err
 	}

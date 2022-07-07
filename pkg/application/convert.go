@@ -27,7 +27,7 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 	if app.Deployment.Type == "simple" {
 		b.Params = make(map[string]interface{})
 		if err := json.Unmarshal([]byte(SimpleParams), &b.Params); err != nil {
-			return b, fmt.Errorf("error parsing simple params: ", err)
+			return b, fmt.Errorf("error parsing simple params: %w", err)
 		}
 	} else {
 		b.Params = app.Params
@@ -91,8 +91,8 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 	// UI
 	if app.Deployment.Type == "simple" {
 		b.UI = make(map[string]interface{})
-		if err := json.Unmarshal([]byte(SimpleUI), &b.UI); err != nil {
-			return b, fmt.Errorf("error parsing simple ui: ", err)
+		if jsonErr := json.Unmarshal([]byte(SimpleUI), &b.UI); jsonErr != nil {
+			return b, fmt.Errorf("error parsing simple ui: %w", jsonErr)
 		}
 	} else {
 		uiOrder := []interface{}{"*"}

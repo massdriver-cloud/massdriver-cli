@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -22,6 +23,7 @@ func WriteDereferencedSchema(schemaFilePath string, outFile io.Writer, c *client
 	dereferencedSchema := RefdSchema{}
 	rawJSON := map[string]interface{}{}
 	cwd := filepath.Dir(schemaFilePath)
+	ctx := context.TODO()
 	data, readErr := ioutil.ReadFile(schemaFilePath)
 	if readErr != nil {
 		return readErr
@@ -30,7 +32,7 @@ func WriteDereferencedSchema(schemaFilePath string, outFile io.Writer, c *client
 	if err := json.Unmarshal(data, &rawJSON); err != nil {
 		return err
 	}
-	definition, err := Hydrate(rawJSON, cwd, c)
+	definition, err := Hydrate(ctx, rawJSON, cwd, c)
 	if err != nil {
 		return err
 	}

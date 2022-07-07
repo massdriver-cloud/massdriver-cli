@@ -20,21 +20,12 @@ var massdriverDefinitionPattern = regexp.MustCompile(`^[a-zA-Z0-9]`)
 var httpPattern = regexp.MustCompile(`^(http|https)://`)
 var fragmentPattern = regexp.MustCompile(`^#`)
 
-func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
+func Hydrate(ctx context.Context, any interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
 	val := getValue(any)
-	ctx := context.TODO()
 
-	switch val.Kind() {
+	switch val.Kind() { // nolint:exhaustive
 	case reflect.Slice, reflect.Array:
-		hydratedList := make([]interface{}, 0)
-		for i := 0; i < val.Len(); i++ {
-			hydratedVal, err := Hydrate(val.Index(i).Interface(), cwd, c)
-			if err != nil {
-				return hydratedList, err
-			}
-			hydratedList = append(hydratedList, hydratedVal)
-		}
-		return hydratedList, nil
+		return hydrateList(ctx, c, cwd, val)
 	case reflect.Map:
 		schemaInterface := val.Interface()
 		schema := schemaInterface.(map[string]interface{}) //nolint:errcheck
@@ -45,83 +36,116 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 		// which adheres to the JSON Schema spec.
 		if schemaRefInterface, ok := schema["$ref"]; ok {
 			schemaRefValue := schemaRefInterface.(string) //nolint:errcheck
-			var referencedSchema map[string]interface{}
 			schemaRefDir := cwd
+			var err error
 			if relativeFilePathPattern.MatchString(schemaRefValue) { //nolint:gocritic
 				// this is a local file ref
 				// build up the path from where the dir current schema was read
-				schemaRefAbsPath, err := filepath.Abs(filepath.Join(cwd, schemaRefValue))
-				if err != nil {
-					return hydratedSchema, err
-				}
-
-				schemaRefDir = filepath.Dir(schemaRefAbsPath)
-				referencedSchema, err = readJSONFile(schemaRefAbsPath)
-				if err != nil {
-					return hydratedSchema, err
-				}
-
-				hydratedSchema, err = replaceRef(schema, referencedSchema, schemaRefDir, c)
-				if err != nil {
-					return hydratedSchema, err
-				}
+				hydratedSchema, err = hydrateFilePathRef(ctx, c, cwd, hydratedSchema, schema, schemaRefValue)
 			} else if httpPattern.MatchString(schemaRefValue) {
 				// HTTP ref. Pull the schema down via HTTP GET and hydrate
-				// TODO: this is a security risk as we're blindly doing a get based on a bundle author provided URL
-				// see: https://securego.io/docs/rules/g107.html
-				// tracked in: https://github.com/massdriver-cloud/massdriver-cli/issues/43
-				request, err := http.NewRequestWithContext(ctx, "GET", schemaRefValue, nil)
-				if err != nil {
-					return hydratedSchema, err
-				}
-				resp, doErr := c.Client.Do(request)
-				if doErr != nil {
-					return hydratedSchema, doErr
-				}
-				defer resp.Body.Close()
-
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					return hydratedSchema, err
-				}
-				err = json.Unmarshal(body, &referencedSchema)
-				if err != nil {
-					return hydratedSchema, err
-				}
-
-				hydratedSchema, err = replaceRef(schema, referencedSchema, schemaRefDir, c)
-				if err != nil {
-					return hydratedSchema, err
-				}
+				hydratedSchema, err = hydrateHTTPRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)
 			} else if fragmentPattern.MatchString(schemaRefValue) {
 				fmt.Println("Fragment refs not supported")
 			} else if massdriverDefinitionPattern.MatchString(schemaRefValue) {
 				// this must be a published schema, so fetch from massdriver
-				var err error
-				referencedSchema, err = definition.GetDefinition(c, schemaRefValue)
-				if err != nil {
-					return hydratedSchema, err
-				}
-
-				hydratedSchema, err = replaceRef(schema, referencedSchema, schemaRefDir, c)
-				if err != nil {
-					return hydratedSchema, err
-				}
+				hydratedSchema, err = hydrateMassdriverRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)
 			}
-		}
-
-		for key, value := range schema {
-			var valueInterface = value
-			hydratedValue, err := Hydrate(valueInterface, cwd, c)
 			if err != nil {
 				return hydratedSchema, err
 			}
-			hydratedSchema[key] = hydratedValue
 		}
-		return hydratedSchema, nil
+		return hydrateMap(ctx, c, cwd, hydratedSchema, schema)
 	default:
 		return any, nil
 	}
+}
+
+func hydrateMap(ctx context.Context, c *client.MassdriverClient, cwd string, hydratedSchema map[string]interface{}, schema map[string]interface{}) (map[string]interface{}, error) {
+	for key, value := range schema {
+		var valueInterface = value
+		hydratedValue, err := Hydrate(ctx, valueInterface, cwd, c)
+		if err != nil {
+			return hydratedSchema, err
+		}
+		hydratedSchema[key] = hydratedValue
+	}
+	return hydratedSchema, nil
+}
+
+func hydrateList(ctx context.Context, c *client.MassdriverClient, cwd string, val reflect.Value) ([]interface{}, error) {
+	hydratedList := make([]interface{}, 0)
+	for i := 0; i < val.Len(); i++ {
+		hydratedVal, err := Hydrate(ctx, val.Index(i).Interface(), cwd, c)
+		if err != nil {
+			return hydratedList, err
+		}
+		hydratedList = append(hydratedList, hydratedVal)
+	}
+	return hydratedList, nil
+}
+
+func hydrateMassdriverRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
+	referencedSchema, err := definition.GetDefinition(c, schemaRefValue)
+	if err != nil {
+		return hydratedSchema, err
+	}
+
+	hydratedSchema, err = replaceRef(ctx, schema, referencedSchema, schemaRefDir, c)
+	if err != nil {
+		return hydratedSchema, err
+	}
+	return hydratedSchema, nil
+}
+
+func hydrateHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
+	// TODO: this is a security risk as we're blindly doing a get based on a bundle author provided URL
+	// see: https://securego.io/docs/rules/g107.html
+	// tracked in: https://github.com/massdriver-cloud/massdriver-cli/issues/43
+	var referencedSchema map[string]interface{}
+	request, err := http.NewRequestWithContext(ctx, "GET", schemaRefValue, nil)
+	if err != nil {
+		return hydratedSchema, err
+	}
+	resp, doErr := c.Client.Do(request)
+	if doErr != nil {
+		return hydratedSchema, doErr
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return hydratedSchema, err
+	}
+	err = json.Unmarshal(body, &referencedSchema)
+	if err != nil {
+		return hydratedSchema, err
+	}
+
+	hydratedSchema, err = replaceRef(ctx, schema, referencedSchema, schemaRefDir, c)
+	return hydratedSchema, err
+}
+
+func hydrateFilePathRef(ctx context.Context, c *client.MassdriverClient, cwd string, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefValue string) (map[string]interface{}, error) {
+	var referencedSchema map[string]interface{}
+	var schemaRefDir string
+	schemaRefAbsPath, err := filepath.Abs(filepath.Join(cwd, schemaRefValue))
+	if err != nil {
+		return hydratedSchema, err
+	}
+
+	schemaRefDir = filepath.Dir(schemaRefAbsPath)
+	referencedSchema, readErr := readJSONFile(schemaRefAbsPath)
+	if readErr != nil {
+		return hydratedSchema, readErr
+	}
+
+	var replaceErr error
+	hydratedSchema, replaceErr = replaceRef(ctx, schema, referencedSchema, schemaRefDir, c)
+	if replaceErr != nil {
+		return hydratedSchema, replaceErr
+	}
+	return hydratedSchema, nil
 }
 
 func getValue(anyVal interface{}) reflect.Value {
@@ -145,12 +169,12 @@ func readJSONFile(filepath string) (map[string]interface{}, error) {
 	return result, err
 }
 
-func replaceRef(base map[string]interface{}, referenced map[string]interface{}, schemaRefDir string, c *client.MassdriverClient) (map[string]interface{}, error) {
+func replaceRef(ctx context.Context, base map[string]interface{}, referenced map[string]interface{}, schemaRefDir string, c *client.MassdriverClient) (map[string]interface{}, error) {
 	hydratedSchema := map[string]interface{}{}
 	delete(base, "$ref")
 
 	for k, v := range referenced {
-		hydratedValue, err := Hydrate(v, schemaRefDir, c)
+		hydratedValue, err := Hydrate(ctx, v, schemaRefDir, c)
 		if err != nil {
 			return hydratedSchema, err
 		}

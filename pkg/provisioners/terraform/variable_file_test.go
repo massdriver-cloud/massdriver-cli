@@ -2,11 +2,12 @@ package terraform_test
 
 import (
 	"encoding/json"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"reflect"
 	"testing"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/terraform"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 )
 
 type test struct {

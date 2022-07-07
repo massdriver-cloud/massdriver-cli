@@ -109,8 +109,8 @@ func UploadToPresignedS3URL(url string, object io.Reader) error {
 		if _, readErr := respBody.ReadFrom(resp.Body); readErr != nil {
 			return readErr
 		}
-		if err := xml.Unmarshal(respBody.Bytes(), &respContent); err != nil {
-			return fmt.Errorf("enountered non-200 response code, unable to unmarshal xml response body: %v: original error: %w", respBody.String(), err)
+		if xmlErr := xml.Unmarshal(respBody.Bytes(), &respContent); xmlErr != nil {
+			return fmt.Errorf("enountered non-200 response code, unable to unmarshal xml response body: %v: original error: %w", respBody.String(), xmlErr)
 		}
 
 		return errors.New("unable to upload content: " + respContent.Message)

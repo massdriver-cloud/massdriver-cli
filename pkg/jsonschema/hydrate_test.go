@@ -1,6 +1,7 @@
 package jsonschema_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -114,8 +115,9 @@ func TestHydrate(t *testing.T) {
 			defer testServer.Close()
 
 			c := client.NewClient().WithEndpoint(testServer.URL)
+			ctx := context.TODO()
 
-			got, _ := jsonschema.Hydrate(test.Input, ".", c)
+			got, _ := jsonschema.Hydrate(ctx, test.Input, ".", c)
 
 			if fmt.Sprint(got) != fmt.Sprint(test.Expected) {
 				t.Errorf("got %v, want %v", got, test.Expected)
@@ -146,13 +148,14 @@ func TestHydrate(t *testing.T) {
 		defer testServer.Close()
 
 		c := client.NewClient().WithEndpoint(testServer.URL)
+		ctx := context.TODO()
 
 		recursive := fmt.Sprintf(`{"baz":{"$ref":"%s/endpoint"}}`, testServer.URL)
 		recursivePtr = &recursive
 
 		input := jsonDecode(fmt.Sprintf(`{"$ref":"%s/recursive"}`, testServer.URL))
 
-		got, _ := jsonschema.Hydrate(input, ".", c)
+		got, _ := jsonschema.Hydrate(ctx, input, ".", c)
 		expected := map[string]interface{}{
 			"baz": map[string]string{
 				"foo": "bar",

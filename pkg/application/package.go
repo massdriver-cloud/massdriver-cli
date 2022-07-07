@@ -33,8 +33,8 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, marshalErr
 	}
 
-	if _, err := appYaml.Write(appYamlBytes); err != nil {
-		return nil, err
+	if _, yamlErr := appYaml.Write(appYamlBytes); yamlErr != nil {
+		return nil, yamlErr
 	}
 
 	// Write bundle.yaml
@@ -53,8 +53,8 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 	if marshalErr != nil {
 		return nil, marshalErr
 	}
-	if _, err := bundleYaml.Write(bundleYamlBytes); err != nil {
-		return nil, err
+	if _, writeErr := bundleYaml.Write(bundleYamlBytes); writeErr != nil {
+		return nil, writeErr
 	}
 
 	if app.Deployment.Type == "custom" {
@@ -86,18 +86,8 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 	}
 
 	for _, step := range b.Steps {
-		switch step.Provisioner {
-		case "terraform":
-			err = terraform.GenerateFiles(workingDir, step.Path)
-			if err != nil {
-				log.Error().Err(err).Str("bundle", bundlePath).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
-				return nil, err
-			}
-		case "exec":
-			// No-op (Golang doesn't not fallthrough unless explicitly stated)
-		default:
-			log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
-			return nil, fmt.Errorf("unknown provisioner: %v", step.Provisioner)
+		if stepErr := generateStep(step, workingDir, bundlePath); stepErr != nil {
+			return nil, stepErr
 		}
 	}
 
@@ -107,6 +97,23 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 	}
 
 	return b, nil
+}
+
+func generateStep(step bundle.Step, workingDir, bundlePath string) error {
+	switch step.Provisioner {
+	case "terraform":
+		err := terraform.GenerateFiles(workingDir, step.Path)
+		if err != nil {
+			log.Error().Err(err).Str("bundle", bundlePath).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
+			return err
+		}
+	case "exec":
+		// No-op (Golang doesn't not fallthrough unless explicitly stated)
+	default:
+		log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
+		return fmt.Errorf("unknown provisioner: %v", step.Provisioner)
+	}
+	return nil
 }
 
 func packageChart(chartPath string, destPath string) error {
@@ -122,7 +129,7 @@ func packageChart(chartPath string, destPath string) error {
 		if err1 != nil {
 			return err1
 		}
-		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777) // nolint:gosec
+		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777) // nolint:gosec,gomnd
 	})
 	return err
 }

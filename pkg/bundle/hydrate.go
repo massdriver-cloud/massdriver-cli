@@ -1,6 +1,7 @@
 package bundle
 
 import (
+	"context"
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -9,8 +10,9 @@ import (
 
 func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 	cwd := filepath.Dir(path)
+	ctx := context.TODO()
 
-	hydratedArtifacts, err := jsonschema.Hydrate(b.Artifacts, cwd, c)
+	hydratedArtifacts, err := jsonschema.Hydrate(ctx, b.Artifacts, cwd, c)
 	if err != nil {
 		return err
 	}
@@ -20,7 +22,7 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 		return err
 	}
 
-	hydratedParams, err := jsonschema.Hydrate(b.Params, cwd, c)
+	hydratedParams, err := jsonschema.Hydrate(ctx, b.Params, cwd, c)
 	if err != nil {
 		return err
 	}
@@ -30,7 +32,7 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 		return err
 	}
 
-	hydratedConnections, err := jsonschema.Hydrate(b.Connections, cwd, c)
+	hydratedConnections, err := jsonschema.Hydrate(ctx, b.Connections, cwd, c)
 	if err != nil {
 		return err
 	}
@@ -40,7 +42,7 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 		return err
 	}
 
-	hydratedUI, err := jsonschema.Hydrate(b.UI, cwd, c)
+	hydratedUI, err := jsonschema.Hydrate(ctx, b.UI, cwd, c)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/terraform"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 )
 
 // Helper function for asserting json serde matches
@@ -15,7 +15,7 @@ func doc(str string) string {
 	b := []byte(str)
 
 	jsonMap := make(map[string](interface{}))
-	if err := json.Unmarshal([]byte(b), &jsonMap); err != nil {
+	if err := json.Unmarshal(b, &jsonMap); err != nil {
 		panic(err)
 	}
 
@@ -76,9 +76,9 @@ func TestGenerateFiles(t *testing.T) {
 			}
 
 			for file, want := range tc.expected {
-				got, err := os.ReadFile(path.Join(tc.bundlePath, tc.srcDir, file))
-				if err != nil {
-					t.Fatalf("%d, unexpected error", err)
+				got, readErr := os.ReadFile(path.Join(tc.bundlePath, tc.srcDir, file))
+				if readErr != nil {
+					t.Fatalf("%d, unexpected error", readErr)
 				}
 
 				if string(got) != want {
