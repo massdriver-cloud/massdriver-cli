@@ -14,7 +14,7 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 	if err != nil {
 		return err
 	}
-	b.Artifacts = hydratedArtifacts.(map[string]interface{})
+	b.Artifacts = hydratedArtifacts.(map[string]interface{}) //nolint:errcheck
 	err = ApplyTransformations(b.Artifacts, artifactsTransformations)
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 	if err != nil {
 		return err
 	}
-	b.Params = hydratedParams.(map[string]interface{})
+	b.Params = hydratedParams.(map[string]interface{}) //nolint:errcheck
 	err = ApplyTransformations(b.Params, paramsTransformations)
 	if err != nil {
 		return err
@@ -34,18 +34,18 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 	if err != nil {
 		return err
 	}
-	b.Connections = hydratedConnections.(map[string]interface{})
+	b.Connections = hydratedConnections.(map[string]interface{}) //nolint:errcheck
 	err = ApplyTransformations(b.Connections, connectionsTransformations)
 	if err != nil {
 		return err
 	}
 
-	hydratedUi, err := jsonschema.Hydrate(b.Ui, cwd, c)
+	hydratedUI, err := jsonschema.Hydrate(b.UI, cwd, c)
 	if err != nil {
 		return err
 	}
-	b.Ui = hydratedUi.(map[string]interface{})
-	err = ApplyTransformations(b.Ui, uiTransformations)
+	b.UI = hydratedUI.(map[string]interface{}) //nolint:errcheck
+	err = ApplyTransformations(b.UI, uiTransformations)
 	if err != nil {
 		return err
 	}

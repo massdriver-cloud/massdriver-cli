@@ -1,4 +1,4 @@
-package terraform
+package terraform_test
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/terraform"
 )
 
 // Helper function for asserting json serde matches
@@ -13,7 +15,9 @@ func doc(str string) string {
 	b := []byte(str)
 
 	jsonMap := make(map[string](interface{}))
-	json.Unmarshal([]byte(b), &jsonMap)
+	if err := json.Unmarshal([]byte(b), &jsonMap); err != nil {
+		panic(err)
+	}
 
 	outBytes, _ := json.MarshalIndent(jsonMap, "", "    ")
 	return string(outBytes)
@@ -66,7 +70,7 @@ func TestGenerateFiles(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := GenerateFiles(tc.bundlePath, tc.srcDir)
+			err := terraform.GenerateFiles(tc.bundlePath, tc.srcDir)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -121,7 +125,7 @@ func TestCompile(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := Compile(tc.schemaPath, &got)
+			err := terraform.Compile(tc.schemaPath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

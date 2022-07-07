@@ -1,23 +1,26 @@
-package client
+package client_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 )
 
 func TestToHTTPRequest(t *testing.T) {
 	type test struct {
 		name    string
-		request Request
+		request client.Request
 		want    http.Request
 	}
 	tests := []test{
 		{
 			name: "simple",
-			request: Request{
+			request: client.Request{
 				Method: "GET",
 				Path:   "some/path",
 				Body:   strings.NewReader("some data"),
@@ -40,9 +43,9 @@ func TestToHTTPRequest(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
-			c := NewClient().WithApiKey("apikey")
-			got, err := tc.request.toHTTPRequest(c)
+			ctx := context.Background()
+			c := client.NewClient().WithAPIKey("apikey")
+			got, err := tc.request.toHTTPRequest(ctx, c)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
@@ -55,7 +58,9 @@ func TestToHTTPRequest(t *testing.T) {
 			}
 			var gotBody []byte
 			var wantBody []byte
-			got.Body.Read(gotBody)
+			if _, err := got.Body.Read(gotBody); err != nil {
+				t.Errorf("could not read got body %v", string(gotBody))
+			}
 			tc.want.Body.Read(wantBody)
 			if string(gotBody) != string(wantBody) {
 				t.Errorf("got %v, want %v", string(gotBody), string(wantBody))

@@ -11,16 +11,16 @@ import (
 const ArtifactsSchemaFilename = "schema-artifacts.json"
 const ConnectionsSchemaFilename = "schema-connections.json"
 const ParamsSchemaFilename = "schema-params.json"
-const UiSchemaFilename = "schema-ui.json"
+const UISchemaFilename = "schema-ui.json"
 
-const idUrlPattern = "https://schemas.massdriver.cloud/schemas/bundles/%s/schema-%s.json"
-const jsonSchemaUrlPattern = "http://json-schema.org/%s/schema"
+const idURLPattern = "https://schemas.massdriver.cloud/schemas/bundles/%s/schema-%s.json"
+const jsonSchemaURLPattern = "http://json-schema.org/%s/schema"
 
 // Metadata returns common metadata fields for each JSON Schema
 func (b *Bundle) Metadata(schemaType string) map[string]string {
 	return map[string]string{
-		"$schema":     generateSchemaUrl(b.Schema),
-		"$id":         generateIdUrl(b.Name, schemaType),
+		"$schema":     generateSchemaURL(b.Schema),
+		"$id":         generateIDURL(b.Name, schemaType),
 		"name":        b.Name,
 		"description": b.Description,
 	}
@@ -52,7 +52,7 @@ func (b *Bundle) GenerateSchemas(dir string) error {
 		return err
 	}
 
-	uiSchemaFile, err := createFile(dir, UiSchemaFilename)
+	uiSchemaFile, err := createFile(dir, UISchemaFilename)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (b *Bundle) GenerateSchemas(dir string) error {
 	}
 
 	emptyMetadata := make(map[string]string)
-	err = GenerateSchema(b.Ui, emptyMetadata, uiSchemaFile)
+	err = GenerateSchema(b.UI, emptyMetadata, uiSchemaFile)
 	if err != nil {
 		return err
 	}
@@ -118,10 +118,10 @@ func mergeMaps(a map[string]interface{}, b map[string]string) map[string]interfa
 	return a
 }
 
-func generateIdUrl(mdName string, schemaType string) string {
-	return fmt.Sprintf(idUrlPattern, mdName, schemaType)
+func generateIDURL(mdName string, schemaType string) string {
+	return fmt.Sprintf(idURLPattern, mdName, schemaType)
 }
 
-func generateSchemaUrl(schema string) string {
-	return fmt.Sprintf(jsonSchemaUrlPattern, schema)
+func generateSchemaURL(schema string) string {
+	return fmt.Sprintf(jsonSchemaURLPattern, schema)
 }

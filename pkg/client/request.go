@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,7 @@ func NewRequest(method string, path string, body io.Reader) *Request {
 	return req
 }
 
-func (req *Request) toHTTPRequest(c *MassdriverClient) (*http.Request, error) {
+func (req *Request) toHTTPRequest(ctx context.Context, c *MassdriverClient) (*http.Request, error) {
 	url, err := url.Parse(c.endpoint)
 	if err != nil {
 		return nil, err
@@ -31,7 +32,8 @@ func (req *Request) toHTTPRequest(c *MassdriverClient) (*http.Request, error) {
 
 	url.Path = req.Path
 
-	httpReq, err := http.NewRequest(req.Method, url.String(), req.Body)
+	// TODO: is there a better place to set this context?
+	httpReq, err := http.NewRequestWithContext(ctx, req.Method, url.String(), req.Body)
 	if err != nil {
 		return nil, err
 	}

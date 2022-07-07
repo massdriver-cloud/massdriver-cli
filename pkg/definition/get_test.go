@@ -30,12 +30,13 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				urlPath := r.URL.Path
 				switch urlPath {
 				case "/artifact-definitions/massdriver/test-schema":
-					w.Write([]byte(tc.definition))
+					if _, err := w.Write([]byte(tc.definition)); err != nil {
+						t.Errorf("Encountered error writing schema: %v", err)
+					}
 				default:
 					t.Fatalf("unknown schema: %v", urlPath)
 				}

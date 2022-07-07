@@ -104,7 +104,9 @@ func TestHydrate(t *testing.T) {
 				urlPath := r.URL.Path
 				switch urlPath {
 				case "/artifact-definitions/massdriver/test-schema":
-					w.Write([]byte(`{"foo":"bar"}`))
+					if _, err := w.Write([]byte(`{"foo":"bar"}`)); err != nil {
+						t.Fatalf("Failed to write response: %v", err)
+					}
 				default:
 					t.Fatalf("unknown schema: %v", urlPath)
 				}
@@ -128,10 +130,14 @@ func TestHydrate(t *testing.T) {
 			urlPath := r.URL.Path
 			switch urlPath {
 			case "/recursive":
-				w.Write([]byte(*recursivePtr))
+				if _, err := w.Write([]byte(*recursivePtr)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 				fmt.Println("in recursive")
 			case "/endpoint":
-				w.Write([]byte(`{"foo":"bar"}`))
+				if _, err := w.Write([]byte(`{"foo":"bar"}`)); err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 				fmt.Println("in endpoint")
 			default:
 				t.Fatalf("unknown schema: %v", urlPath)
@@ -161,6 +167,8 @@ func TestHydrate(t *testing.T) {
 
 func jsonDecode(data string) map[string]interface{} {
 	var result map[string]interface{}
-	json.Unmarshal([]byte(data), &result)
+	if err := json.Unmarshal([]byte(data), &result); err != nil {
+		panic(err)
+	}
 	return result
 }

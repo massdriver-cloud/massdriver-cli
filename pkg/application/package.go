@@ -17,9 +17,9 @@ import (
 )
 
 func PackageApplication(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
-	app, err := Parse(appPath)
-	if err != nil {
-		return nil, err
+	app, parseErr := Parse(appPath)
+	if parseErr != nil {
+		return nil, parseErr
 	}
 
 	// Write app.yaml
@@ -28,14 +28,20 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, err
 	}
 	defer appYaml.Close()
-	appYamlBytes, err := yaml.Marshal(*app)
-	if err != nil {
+	appYamlBytes, marshalErr := yaml.Marshal(*app)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+
+	if _, err := appYaml.Write(appYamlBytes); err != nil {
 		return nil, err
 	}
-	appYaml.Write(appYamlBytes)
 
 	// Write bundle.yaml
-	b := app.ConvertToBundle()
+	b, err := app.ConvertToBundle()
+	if err != nil {
+		return nil, fmt.Errorf("could not convert app to bundle: %w", err)
+	}
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	bundlePath := path.Join(workingDir, "bundle.yaml")
 	bundleYaml, err := os.Create(bundlePath)
@@ -43,11 +49,13 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, err
 	}
 	defer bundleYaml.Close()
-	bundleYamlBytes, err := yaml.Marshal(*b)
-	if err != nil {
+	bundleYamlBytes, marshalErr := yaml.Marshal(*b)
+	if marshalErr != nil {
+		return nil, marshalErr
+	}
+	if _, err := bundleYaml.Write(bundleYamlBytes); err != nil {
 		return nil, err
 	}
-	bundleYaml.Write(bundleYamlBytes)
 
 	if app.Deployment.Type == "custom" {
 		// Make chart directory
@@ -102,20 +110,19 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 }
 
 func packageChart(chartPath string, destPath string) error {
-	var err error = filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
-		var relPath string = strings.TrimPrefix(path, chartPath)
+	err := filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
+		var relPath = strings.TrimPrefix(path, chartPath)
 		if relPath == "" {
 			return nil
 		}
 		if info.IsDir() {
 			return os.Mkdir(filepath.Join(destPath, relPath), 0755)
-		} else {
-			var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
-			if err1 != nil {
-				return err1
-			}
-			return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777)
 		}
+		var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+		if err1 != nil {
+			return err1
+		}
+		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777) // nolint:gosec
 	})
 	return err
 }

@@ -37,7 +37,7 @@ func TestPublish(t *testing.T) {
 						"hello": "world",
 					},
 				},
-				Ui: map[string]interface{}{
+				UI: map[string]interface{}{
 					"ui": "baz",
 				},
 			},
@@ -49,13 +49,15 @@ func TestPublish(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			var gotBody string
 			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				bytes, err := ioutil.ReadAll(r.Body)
-				if err != nil {
-					t.Fatalf("%d, unexpected error", err)
+				bytes, readErr := ioutil.ReadAll(r.Body)
+				if readErr != nil {
+					t.Fatalf("%d, unexpected error", readErr)
 				}
 				gotBody = string(bytes)
 
-				w.Write([]byte(`{"upload_location":"https://some.site.test/endpoint"}`))
+				if _, err := w.Write([]byte(`{"upload_location":"https://some.site.test/endpoint"}`)); err != nil {
+					t.Fatalf("%d, unexpected error writing upload location to test server", err)
+				}
 				w.WriteHeader(http.StatusOK)
 			}))
 			defer testServer.Close()

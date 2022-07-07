@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type BundleOverrides struct {
+type Overrides struct {
 	Access string
 }
 
@@ -21,7 +21,7 @@ func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal([]byte(data), &bundle)
+	err = yaml.Unmarshal(data, &bundle)
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +35,15 @@ func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 // Sets the default steps to be a single src dir for terraform
 func setDefaultSteps(bundle *Bundle) {
 	if len(bundle.Steps) == 0 {
-		defaultStep := BundleStep{Path: "src", Provisioner: "terraform"}
-		bundle.Steps = []BundleStep{defaultStep}
+		defaultStep := Step{Path: "src", Provisioner: "terraform"}
+		bundle.Steps = []Step{defaultStep}
 	}
 }
 
 func applyOverrides(b *Bundle, overrides map[string]interface{}) {
 	if access, found := overrides["access"]; found {
 		if access == "public" || access == "private" {
-			b.Access = access.(string)
+			b.Access = access.(string) //nolint:errcheck
 		}
 	}
 }

@@ -11,13 +11,12 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 )
 
-var MASSDRIVER_HELM_CHART_REPOSITORY = "https://massdriver-cloud.github.io/helm-charts"
+const MassdriverHelmChartRepository = "https://massdriver-cloud.github.io/helm-charts"
 
-func Generate(data *ApplicationTemplateData) error {
-
+func Generate(data *TemplateData) error {
 	cpo := action.ChartPathOptions{
 		InsecureSkipTLSverify: true,
-		RepoURL:               MASSDRIVER_HELM_CHART_REPOSITORY,
+		RepoURL:               MassdriverHelmChartRepository,
 		Version:               ">0.0.0-0",
 	}
 
@@ -39,12 +38,12 @@ func Generate(data *ApplicationTemplateData) error {
 	defer os.RemoveAll(tempDir)
 
 	client := action.NewPullWithOpts(action.WithConfig(&action.Configuration{}))
-	client.RepoURL = MASSDRIVER_HELM_CHART_REPOSITORY
+	client.RepoURL = MassdriverHelmChartRepository
 	client.ChartPathOptions = cpo
 	client.Settings = cli.New()
 
 	client.Untar = true
-	client.UntarDir = tempDir //data.Location
+	client.UntarDir = tempDir // data.Location
 
 	_, err = client.Run(data.Chart)
 	if err != nil {
@@ -52,8 +51,8 @@ func Generate(data *ApplicationTemplateData) error {
 	}
 
 	// regenerate Chart.yaml to match their config
-	chart := ChartYaml{
-		ApiVersion:  "v2",
+	chart := ChartYAML{
+		APIVersion:  "v2",
 		Name:        data.Name,
 		Description: data.Description,
 		Type:        "application",
@@ -63,7 +62,7 @@ func Generate(data *ApplicationTemplateData) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644)
+	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644) // nolint: gosec
 	if err != nil {
 		return err
 	}

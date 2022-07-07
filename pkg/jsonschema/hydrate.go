@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -21,6 +22,7 @@ var fragmentPattern = regexp.MustCompile(`^#`)
 
 func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
 	val := getValue(any)
+	ctx := context.TODO()
 
 	switch val.Kind() {
 	case reflect.Slice, reflect.Array:
@@ -35,17 +37,17 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 		return hydratedList, nil
 	case reflect.Map:
 		schemaInterface := val.Interface()
-		schema := schemaInterface.(map[string]interface{})
+		schema := schemaInterface.(map[string]interface{}) //nolint:errcheck
 		hydratedSchema := map[string]interface{}{}
 
 		// if this part of the schema has a $ref that is a local file, read it and make it
 		// the map that we hydrate into. This causes any keys in the ref'ing object to override anything in the ref'd object
 		// which adheres to the JSON Schema spec.
 		if schemaRefInterface, ok := schema["$ref"]; ok {
-			schemaRefValue := schemaRefInterface.(string)
+			schemaRefValue := schemaRefInterface.(string) //nolint:errcheck
 			var referencedSchema map[string]interface{}
 			schemaRefDir := cwd
-			if relativeFilePathPattern.MatchString(schemaRefValue) {
+			if relativeFilePathPattern.MatchString(schemaRefValue) { //nolint:gocritic
 				// this is a local file ref
 				// build up the path from where the dir current schema was read
 				schemaRefAbsPath, err := filepath.Abs(filepath.Join(cwd, schemaRefValue))
@@ -54,7 +56,7 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 				}
 
 				schemaRefDir = filepath.Dir(schemaRefAbsPath)
-				referencedSchema, err = readJsonFile(schemaRefAbsPath)
+				referencedSchema, err = readJSONFile(schemaRefAbsPath)
 				if err != nil {
 					return hydratedSchema, err
 				}
@@ -65,9 +67,16 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 				}
 			} else if httpPattern.MatchString(schemaRefValue) {
 				// HTTP ref. Pull the schema down via HTTP GET and hydrate
-				resp, err := http.Get(schemaRefValue)
+				// TODO: this is a security risk as we're blindly doing a get based on a bundle author provided URL
+				// see: https://securego.io/docs/rules/g107.html
+				// tracked in: https://github.com/massdriver-cloud/massdriver-cli/issues/43
+				request, err := http.NewRequestWithContext(ctx, "GET", schemaRefValue, nil)
 				if err != nil {
 					return hydratedSchema, err
+				}
+				resp, doErr := c.Client.Do(request)
+				if doErr != nil {
+					return hydratedSchema, doErr
 				}
 				defer resp.Body.Close()
 
@@ -115,8 +124,8 @@ func Hydrate(any interface{}, cwd string, c *client.MassdriverClient) (interface
 	}
 }
 
-func getValue(any interface{}) reflect.Value {
-	val := reflect.ValueOf(any)
+func getValue(anyVal interface{}) reflect.Value {
+	val := reflect.ValueOf(anyVal)
 
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -125,13 +134,13 @@ func getValue(any interface{}) reflect.Value {
 	return val
 }
 
-func readJsonFile(filepath string) (map[string]interface{}, error) {
+func readJSONFile(filepath string) (map[string]interface{}, error) {
 	var result map[string]interface{}
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return result, err
 	}
-	err = json.Unmarshal([]byte(data), &result)
+	err = json.Unmarshal(data, &result)
 
 	return result, err
 }

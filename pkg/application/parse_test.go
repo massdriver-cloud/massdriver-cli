@@ -23,7 +23,7 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.ApplicationDeployment{
+				Deployment: application.Deployment{
 					Type: "simple",
 				},
 				Params: map[string]interface{}{
@@ -48,7 +48,7 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.ApplicationDeployment{
+				Deployment: application.Deployment{
 					Type: "custom",
 					Path: "./test-chart",
 				},
@@ -74,7 +74,7 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.ApplicationDeployment{
+				Deployment: application.Deployment{
 					Type: "simple",
 				},
 				Params: map[string]interface{}{
@@ -92,12 +92,12 @@ func TestParse(t *testing.T) {
 						"name",
 					},
 				},
-				Dependencies: []application.ApplicationDependencies{
+				Dependencies: []application.Dependencies{
 					{
 						Type:     "massdriver/rdbms-authentication",
 						Field:    "database",
 						Required: true,
-						Envs: []application.ApplicationDependenciesEnvs{
+						Envs: []application.DependenciesEnvs{
 							{
 								Name: "DATABASE_URL",
 								Path: ".data.authentication.connection_string",
@@ -109,7 +109,7 @@ func TestParse(t *testing.T) {
 						Type:     "massdriver/aws-sqs-queue",
 						Field:    "queue",
 						Required: false,
-						Envs: []application.ApplicationDependenciesEnvs{
+						Envs: []application.DependenciesEnvs{
 							{
 								Name: "MY_QUEUE_ARN",
 								Path: ".data.infrastructure.arn",
@@ -124,7 +124,6 @@ func TestParse(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
 			got, err := application.Parse(tc.appPath)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)

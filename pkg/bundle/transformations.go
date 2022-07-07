@@ -10,7 +10,6 @@ var artifactsTransformations = []func(map[string]interface{}) error{DisableAddit
 var uiTransformations = []func(map[string]interface{}) error{}
 
 func ApplyTransformations(schema map[string]interface{}, transformations []func(map[string]interface{}) error) error {
-
 	for _, transformation := range transformations {
 		err := transformation(schema)
 		if err != nil {
@@ -30,26 +29,26 @@ func ApplyTransformations(schema map[string]interface{}, transformations []func(
 	return nil
 }
 
-func AddSetIdToObjectArrays(schema map[string]interface{}) error {
+func AddSetIDToObjectArrays(schema map[string]interface{}) error {
 	if schema["type"] == "array" {
-		itemsInterface, found := schema["items"]
-		if !found {
+		itemsInterface, itemsOK := schema["items"]
+		if !itemsOK {
 			return errors.New("found array without items")
 		}
-		items := itemsInterface.(map[string]interface{})
+		items := itemsInterface.(map[string]interface{}) //nolint:errcheck
 		if items["type"] == "object" {
-			propertiesInterface, found := items["properties"]
-			if !found {
+			propertiesInterface, propsOK := items["properties"]
+			if !propsOK {
 				return errors.New("found object without properties")
 			}
-			properties := propertiesInterface.(map[string]interface{})
+			properties := propertiesInterface.(map[string]interface{}) //nolint:errcheck
 			properties["md_set_id"] = map[string]interface{}{"type": "string"}
 
-			requiredInterface, found := items["required"]
-			if !found {
+			requiredInterface, reqsOK := items["required"]
+			if !reqsOK {
 				items["required"] = []string{"md_set_id"}
 			} else {
-				required := requiredInterface.([]interface{})
+				required := requiredInterface.([]interface{}) //nolint:errcheck
 				items["required"] = append(required, "md_set_id")
 			}
 		}

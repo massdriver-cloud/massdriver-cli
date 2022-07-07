@@ -55,14 +55,16 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 
 // Compile a JSON Schema to Terraform Variable Definition JSON
 func Compile(path string, out io.Writer) error {
-	vars, err := getVars(path)
-	if err != nil {
-		return err
+	vars, varErr := getVars(path)
+	if varErr != nil {
+		return varErr
 	}
 
 	// You can't have an empty variable block, so if there are no vars return an empty json block
 	if len(vars) == 0 {
-		out.Write([]byte("{}"))
+		if _, err := out.Write([]byte("{}")); err != nil {
+			return err
+		}
 		return nil
 	}
 
