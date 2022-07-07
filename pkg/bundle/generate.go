@@ -24,6 +24,9 @@ func Generate(data *TemplateData) error {
 	templateFiles, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
 
 	err := fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		outputPath := path.Join(data.OutputDir, filePath)
 		if info.IsDir() {
 			if filePath == "." {

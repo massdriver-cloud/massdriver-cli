@@ -49,8 +49,12 @@ func TestGenerate(t *testing.T) {
 	expectedContent = regexp.MustCompile("# aws-vpc")
 	assertFileCreatedAndContainsText(t, readmePath, expectedContent)
 
-	terraformPath := fmt.Sprintf("%s/src", templatePath)
-	mainTFPath := fmt.Sprintf("%s/main.tf", terraformPath)
+	srcPath := fmt.Sprintf("%s/src", templatePath)
+	mainTFPath := fmt.Sprintf("%s/main.tf", srcPath)
 	expectedContent = regexp.MustCompile("random_pet")
 	assertFileCreatedAndContainsText(t, mainTFPath, expectedContent)
+
+	validationsJSONPath := fmt.Sprintf("%s/validations.json", srcPath)
+	expectedContent = regexp.MustCompile("do_not_delete")
+	assertFileCreatedAndContainsText(t, validationsJSONPath, expectedContent)
 }
