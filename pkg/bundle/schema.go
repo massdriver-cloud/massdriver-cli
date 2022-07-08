@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 const ArtifactsSchemaFilename = "schema-artifacts.json"
@@ -32,7 +34,7 @@ func createFile(dir string, fileName string) (*os.File, error) {
 
 // Build generates all bundle files in the given bundle
 func (b *Bundle) GenerateSchemas(dir string) error {
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, common.AllRX|common.UserRW)
 	if err != nil {
 		return err
 	}

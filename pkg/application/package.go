@@ -11,6 +11,7 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
@@ -123,13 +124,13 @@ func packageChart(chartPath string, destPath string) error {
 			return nil
 		}
 		if info.IsDir() {
-			return os.Mkdir(filepath.Join(destPath, relPath), 0755)
+			return os.Mkdir(filepath.Join(destPath, relPath), common.AllRX|common.UserRW)
 		}
 		var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
 		if err1 != nil {
 			return err1
 		}
-		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, 0777) // nolint:gosec,gomnd
+		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, common.AllRWX)
 	})
 	return err
 }

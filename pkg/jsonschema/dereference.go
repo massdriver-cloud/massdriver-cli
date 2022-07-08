@@ -38,7 +38,7 @@ func WriteDereferencedSchema(schemaFilePath string, outFile io.Writer, c *client
 	}
 	dereferencedSchema.Definition = definition
 
-	json, err := json.Marshal(dereferencedSchema.Definition)
+	json, err := json.MarshalIndent(dereferencedSchema.Definition, "", "    ")
 	if err != nil {
 		return err
 	}

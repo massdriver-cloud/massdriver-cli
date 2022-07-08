@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
@@ -26,7 +27,7 @@ func Generate(data *TemplateData) error {
 		return errors.New("specified directory already exists")
 	}
 
-	err := os.MkdirAll(data.Location, 0755)
+	err := os.MkdirAll(data.Location, common.AllRX|common.UserRW)
 	if err != nil {
 		return err
 	}
@@ -62,7 +63,7 @@ func Generate(data *TemplateData) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, 0644) // nolint:gosec,gomnd
+	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
 	if err != nil {
 		return err
 	}
