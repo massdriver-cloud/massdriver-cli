@@ -31,4 +31,5 @@ dependencies:
     env:
       - name: MY_QUEUE_ARN
         value: ${data.infrastructure.arn}
-    policy: read
+    policies:
+      - read

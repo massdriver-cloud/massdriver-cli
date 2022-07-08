@@ -9,14 +9,14 @@ type TemplateData struct {
 }
 
 type Application struct {
-	Schema       string                 `json:"schema" yaml:"schema"`
-	Name         string                 `json:"name" yaml:"name"`
-	Description  string                 `json:"description" yaml:"description"`
-	Ref          string                 `json:"ref" yaml:"ref"`
-	Access       string                 `json:"access" yaml:"access"`
-	Deployment   Deployment             `json:"deployment" yaml:"deployment"`
-	Params       map[string]interface{} `json:"params" yaml:"params"`
-	Dependencies []Dependencies         `json:"dependencies" yaml:"dependencies"`
+	Schema       string                  `json:"schema" yaml:"schema"`
+	Name         string                  `json:"name" yaml:"name"`
+	Description  string                  `json:"description" yaml:"description"`
+	Ref          string                  `json:"ref" yaml:"ref"`
+	Access       string                  `json:"access" yaml:"access"`
+	Deployment   Deployment              `json:"deployment" yaml:"deployment"`
+	Params       map[string]interface{}  `json:"params" yaml:"params"`
+	Dependencies map[string]Dependencies `json:"dependencies" yaml:"dependencies"`
 }
 
 type Deployment struct {
@@ -28,7 +28,6 @@ type Deployment struct {
 
 type Dependencies struct {
 	Type     string             `json:"type" yaml:"type"`
-	Field    string             `json:"field" yaml:"field"`
 	Required bool               `json:"required,omitempty" yaml:"required,omitempty"`
 	Envs     []DependenciesEnvs `json:"envs" yaml:"envs"`
 	Policies []string           `json:"policies,omitempty" yaml:"policies,omitempty"`
