@@ -15,8 +15,8 @@ func TestParseBundle(t *testing.T) {
 		Name:        "aws-vpc",
 		Description: "Something",
 		Access:      "public",
-		Steps: []bundle.BundleStep{
-			bundle.BundleStep{Path: "src", Provisioner: "terraform"},
+		Steps: []bundle.Step{
+			{Path: "src", Provisioner: "terraform"},
 		},
 		Artifacts: map[string]interface{}{},
 		Params: map[string]interface{}{
@@ -45,7 +45,7 @@ func TestParseBundle(t *testing.T) {
 				},
 			},
 		},
-		Ui: map[string]interface{}{},
+		UI: map[string]interface{}{},
 	}
 
 	if !reflect.DeepEqual(*got, want) {

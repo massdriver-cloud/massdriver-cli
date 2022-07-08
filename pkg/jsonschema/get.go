@@ -16,6 +16,8 @@ func GetJSONSchema(path string) (Schema, error) {
 		return schema, err
 	}
 
-	json.Unmarshal(byteData, &schema)
+	if marshalErr := json.Unmarshal(byteData, &schema); marshalErr != nil {
+		return schema, marshalErr
+	}
 	return schema, nil
 }

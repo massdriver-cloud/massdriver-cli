@@ -1,4 +1,4 @@
-package terraform
+package terraform_test
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 )
 
 // Helper function for asserting json serde matches
@@ -13,9 +15,11 @@ func doc(str string) string {
 	b := []byte(str)
 
 	jsonMap := make(map[string](interface{}))
-	json.Unmarshal([]byte(b), &jsonMap)
+	if err := json.Unmarshal(b, &jsonMap); err != nil {
+		panic(err)
+	}
 
-	outBytes, _ := json.MarshalIndent(jsonMap, "", "  ")
+	outBytes, _ := json.MarshalIndent(jsonMap, "", "    ")
 	return string(outBytes)
 }
 
@@ -33,45 +37,48 @@ func TestGenerateFiles(t *testing.T) {
 			srcDir:     "src",
 			expected: map[string]string{
 				"_connections_variables.tf.json": `{
-  "variable": {
-    "foo": {
-      "type": "string"
+    "variable": {
+        "foo": {
+            "type": "string"
+        }
     }
-  }
-}`,
+}
+`,
 				"_params_variables.tf.json": `{
-  "variable": {
-    "age": {
-      "type": "number",
-      "default": null
-    },
-    "name": {
-      "type": "string"
+    "variable": {
+        "age": {
+            "type": "number",
+            "default": null
+        },
+        "name": {
+            "type": "string"
+        }
     }
-  }
-}`,
+}
+`,
 				"_md_variables.tf.json": `{
-  "variable": {
-    "md_metadata": {
-      "type": "any"
+    "variable": {
+        "md_metadata": {
+            "type": "any"
+        }
     }
-  }
-}`,
+}
+`,
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			err := GenerateFiles(tc.bundlePath, tc.srcDir)
+			err := terraform.GenerateFiles(tc.bundlePath, tc.srcDir)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
 			for file, want := range tc.expected {
-				got, err := os.ReadFile(path.Join(tc.bundlePath, tc.srcDir, file))
-				if err != nil {
-					t.Fatalf("%d, unexpected error", err)
+				got, readErr := os.ReadFile(path.Join(tc.bundlePath, tc.srcDir, file))
+				if readErr != nil {
+					t.Fatalf("%d, unexpected error", readErr)
 				}
 
 				if string(got) != want {
@@ -107,19 +114,18 @@ func TestCompile(t *testing.T) {
 			"type": "number"
 		}
 	}
-}
-		`)},
+}`) + "\n"},
 		{
 			name:       "empty schema",
 			schemaPath: "file://./testdata/empty-schema.json",
-			expected:   doc(""),
+			expected:   doc("{}"),
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := Compile(tc.schemaPath, &got)
+			err := terraform.Compile(tc.schemaPath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

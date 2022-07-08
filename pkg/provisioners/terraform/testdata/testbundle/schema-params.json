@@ -7,5 +7,7 @@
             "type": "integer"
         }
     },
-    "required": ["name"]
+    "required": [
+        "name"
+    ]
 }

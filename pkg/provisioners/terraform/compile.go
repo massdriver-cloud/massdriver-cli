@@ -41,11 +41,11 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	bytes, err := json.MarshalIndent(massdriverVariables, "", "  ")
+	bytes, err := json.MarshalIndent(massdriverVariables, "", "    ")
 	if err != nil {
 		return err
 	}
-	_, err = massdriverVariablesFile.Write(bytes)
+	_, err = massdriverVariablesFile.Write(append(bytes, []byte("\n")...))
 	if err != nil {
 		return err
 	}
@@ -55,25 +55,27 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 
 // Compile a JSON Schema to Terraform Variable Definition JSON
 func Compile(path string, out io.Writer) error {
-	vars, err := getVars(path)
-	if err != nil {
-		return err
+	vars, varErr := getVars(path)
+	if varErr != nil {
+		return varErr
 	}
 
 	// You can't have an empty variable block, so if there are no vars return an empty json block
 	if len(vars) == 0 {
-		out.Write([]byte("{}"))
+		if _, err := out.Write([]byte("{}")); err != nil {
+			return err
+		}
 		return nil
 	}
 
 	variableFile := TFVariableFile{Variable: vars}
 
-	bytes, err := json.MarshalIndent(variableFile, "", "  ")
+	bytes, err := json.MarshalIndent(variableFile, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	_, err = out.Write(bytes)
+	_, err = out.Write(append(bytes, []byte("\n")...))
 
 	return err
 }

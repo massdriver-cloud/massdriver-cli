@@ -20,7 +20,7 @@ func TestTransformations(t *testing.T) {
 		{
 			name:           "md_set_id",
 			schemaPath:     "./testdata/transformation-md_set_id.yaml",
-			transformation: bundle.AddSetIdToObjectArrays,
+			transformation: bundle.AddSetIDToObjectArrays,
 			expected: map[string]interface{}{
 				"params": map[string]interface{}{
 					"properties": map[string]interface{}{
@@ -89,7 +89,7 @@ func TestTransformations(t *testing.T) {
 
 			got := map[string]interface{}{}
 
-			err = yaml.Unmarshal([]byte(data), &got)
+			err = yaml.Unmarshal(data, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

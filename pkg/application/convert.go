@@ -2,13 +2,12 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 )
 
-var MASSDRIVER_URL string = "https://api.massdriver.cloud/"
-
-func (app *Application) ConvertToBundle() *bundle.Bundle {
+func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 	b := new(bundle.Bundle)
 
 	b.Schema = app.Schema
@@ -18,7 +17,7 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 	b.Type = "application"
 	b.Access = app.Access
 
-	b.Steps = []bundle.BundleStep{
+	b.Steps = []bundle.Step{
 		{
 			Path:        "src",
 			Provisioner: "terraform",
@@ -27,17 +26,19 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 
 	if app.Deployment.Type == "simple" {
 		b.Params = make(map[string]interface{})
-		json.Unmarshal([]byte(SimpleParams), &b.Params)
+		if err := json.Unmarshal([]byte(SimpleParams), &b.Params); err != nil {
+			return b, fmt.Errorf("error parsing simple params: %w", err)
+		}
 	} else {
 		b.Params = app.Params
 	}
 
 	b.Connections = make(map[string]interface{})
 	b.Artifacts = make(map[string]interface{})
-	b.Ui = make(map[string]interface{})
+	b.UI = make(map[string]interface{})
 
 	// default connections are kubernetes and cloud auth
-	//connectionsRequired := []string{"kubernetes-cluster", "cloud-authentication"}
+	// connectionsRequired := []string{"kubernetes-cluster", "cloud-authentication"}
 	connectionsRequired := []string{"kubernetes_cluster"}
 	connectionsProperties := make(map[string]interface{})
 
@@ -89,12 +90,14 @@ func (app *Application) ConvertToBundle() *bundle.Bundle {
 
 	// UI
 	if app.Deployment.Type == "simple" {
-		b.Ui = make(map[string]interface{})
-		json.Unmarshal([]byte(SimpleUi), &b.Ui)
+		b.UI = make(map[string]interface{})
+		if jsonErr := json.Unmarshal([]byte(SimpleUI), &b.UI); jsonErr != nil {
+			return b, fmt.Errorf("error parsing simple ui: %w", jsonErr)
+		}
 	} else {
 		uiOrder := []interface{}{"*"}
-		b.Ui["ui:order"] = uiOrder
+		b.UI["ui:order"] = uiOrder
 	}
 
-	return b
+	return b, nil
 }

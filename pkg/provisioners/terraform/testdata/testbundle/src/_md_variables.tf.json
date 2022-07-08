@@ -1,7 +1,7 @@
 {
-  "variable": {
-    "md_metadata": {
-      "type": "any"
+    "variable": {
+        "md_metadata": {
+            "type": "any"
+        }
     }
-  }
 }

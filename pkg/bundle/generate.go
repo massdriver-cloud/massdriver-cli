@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 // note to all: option in go 1.18 will load hidden files so we dont have to include `cp` instructions in readme for pre-commit.
@@ -24,13 +26,16 @@ func Generate(data *TemplateData) error {
 	templateFiles, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
 
 	err := fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		outputPath := path.Join(data.OutputDir, filePath)
 		if info.IsDir() {
 			if filePath == "." {
-				return os.MkdirAll(data.OutputDir, 0777)
+				return os.MkdirAll(data.OutputDir, common.AllRWX)
 			}
 
-			return os.Mkdir(outputPath, 0777)
+			return os.Mkdir(outputPath, common.AllRWX)
 		}
 
 		var tmpl *template.Template

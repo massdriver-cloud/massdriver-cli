@@ -1,7 +1,7 @@
 {
-  "variable": {
-    "foo": {
-      "type": "string"
+    "variable": {
+        "foo": {
+            "type": "string"
+        }
     }
-  }
 }

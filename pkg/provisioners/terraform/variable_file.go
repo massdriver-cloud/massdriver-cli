@@ -25,8 +25,8 @@ type TFRequiredVariable struct {
 
 // TFOptionalVariable is a representation of a terraform HCL "variable" with a default of null
 type TFOptionalVariable struct {
-	Type       string  `json:"type"`
-	DO_NOT_SET *string `json:"default"` // DO NOT SET THIS. The intention is to get a nil value for this
+	Type     string  `json:"type"`
+	DoNotSet *string `json:"default"` // DO NOT SET THIS. The intention is to get a nil value for this
 }
 
 // Dummy functions to satisfy the interface

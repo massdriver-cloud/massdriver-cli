@@ -22,16 +22,16 @@ func TestConvertToBundle(t *testing.T) {
 				Description: "description",
 				Ref:         "github.com/some-repo",
 				Access:      "public",
-				Dependencies: map[string]application.ApplicationDependencies{
+				Dependencies: map[string]application.Dependencies{
 					"some-field": {
 						Type:     "foo",
 						Required: false,
-						Envs:     []application.ApplicationDependenciesEnvs{},
+						Envs:     []application.DependenciesEnvs{},
 					},
 					"another-field": {
 						Type:     "bar",
 						Required: true,
-						Envs:     []application.ApplicationDependenciesEnvs{},
+						Envs:     []application.DependenciesEnvs{},
 					},
 				},
 				Params: map[string]interface{}{
@@ -46,7 +46,7 @@ func TestConvertToBundle(t *testing.T) {
 				Ref:         "github.com/some-repo",
 				Access:      "public",
 				Type:        "application",
-				Steps: []bundle.BundleStep{
+				Steps: []bundle.Step{
 					{
 						Path:        "src",
 						Provisioner: "terraform",
@@ -78,7 +78,7 @@ func TestConvertToBundle(t *testing.T) {
 				Artifacts: map[string]interface{}{
 					"properties": map[string]interface{}{},
 				},
-				Ui: map[string]interface{}{
+				UI: map[string]interface{}{
 					"ui:order": []interface{}{"*"},
 				},
 				// 	"required": []string{"kubernetes-application"},
@@ -92,8 +92,10 @@ func TestConvertToBundle(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-
-			got := tc.app.ConvertToBundle()
+			got, err := tc.app.ConvertToBundle()
+			if err != nil {
+				t.Errorf("unexpected error converting app to bundle: %v", err)
+			}
 
 			if !reflect.DeepEqual(*got, *tc.want) {
 				t.Errorf("got %v, want %v", *got, *tc.want)

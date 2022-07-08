@@ -1,19 +1,19 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://schemas.massdriver.cloud/schemas/bundles/aws-vpc/schema-params.json",
-  "name": "aws-vpc",
-  "description": "Something",
-  "required": [
-    "name"
-  ],
-  "properties": {
-    "name": {
-      "type": "string",
-      "title": "Name"
-    },
-    "age": {
-      "type": "integer",
-      "title": "Age"
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://schemas.massdriver.cloud/schemas/bundles/aws-vpc/schema-params.json",
+    "name": "aws-vpc",
+    "description": "Something",
+    "required": [
+        "name"
+    ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "title": "Name"
+        },
+        "age": {
+            "type": "integer",
+            "title": "Age"
+        }
     }
-  }
 }

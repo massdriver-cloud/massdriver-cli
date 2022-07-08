@@ -1,6 +1,7 @@
 package definition
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,7 +18,9 @@ func GetDefinition(c *client.MassdriverClient, definitionType string) (map[strin
 
 	req := client.NewRequest("GET", endpoint, nil)
 
-	resp, err := c.Do(req)
+	ctx := context.TODO()
+	resp, err := c.Do(&ctx, req)
+
 	if err != nil {
 		return definition, err
 	}

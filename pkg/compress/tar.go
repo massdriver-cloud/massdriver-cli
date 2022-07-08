@@ -11,14 +11,16 @@ import (
 )
 
 func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
-
-	absolutePath, err := filepath.Abs(dirPath)
-	if err != nil {
-		return err
+	absolutePath, pathErr := filepath.Abs(dirPath)
+	if pathErr != nil {
+		return pathErr
 	}
 
 	// walk through every file in the folder
-	filepath.Walk(absolutePath, func(file string, fi os.FileInfo, err error) error {
+	if err := filepath.Walk(absolutePath, func(file string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		relativeDestinationFilePath := path.Join(prefix, strings.TrimPrefix(filepath.ToSlash(file), absolutePath))
 		// generate tar header
 		header, err := tar.FileInfoHeader(fi, file)
@@ -34,44 +36,45 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 		header.Name = relativeDestinationFilePath
 
 		// write header
-		if err := tarWriter.WriteHeader(header); err != nil {
-			return err
+		if writeErr := tarWriter.WriteHeader(header); writeErr != nil {
+			return writeErr
 		}
 		// if not a dir, write file content
 		if !fi.IsDir() {
-			data, err := os.Open(file)
-			if err != nil {
-				return err
+			data, openErr := os.Open(file)
+			if openErr != nil {
+				return openErr
 			}
-			if _, err := io.Copy(tarWriter, data); err != nil {
-				return err
+			if _, copyErr := io.Copy(tarWriter, data); copyErr != nil {
+				return copyErr
 			}
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
-
-	filePtr, err := os.Open(filePath)
-	if err != nil {
-		return err
+	filePtr, errOpen := os.Open(filePath)
+	if errOpen != nil {
+		return errOpen
 	}
 
-	fileInfo, err := filePtr.Stat()
-	if err != nil {
-		return err
+	fileInfo, errStat := filePtr.Stat()
+	if errStat != nil {
+		return errStat
 	}
 
 	if fileInfo.IsDir() {
 		return errors.New("specified path is not a file")
 	}
 
-	header, err := tar.FileInfoHeader(fileInfo, filePath)
-	if err != nil {
-		return err
+	header, errHeader := tar.FileInfoHeader(fileInfo, filePath)
+	if errHeader != nil {
+		return errHeader
 	}
 
 	// must provide real name
@@ -94,9 +97,9 @@ func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 func ShouldIgnore(relativeFilePath string) bool {
 	// .terraform, .terraform.lock.hcl
 	return strings.Contains(relativeFilePath, ".terraform") ||
-		  // terraform.tfstate, terraform.tfstate.backup, etc...
-			strings.Contains(relativeFilePath, ".tfstate") ||
-			// Massdriver gives the vars
-			strings.Contains(relativeFilePath, ".tfvars") ||
-			strings.Contains(relativeFilePath, ".md")
+		// terraform.tfstate, terraform.tfstate.backup, etc...
+		strings.Contains(relativeFilePath, ".tfstate") ||
+		// Massdriver gives the vars
+		strings.Contains(relativeFilePath, ".tfvars") ||
+		strings.Contains(relativeFilePath, ".md")
 }

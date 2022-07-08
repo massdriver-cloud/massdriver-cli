@@ -1,8 +1,8 @@
 {
-  "variable": {
-    "simple": {
-      "type": "string",
-      "default": null
+    "variable": {
+        "simple": {
+            "type": "string",
+            "default": null
+        }
     }
-  }
 }

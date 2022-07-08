@@ -44,7 +44,9 @@ func init() {
 
 	definitionCmd.AddCommand(definitionPublishCmd)
 	definitionPublishCmd.Flags().StringP("file", "f", "", "File containing artifact definition schema (use - for stdin)")
-	definitionPublishCmd.MarkFlagRequired("file")
+	if err := definitionPublishCmd.MarkFlagRequired("file"); err != nil {
+		panic(err)
+	}
 }
 
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
@@ -59,7 +61,7 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if apiKey != "" {
-		c.WithApiKey(apiKey)
+		c.WithAPIKey(apiKey)
 	}
 
 	def, err := definition.GetDefinition(c, defName)
@@ -92,14 +94,14 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if apiKey != "" {
-		c.WithApiKey(apiKey)
+		c.WithAPIKey(apiKey)
 	}
 
 	var defFile *os.File
 	if defPath == "-" {
 		defFile = os.Stdin
 	} else {
-		defFile, err := os.Open(defPath)
+		defFile, err = os.Open(defPath)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -109,11 +111,12 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	byteValue, _ := ioutil.ReadAll(defFile)
 	var art definition.Definition
 
-	json.Unmarshal([]byte(byteValue), &art)
+	if jsonErr := json.Unmarshal(byteValue, &art); err != nil {
+		return jsonErr
+	}
 
-	err = art.Publish(c)
-	if err != nil {
-		return err
+	if pubErr := art.Publish(c); pubErr != nil {
+		return pubErr
 	}
 
 	fmt.Println("Definition published successfully!")
