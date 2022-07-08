@@ -20,8 +20,8 @@ var massdriverDefinitionPattern = regexp.MustCompile(`^[a-zA-Z0-9]`)
 var httpPattern = regexp.MustCompile(`^(http|https)://`)
 var fragmentPattern = regexp.MustCompile(`^#`)
 
-func Hydrate(ctx context.Context, any interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
-	val := getValue(any)
+func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
+	val := getValue(anyVal)
 
 	switch val.Kind() { // nolint:exhaustive
 	case reflect.Slice, reflect.Array:
@@ -57,7 +57,7 @@ func Hydrate(ctx context.Context, any interface{}, cwd string, c *client.Massdri
 		}
 		return hydrateMap(ctx, c, cwd, hydratedSchema, schema)
 	default:
-		return any, nil
+		return anyVal, nil
 	}
 }
 

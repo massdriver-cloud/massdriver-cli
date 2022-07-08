@@ -118,7 +118,7 @@ func TestCompile(t *testing.T) {
 		{
 			name:       "empty schema",
 			schemaPath: "file://./testdata/empty-schema.json",
-			expected:   doc(""),
+			expected:   doc("{}"),
 		},
 	}
 

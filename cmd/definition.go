@@ -115,8 +115,7 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 		return jsonErr
 	}
 
-	pubErr := art.Publish(c)
-	if pubErr != nil {
+	if pubErr := art.Publish(c); pubErr != nil {
 		return pubErr
 	}
 
