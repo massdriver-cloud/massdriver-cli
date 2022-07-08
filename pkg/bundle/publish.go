@@ -12,7 +12,6 @@ import (
 	"net/http"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
@@ -103,7 +102,7 @@ func UploadToPresignedS3URL(url string, object io.Reader) error {
 	defer resp.Body.Close()
 
 	// Check for errors
-	if resp.StatusCode != common.HTTPCodeOK {
+	if resp.StatusCode != http.StatusOK {
 		var respContent S3PresignEndpointResponse
 		var respBody bytes.Buffer
 		if _, readErr := respBody.ReadFrom(resp.Body); readErr != nil {

@@ -28,14 +28,20 @@ func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.Mass
 		return hydrateList(ctx, c, cwd, val)
 	case reflect.Map:
 		schemaInterface := val.Interface()
-		schema := schemaInterface.(map[string]interface{}) //nolint:errcheck
+		schema, ok := schemaInterface.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("schema is not an object")
+		}
 		hydratedSchema := map[string]interface{}{}
 
 		// if this part of the schema has a $ref that is a local file, read it and make it
 		// the map that we hydrate into. This causes any keys in the ref'ing object to override anything in the ref'd object
 		// which adheres to the JSON Schema spec.
-		if schemaRefInterface, ok := schema["$ref"]; ok {
-			schemaRefValue := schemaRefInterface.(string) //nolint:errcheck
+		if schemaRefInterface, refOk := schema["$ref"]; refOk {
+			schemaRefValue, refStringOk := schemaRefInterface.(string)
+			if !refStringOk {
+				return nil, fmt.Errorf("$ref is not a string")
+			}
 			schemaRefDir := cwd
 			var err error
 			if relativeFilePathPattern.MatchString(schemaRefValue) { //nolint:gocritic

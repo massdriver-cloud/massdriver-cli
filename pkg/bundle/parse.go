@@ -1,6 +1,7 @@
 package bundle
 
 import (
+	"errors"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v3"
@@ -27,7 +28,9 @@ func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 	}
 
 	setDefaultSteps(bundle)
-	applyOverrides(bundle, overrides)
+	if overrideErr := applyOverrides(bundle, overrides); overrideErr != nil {
+		return nil, overrideErr
+	}
 
 	return bundle, nil
 }
@@ -40,10 +43,15 @@ func setDefaultSteps(bundle *Bundle) {
 	}
 }
 
-func applyOverrides(b *Bundle, overrides map[string]interface{}) {
+func applyOverrides(b *Bundle, overrides map[string]interface{}) error {
 	if access, found := overrides["access"]; found {
 		if access == "public" || access == "private" {
-			b.Access = access.(string) //nolint:errcheck
+			var ok bool
+			b.Access, ok = access.(string)
+			if !ok {
+				return errors.New("invalid access override")
+			}
 		}
 	}
+	return nil
 }
