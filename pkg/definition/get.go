@@ -33,7 +33,7 @@ func GetDefinition(c *client.MassdriverClient, definitionType string) (map[strin
 
 	if resp.Status != "200 OK" {
 		fmt.Println(string(respBodyBytes))
-		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status)
+		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status + " " + definitionType)
 	}
 
 	err = json.Unmarshal(respBodyBytes, &definition)
