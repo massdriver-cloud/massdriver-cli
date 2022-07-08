@@ -24,7 +24,8 @@ repos:
       - id: check-json
         exclude: .devcontainer/
       - id: pretty-format-json
-        args: [--autofix, --no-sort-keys]
+        args: [--autofix, --no-sort-keys, --indent=4]
+        exclude: .devcontainer/
       - id: check-yaml
       - id: end-of-file-fixer
       - id: detect-aws-credentials

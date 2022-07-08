@@ -1,10 +1,10 @@
 {
-  "variable": {
-    "age": {
-      "type": "integer"
-    },
-    "name": {
-      "type": "string"
+    "variable": {
+        "age": {
+            "type": "integer"
+        },
+        "name": {
+            "type": "string"
+        }
     }
-  }
 }

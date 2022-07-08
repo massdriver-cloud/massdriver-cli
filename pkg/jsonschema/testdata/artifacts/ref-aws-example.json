@@ -1,5 +1,5 @@
 {
-  "properties": {
-    "$ref": "./aws-example.json"
-  }
+    "properties": {
+        "$ref": "./aws-example.json"
+    }
 }
