@@ -14,7 +14,9 @@ func PackageBundle(filePath string, buf io.Writer) error {
 	gzipWriter := gzip.NewWriter(buf)
 	tarWriter := tar.NewWriter(gzipWriter)
 
-	compress.TarDirectory(filepath.Dir(filePath), "bundle", tarWriter)
+	if err := compress.TarDirectory(filepath.Dir(filePath), "bundle", tarWriter); err != nil {
+		return err
+	}
 
 	// produce tar
 	if err := tarWriter.Close(); err != nil {

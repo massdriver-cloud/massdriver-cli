@@ -1,6 +1,6 @@
 {
-    "description":"empty schema",
-    "properties":{},
-    "required":[],
-    "title":"empty schema"
+    "description": "empty schema",
+    "properties": {},
+    "required": [],
+    "title": "empty schema"
 }

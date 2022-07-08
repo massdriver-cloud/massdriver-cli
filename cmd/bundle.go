@@ -68,7 +68,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if apiKey != "" {
-		c.WithApiKey(apiKey)
+		c.WithAPIKey(apiKey)
 	}
 
 	// default the output to the path of the massdriver.yaml file
@@ -159,7 +159,7 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if apiKey != "" {
-		c.WithApiKey(apiKey)
+		c.WithAPIKey(apiKey)
 	}
 
 	overrides, err := getPublishOverrides(cmd)

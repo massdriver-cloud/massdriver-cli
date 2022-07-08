@@ -1,11 +1,11 @@
 {
-  "variable": {
-    "age": {
-      "type": "number",
-      "default": null
-    },
-    "name": {
-      "type": "string"
+    "variable": {
+        "age": {
+            "type": "number",
+            "default": null
+        },
+        "name": {
+            "type": "string"
+        }
     }
-  }
 }

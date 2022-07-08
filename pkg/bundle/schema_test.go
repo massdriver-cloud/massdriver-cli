@@ -35,15 +35,17 @@ func TestGenerateSchema(t *testing.T) {
 	var b, _ = bundle.Parse("./testdata/bundle.Build/massdriver.yaml", nil)
 	var inputIo bytes.Buffer
 
-	bundle.GenerateSchema(b.Params, b.Metadata("params"), &inputIo)
-	var gotJson = &map[string]interface{}{}
-	_ = json.Unmarshal(inputIo.Bytes(), gotJson)
+	if err := bundle.GenerateSchema(b.Params, b.Metadata("params"), &inputIo); err != nil {
+		t.Errorf("Encountered error generating schema: %v", err)
+	}
+	var gotJSON = &map[string]interface{}{}
+	_ = json.Unmarshal(inputIo.Bytes(), gotJSON)
 
 	wantBytes, _ := ioutil.ReadFile("./testdata/bundle.Build/schema-params.json")
-	var wantJson = &map[string]interface{}{}
-	_ = json.Unmarshal(wantBytes, wantJson)
+	var wantJSON = &map[string]interface{}{}
+	_ = json.Unmarshal(wantBytes, wantJSON)
 
-	if !reflect.DeepEqual(gotJson, wantJson) {
-		t.Errorf("got %v, want %v", gotJson, wantJson)
+	if !reflect.DeepEqual(gotJSON, wantJSON) {
+		t.Errorf("got %v, want %v", gotJSON, wantJSON)
 	}
 }

@@ -8,6 +8,20 @@ FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
 ARG NODE_VERSION="none"
 RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 
+# install golangci-lint and goimportsk
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.44.2 && \
+  go install golang.org/x/tools/cmd/goimports@latest
+
+# Add write permission for /go/pkg
+RUN chmod -R a+w /go/pkg
+
+ENV DEBIAN_FRONTEND=noninteractive
+# install python / pre-commit
+RUN sudo apt update && \
+  sudo apt install --no-install-recommends -y gcc musl-dev python3-dev python3-venv python3-pip && \
+  pip install setuptools wheel ruamel.yaml.clib==0.2.6 pre-commit
+
+
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>

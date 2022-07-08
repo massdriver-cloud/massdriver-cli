@@ -2,6 +2,7 @@ package bundle
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -13,10 +14,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 )
 
-var MASSDRIVER_URL string = "https://api.massdriver.cloud/"
-
 func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
-
 	body, err := b.generateBundlePublishBody()
 	if err != nil {
 		return "", err
@@ -27,8 +25,9 @@ func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
 		return "", err
 	}
 
+	ctx := context.TODO()
 	req := client.NewRequest("PUT", "bundles", bytes.NewBuffer(bodyBytes))
-	resp, err := c.Do(req)
+	resp, err := c.Do(&ctx, req)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +43,7 @@ func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
 		return "", errors.New("received non-200 response from Massdriver: " + resp.Status)
 	}
 
-	var respBody BundlePublishResponse
+	var respBody PublishResponse
 	err = json.Unmarshal(respBodyBytes, &respBody)
 	if err != nil {
 		return "", err
@@ -53,8 +52,8 @@ func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
 	return respBody.UploadLocation, nil
 }
 
-func (b *Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
-	var body BundlePublishPost
+func (b *Bundle) generateBundlePublishBody() (PublishPost, error) {
+	var body PublishPost
 
 	body.Name = b.Name
 	body.Description = b.Description
@@ -80,7 +79,7 @@ func (b *Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
 	}
 	body.ParamsSchema = string(paramsSchema)
 
-	uiSchema, err := json.Marshal(b.Ui)
+	uiSchema, err := json.Marshal(b.UI)
 	if err != nil {
 		return body, err
 	}
@@ -90,7 +89,8 @@ func (b *Bundle) generateBundlePublishBody() (BundlePublishPost, error) {
 }
 
 func UploadToPresignedS3URL(url string, object io.Reader) error {
-	req, err := http.NewRequest("PUT", url, object)
+	// TODO: is there a better place to pull this context from?
+	req, err := http.NewRequestWithContext(context.TODO(), "PUT", url, object)
 	if err != nil {
 		return err
 	}
@@ -102,11 +102,16 @@ func UploadToPresignedS3URL(url string, object io.Reader) error {
 	defer resp.Body.Close()
 
 	// Check for errors
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		var respContent S3PresignEndpointResponse
 		var respBody bytes.Buffer
-		respBody.ReadFrom(resp.Body)
-		xml.Unmarshal(respBody.Bytes(), &respContent)
+		if _, readErr := respBody.ReadFrom(resp.Body); readErr != nil {
+			return readErr
+		}
+		if xmlErr := xml.Unmarshal(respBody.Bytes(), &respContent); xmlErr != nil {
+			return fmt.Errorf("enountered non-200 response code, unable to unmarshal xml response body: %v: original error: %w", respBody.String(), xmlErr)
+		}
+
 		return errors.New("unable to upload content: " + respContent.Message)
 	}
 	return nil

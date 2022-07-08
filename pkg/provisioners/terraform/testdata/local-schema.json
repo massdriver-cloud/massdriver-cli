@@ -1,18 +1,23 @@
 {
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string"
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "age": {
+            "type": "integer"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "height": {
+            "type": "number"
+        }
     },
-    "age": {
-      "type": "integer"
-    },
-    "active": {
-      "type": "boolean"
-    },
-    "height": {
-      "type": "number"
-    }
-  },
-  "required": ["name", "age", "active", "height"]
+    "required": [
+        "name",
+        "age",
+        "active",
+        "height"
+    ]
 }

@@ -1,6 +1,6 @@
 package application
 
-type ApplicationTemplateData struct {
+type TemplateData struct {
 	Name        string
 	Description string
 	Access      string
@@ -9,45 +9,45 @@ type ApplicationTemplateData struct {
 }
 
 type Application struct {
-	Schema       string                    `json:"schema" yaml:"schema"`
-	Name         string                    `json:"name" yaml:"name"`
-	Description  string                    `json:"description" yaml:"description"`
-	Ref          string                    `json:"ref" yaml:"ref"`
-	Access       string                    `json:"access" yaml:"access"`
-	Deployment   ApplicationDeployment     `json:"deployment" yaml:"deployment"`
-	Params       map[string]interface{}    `json:"params" yaml:"params"`
-	Dependencies []ApplicationDependencies `json:"dependencies" yaml:"dependencies"`
+	Schema       string                 `json:"schema" yaml:"schema"`
+	Name         string                 `json:"name" yaml:"name"`
+	Description  string                 `json:"description" yaml:"description"`
+	Ref          string                 `json:"ref" yaml:"ref"`
+	Access       string                 `json:"access" yaml:"access"`
+	Deployment   Deployment             `json:"deployment" yaml:"deployment"`
+	Params       map[string]interface{} `json:"params" yaml:"params"`
+	Dependencies []Dependencies         `json:"dependencies" yaml:"dependencies"`
 }
 
-type ApplicationDeployment struct {
+type Deployment struct {
 	Type       string `json:"type" yaml:"type"`
 	Path       string `json:"path,omitempty" yaml:"path,omitempty"`
 	Chart      string `json:"chart,omitempty" yaml:"chart,omitempty"`
 	Repository string `json:"repository,omitempty" yaml:"repository,omitempty"`
 }
 
-type ApplicationDependencies struct {
-	Type     string                        `json:"type" yaml:"type"`
-	Field    string                        `json:"field" yaml:"field"`
-	Required bool                          `json:"required,omitempty" yaml:"required,omitempty"`
-	Envs     []ApplicationDependenciesEnvs `json:"envs" yaml:"envs"`
-	Policies []string                      `json:"policies,omitempty" yaml:"policies,omitempty"`
+type Dependencies struct {
+	Type     string             `json:"type" yaml:"type"`
+	Field    string             `json:"field" yaml:"field"`
+	Required bool               `json:"required,omitempty" yaml:"required,omitempty"`
+	Envs     []DependenciesEnvs `json:"envs" yaml:"envs"`
+	Policies []string           `json:"policies,omitempty" yaml:"policies,omitempty"`
 }
 
-type ApplicationDependenciesEnvs struct {
+type DependenciesEnvs struct {
 	Name string `json:"name" yaml:"name"`
 	Path string `json:"path" yaml:"path"`
 }
 
-type ChartYaml struct {
-	ApiVersion  string `yaml:"apiVersion"`
+type ChartYAML struct {
+	APIVersion  string `yaml:"apiVersion"`
 	Name        string `yaml:"name"`
 	Description string `yaml:"description"`
 	Type        string `yaml:"type"`
 	Version     string `yaml:"version"`
 }
 
-var SimpleUi = `{
+var SimpleUI = `{
 	"ui:order": [
 		"name",
 		"namespace",

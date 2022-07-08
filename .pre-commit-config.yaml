@@ -5,13 +5,13 @@ repos:
     hooks:
       - id: go-fmt
       - id: go-vet
-      #- id: go-lint
+      # - id: go-lint
       #- id: go-imports
       #- id: go-cyclo
       #  args: [-over=15]
       #- id: validate-toml
       - id: no-go-testing
-      #- id: golangci-lint
+      - id: golangci-lint
       #- id: go-critic
       - id: go-unit-tests
       - id: go-build
@@ -22,6 +22,10 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
       - id: check-json
+        exclude: .devcontainer/
+      - id: pretty-format-json
+        args: [--autofix, --no-sort-keys, --indent=4]
+        exclude: .devcontainer/
       - id: check-yaml
       - id: end-of-file-fixer
       - id: detect-aws-credentials

@@ -48,7 +48,7 @@ func init() {
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.ApplicationTemplateData{}
+	templateData := application.TemplateData{}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -76,7 +76,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if apiKey != "" {
-		c.WithApiKey(apiKey)
+		c.WithAPIKey(apiKey)
 	}
 
 	// Create a temporary working directory

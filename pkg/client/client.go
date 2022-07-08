@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"net/http"
 	"os"
 )
@@ -10,31 +11,29 @@ type HTTPClient interface {
 }
 
 type MassdriverClient struct {
-	client   HTTPClient
+	Client   HTTPClient
 	endpoint string
 	apiKey   string
 }
 
-var (
-	MASSDRIVER_ENDPOINT = "https://api.massdriver.cloud"
-)
+const MassdriverEndpoint = "https://api.massdriver.cloud"
 
 func NewClient() *MassdriverClient {
 	c := new(MassdriverClient)
 
-	c.client = http.DefaultClient
-	c.endpoint = MASSDRIVER_ENDPOINT
-	c.apiKey = getApiKey()
+	c.Client = http.DefaultClient
+	c.endpoint = MassdriverEndpoint
+	c.apiKey = getAPIKey()
 
 	return c
 }
 
 // eventually this could walk through multiple sources (environment, then config file, etc)
-func getApiKey() string {
+func getAPIKey() string {
 	return os.Getenv("MASSDRIVER_API_KEY")
 }
 
-func (c *MassdriverClient) WithApiKey(apiKey string) *MassdriverClient {
+func (c *MassdriverClient) WithAPIKey(apiKey string) *MassdriverClient {
 	c.apiKey = apiKey
 	return c
 }
@@ -44,11 +43,11 @@ func (c *MassdriverClient) WithEndpoint(endpoint string) *MassdriverClient {
 	return c
 }
 
-func (c *MassdriverClient) Do(req *Request) (*http.Response, error) {
-	httpReq, err := req.toHTTPRequest(c)
+func (c *MassdriverClient) Do(ctx *context.Context, req *Request) (*http.Response, error) {
+	httpReq, err := req.ToHTTPRequest(*ctx, c)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.client.Do(httpReq)
+	return c.Client.Do(httpReq)
 }

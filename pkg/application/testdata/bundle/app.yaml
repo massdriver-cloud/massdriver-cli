@@ -4,7 +4,7 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment: 
+deployment:
   type: custom
   path: lol
 
@@ -18,17 +18,17 @@ params:
       type: integer
       title: Age
 
-dependencies: 
+dependencies:
   - type: massdriver/rdbms-authentication
     field: database
     required: true
-    env: 
+    env:
       - name: DATABASE_URL
         value: ${data.authentication.connection_string}
   - type: massdriver/aws-sqs-queue
     field: queue
     required: false
-    env: 
+    env:
       - name: MY_QUEUE_ARN
         value: ${data.infrastructure.arn}
     policy: read

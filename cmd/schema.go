@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 
 	"github.com/spf13/cobra"
@@ -79,7 +80,7 @@ func runSchemaDereference(cmd *cobra.Command, args []string) error {
 		outFile = os.Stdout
 	} else {
 		var err error
-		outFile, err = os.OpenFile(out, os.O_CREATE|os.O_WRONLY, 0644)
+		outFile, err = os.OpenFile(out, os.O_CREATE|os.O_WRONLY, common.AllRead|common.UserRW)
 		if err != nil {
 			return err
 		}

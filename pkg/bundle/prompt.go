@@ -40,7 +40,7 @@ func getName(t *TemplateData) error {
 		return nil
 	}
 
-	defaultValue := strings.Replace(strings.ToLower(t.Name), " ", "-", -1)
+	defaultValue := strings.ReplaceAll(strings.ToLower(t.Name), " ", "-")
 
 	prompt := promptui.Prompt{
 		Label:    "Name",

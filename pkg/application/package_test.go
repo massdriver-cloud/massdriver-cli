@@ -38,13 +38,21 @@ func TestPackage(t *testing.T) {
 				schemaFile := r.URL.Path
 				switch schemaFile {
 				case "/artifact-definitions/massdriver/kubernetes-cluster":
-					w.Write([]byte(`{"kube":"cluster"}`))
+					if _, err := w.Write([]byte(`{"kube":"cluster"}`)); err != nil {
+						t.Errorf("Encountered error writing kube cluster: %v", err)
+					}
 				case "/artifact-definitions/massdriver/aws-iam-role":
-					w.Write([]byte(`{"aws":"authentication"}`))
+					if _, err := w.Write([]byte(`{"aws":"authentication"}`)); err != nil {
+						t.Errorf("Encountered error writing aws iam role: %v", err)
+					}
 				case "/artifact-definitions/massdriver/gcp-service-account":
-					w.Write([]byte(`{"gcp":"authentication"}`))
+					if _, err := w.Write([]byte(`{"gcp":"authentication"}`)); err != nil {
+						t.Errorf("Encountered error writing gcp service account: %v", err)
+					}
 				case "/artifact-definitions/massdriver/azure-service-principal":
-					w.Write([]byte(`{"azure":"authentication"}`))
+					if _, err := w.Write([]byte(`{"azure":"authentication"}`)); err != nil {
+						t.Errorf("Encountered error writing azure service principal: %v", err)
+					}
 				default:
 					t.Fatalf("unknown schema: %v", schemaFile)
 				}
@@ -57,7 +65,7 @@ func TestPackage(t *testing.T) {
 			testDir := t.TempDir()
 
 			application.SimpleParams = `{"properties":{"simple":{"type":"string"}}}`
-			application.SimpleUi = `{"properties":{"simple":"ui"}}`
+			application.SimpleUI = `{"properties":{"simple":"ui"}}`
 
 			_, err := application.PackageApplication(tc.applicationPath, c, testDir, &got)
 			if err != nil {
