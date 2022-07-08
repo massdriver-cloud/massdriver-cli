@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -31,7 +32,7 @@ func GetDefinition(c *client.MassdriverClient, definitionType string) (map[strin
 		return definition, err
 	}
 
-	if resp.StatusCode != http.StatusOk {
+	if resp.StatusCode != http.StatusOK {
 		fmt.Println(string(respBodyBytes))
 		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status + " " + definitionType)
 	}
