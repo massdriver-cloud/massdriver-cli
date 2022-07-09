@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -33,7 +32,6 @@ func GetDefinition(c *client.MassdriverClient, definitionType string) (map[strin
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println(string(respBodyBytes))
 		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status + " " + definitionType)
 	}
 

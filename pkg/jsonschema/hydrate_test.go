@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -13,9 +14,10 @@ import (
 )
 
 type TestCase struct {
-	Name     string
-	Input    interface{}
-	Expected interface{}
+	Name                string
+	Input               interface{}
+	Expected            interface{}
+	ExpectedErrorSuffix string
 }
 
 func TestHydrate(t *testing.T) {
@@ -91,6 +93,16 @@ func TestHydrate(t *testing.T) {
 			},
 		},
 		{
+			Name:  "Reports not found when $ref is not found",
+			Input: jsonDecode(`{"$ref": "./testdata/no-type.json"}`),
+			// Expected: map[string]map[string]string{
+			// 	"properties": {
+			// 		"id": "fake-schema-id",
+			// 	},
+			// },
+			ExpectedErrorSuffix: "testdata/no-type.json: no such file or directory",
+		},
+		{
 			Name:  "Hydrates remote (massdriver) ref",
 			Input: jsonDecode(`{"$ref": "massdriver/test-schema"}`),
 			Expected: map[string]string{
@@ -117,10 +129,16 @@ func TestHydrate(t *testing.T) {
 			c := client.NewClient().WithEndpoint(testServer.URL)
 			ctx := context.TODO()
 
-			got, _ := jsonschema.Hydrate(ctx, test.Input, ".", c)
+			got, gotErr := jsonschema.Hydrate(ctx, test.Input, ".", c)
 
-			if fmt.Sprint(got) != fmt.Sprint(test.Expected) {
-				t.Errorf("got %v, want %v", got, test.Expected)
+			if test.ExpectedErrorSuffix != "" {
+				if !strings.HasSuffix(gotErr.Error(), test.ExpectedErrorSuffix) {
+					t.Errorf("got %v, want %v", gotErr.Error(), test.ExpectedErrorSuffix)
+				}
+			} else {
+				if fmt.Sprint(got) != fmt.Sprint(test.Expected) {
+					t.Errorf("got %v, want %v", got, test.Expected)
+				}
 			}
 		})
 	}
@@ -142,7 +160,11 @@ func TestHydrate(t *testing.T) {
 				}
 				fmt.Println("in endpoint")
 			default:
-				t.Fatalf("unknown schema: %v", urlPath)
+				w.WriteHeader(http.StatusNotFound)
+				_, err := w.Write([]byte(`404 - not found`))
+				if err != nil {
+					t.Fatalf("Failed to write response: %v", err)
+				}
 			}
 		}))
 		defer testServer.Close()
@@ -164,6 +186,14 @@ func TestHydrate(t *testing.T) {
 
 		if fmt.Sprint(got) != fmt.Sprint(expected) {
 			t.Errorf("got %v, want %v", got, expected)
+		}
+
+		input = jsonDecode(fmt.Sprintf(`{"$ref":"%s/not-found"}`, testServer.URL))
+		_, gotErr := jsonschema.Hydrate(ctx, input, ".", c)
+		expectedErrPrefix := "received non-200 response getting ref 404 Not Found"
+
+		if !strings.HasPrefix(gotErr.Error(), expectedErrPrefix) {
+			t.Errorf("got %v, want %v", gotErr.Error(), expectedErrPrefix)
 		}
 	})
 }
