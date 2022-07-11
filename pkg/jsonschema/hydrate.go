@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -117,6 +118,10 @@ func hydrateHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSch
 	if doErr != nil {
 		return hydratedSchema, doErr
 	}
+	if resp.StatusCode != http.StatusOK {
+		return hydratedSchema, errors.New("received non-200 response getting ref " + resp.Status + " " + schemaRefValue)
+	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)

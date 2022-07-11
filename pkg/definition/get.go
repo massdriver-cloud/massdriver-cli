@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -31,9 +31,8 @@ func GetDefinition(c *client.MassdriverClient, definitionType string) (map[strin
 		return definition, err
 	}
 
-	if resp.Status != "200 OK" {
-		fmt.Println(string(respBodyBytes))
-		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		return definition, errors.New("received non-200 response from Massdriver: " + resp.Status + " " + definitionType)
 	}
 
 	err = json.Unmarshal(respBodyBytes, &definition)
