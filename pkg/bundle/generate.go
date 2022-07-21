@@ -42,7 +42,7 @@ func Generate(data *TemplateData) error {
 		var tmpl *template.Template
 		tmpl, _ = template.ParseFS(templateFiles, filePath)
 
-		if _, err := os.Stat(outputPath); err == nil {
+		if _, err = os.Stat(outputPath); err == nil {
 			fmt.Printf("%s exists. Overwrite? (y|N): ", outputPath)
 			var response string
 			fmt.Scanln(&response)
