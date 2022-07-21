@@ -91,7 +91,7 @@ func getDescription(t *TemplateData) error {
 
 func getChart(t *TemplateData) error {
 	prompt := promptui.Select{
-		Label: "Access Level",
+		Label: "Type",
 		Items: []string{"application", "adhoc-job", "scheduled-job"},
 	}
 
