@@ -58,17 +58,17 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, writeErr
 	}
 
-	if app.Deployment.Type == "custom" {
-		// Make chart directory
-		err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
-		if err != nil {
-			return nil, err
-		}
-		err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
-		if err != nil {
-			return nil, err
-		}
-	}
+	// if app.Deployment.Type == "custom" {
+	// 	// Make chart directory
+	// 	err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	// Make src directory
 	err = os.MkdirAll(path.Join(workingDir, "src"), 0744)

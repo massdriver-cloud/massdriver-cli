@@ -49,13 +49,13 @@ func init() {
 }
 
 var nameDefault = ""
-var descriptionDefault = ""
+var descriptionDefault = "placeholder description, written to app.yaml"
+var templateDefault = ""
 var accessDefault = "private"
 
 func applicationAddFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringP("name", "n", nameDefault, "What's it called?")
-	cmd.PersistentFlags().StringP("description", "d", descriptionDefault, "What is this?")
-
+	cmd.PersistentFlags().StringP("template", "t", templateDefault, "Which application-template to use?")
 	// access is not exposed in the CLI, but can be manually set in the generated app.yaml
 	// cmd.PersistentFlags().StringP("access", "a", accessDefault, "public or priviate")
 }
@@ -71,16 +71,15 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 
 	name, nameErr := cmd.Flags().GetString("name")
 	check(nameErr)
-	description, descriptionErr := cmd.Flags().GetString("description")
-	check(descriptionErr)
-	access := accessDefault
+	template, templateErr := cmd.Flags().GetString("template")
+	check(templateErr)
 
 	templateData := application.TemplateData{
-		Name:        name,
-		Description: description,
-		Access:      access,
+		Name:         name,
+		Description:  descriptionDefault,
+		TemplateName: template,
+		Access:       accessDefault,
 	}
-	// cmd.PersistentFlags().StringVarP(&templateData.Name, "name", "n", "", "Name of application")
 	err := application.RunPrompt(&templateData)
 	if err != nil {
 		return err
