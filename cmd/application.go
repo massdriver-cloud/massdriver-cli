@@ -11,11 +11,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -167,17 +166,10 @@ func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(tempDir)
 	// TODO: read massrc file, globally -> Jake
-	// TODO: move cloning to shared pkg
-	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL:      common.MassdriverApplicationTemplatesRepository,
-		Progress: os.Stdout,
-		Depth:    1,
-	})
-	if cloneErr != nil {
-		return cloneErr
-	}
+	cache.GetMassdriverTemplates()
+
 	templates := []string{}
-	templateDirs, err := ioutil.ReadDir(tempDir)
+	templateDirs, err := ioutil.ReadDir(cache.TemplateCacheDir)
 	if err != nil {
 		return err
 	}
