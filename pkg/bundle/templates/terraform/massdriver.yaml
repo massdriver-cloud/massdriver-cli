@@ -45,7 +45,7 @@ artifacts:
   #   - network
   # properties:
   #   network:
-  #     $ref: massdriver/aws-regional-cloud
+  #     $ref: massdriver/aws-vpc
 
 # schema-ui.json
 # List of form customizations for params-schema
