@@ -23,9 +23,9 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "simple",
-				},
+				// Deployment: application.Deployment{
+				// 	Type: "simple",
+				// },
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{
@@ -48,10 +48,10 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "custom",
-					Path: "./test-chart",
-				},
+				// Deployment: application.Deployment{
+				// 	Type: "custom",
+				// 	Path: "./test-chart",
+				// },
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{
@@ -74,9 +74,9 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "simple",
-				},
+				// Deployment: application.Deployment{
+				// 	Type: "simple",
+				// },
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{

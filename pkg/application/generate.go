@@ -37,6 +37,7 @@ func Generate(data *TemplateData) error {
 
 	// TODO: only do this for templates w/ a helm chart
 	modifyHelmTemplate(tempDir, *data)
+	modifyAppYaml(tempDir, *data)
 
 	return nil
 }
@@ -69,6 +70,33 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 
 		return nil
 	})
+}
+
+func modifyAppYaml(tempDir string, data TemplateData) error {
+	appYAML, _ := Parse(tempDir + "/" + data.TemplateName + "/app/app.yaml")
+	// TODO: Cory has a PR to change this to title
+	appYAML.Name = data.Name
+	appYAML.Metadata = Metadata{
+		Template: data.TemplateName,
+	}
+	appYAML.Description = data.Description
+	appYAML.Access = data.Access
+
+	appYAMLBytes, err := yaml.Marshal(appYAML)
+	if err != nil {
+		return err
+	}
+
+	errWrite := ioutil.WriteFile(path.Join(tempDir, data.TemplateName+"/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
+	if errWrite != nil {
+		return errWrite
+	}
+
+	errRename := os.Rename(path.Join(tempDir, data.TemplateName+"/app/app.yaml"), "app/app.yaml")
+	if errRename != nil {
+		return errRename
+	}
+	return nil
 }
 
 func modifyHelmTemplate(tempDir string, data TemplateData) error {
