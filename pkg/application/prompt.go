@@ -59,18 +59,18 @@ func getName(t *TemplateData) error {
 }
 
 func getAccessLevel(t *TemplateData) error {
-	prompt := promptui.Select{
-		Label: "Access Level",
-		Items: []string{"public", "private"},
-	}
+	// prompt := promptui.Select{
+	// 	Label: "Access Level",
+	// 	Items: []string{"public", "private"},
+	// }
 
-	_, result, err := prompt.Run()
+	// _, result, err := prompt.Run()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	t.Access = result
+	t.Access = "private"
 	return nil
 }
 
@@ -91,8 +91,9 @@ func getDescription(t *TemplateData) error {
 
 func getChart(t *TemplateData) error {
 	prompt := promptui.Select{
-		Label: "Access Level",
-		Items: []string{"application", "adhoc-job", "scheduled-job"},
+		Label: "Type",
+		// TODO: list types from the templates repo
+		Items: []string{"kubernetes-deployment", "adhoc-job", "scheduled-job"},
 	}
 
 	_, result, err := prompt.Run()
@@ -106,18 +107,18 @@ func getChart(t *TemplateData) error {
 }
 
 func getLocation(t *TemplateData) error {
-	prompt := promptui.Prompt{
-		Label:     "Chart Location",
-		Default:   "./chart",
-		AllowEdit: true,
-	}
+	// prompt := promptui.Prompt{
+	// 	Label:     "Chart Location",
+	// 	Default:   "./chart",
+	// 	AllowEdit: true,
+	// }
 
-	result, err := prompt.Run()
+	// result, err := prompt.Run()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	t.Location = result
+	t.Location = "./chart"
 	return nil
 }
