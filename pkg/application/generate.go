@@ -11,8 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const MassdriverApplicationTemplatesRepository = "https://github.com/massdriver-cloud/application-templates"
-
 func Generate(data *TemplateData) error {
 	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
 	if err != nil {
@@ -20,8 +18,9 @@ func Generate(data *TemplateData) error {
 	}
 	defer os.RemoveAll(tempDir)
 
+	// TODO: move to shared pkg
 	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL:      MassdriverApplicationTemplatesRepository,
+		URL:      common.MassdriverApplicationTemplatesRepository,
 		Progress: os.Stdout,
 		Depth:    1,
 	})

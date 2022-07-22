@@ -7,11 +7,15 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -40,12 +44,21 @@ var applicationPublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var applicationListTemplatesCmd = &cobra.Command{
+	Use:              "list-templates",
+	Aliases:          []string{"gen"},
+	Short:            "Lists available application templates",
+	RunE:             runApplicationListTemplates,
+	TraverseChildren: true,
+}
+
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationAddFlags(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
+	applicationCmd.AddCommand(applicationListTemplatesCmd)
 }
 
 var nameDefault = ""
@@ -135,5 +148,37 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	// log
 	fmt.Println("Application published successfully!")
 
+	return nil
+}
+
+func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
+	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir) // TODO: read massrc file, globally
+	// TODO: move to shared pkg
+	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
+		URL:      common.MassdriverApplicationTemplatesRepository,
+		Progress: os.Stdout,
+		Depth:    1,
+	})
+	if cloneErr != nil {
+		return cloneErr
+	}
+	templates := []string{}
+	templateDirs, err := ioutil.ReadDir(tempDir)
+	if err != nil {
+		return err
+	}
+	for _, f := range templateDirs {
+		// cheap first
+		if f.IsDir() && f.Name() != ".git" {
+			templates = append(templates, f.Name())
+		}
+		templates = append(templates, f.Name())
+	}
+
+	log.Info().Msg(fmt.Sprintf("Application templates: %v", templates))
 	return nil
 }
