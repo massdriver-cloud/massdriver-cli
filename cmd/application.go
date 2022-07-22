@@ -17,17 +17,19 @@ import (
 
 // applicationCmd represents the application command
 var applicationCmd = &cobra.Command{
-	Use:     "application",
-	Aliases: []string{"app"},
-	Short:   "Application development tools",
-	Long:    ``,
+	Use:              "application",
+	Aliases:          []string{"app"},
+	Short:            "Application development tools",
+	Long:             ``,
+	TraverseChildren: true,
 }
 
 var applicationGenerateCmd = &cobra.Command{
-	Use:     "generate",
-	Aliases: []string{"gen"},
-	Short:   "Generates a new application template",
-	RunE:    runApplicationGenerate,
+	Use:              "generate",
+	Aliases:          []string{"gen"},
+	Short:            "Generates a new application template",
+	RunE:             runApplicationGenerate,
+	TraverseChildren: true,
 }
 
 var applicationPublishCmd = &cobra.Command{
@@ -41,6 +43,7 @@ var applicationPublishCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
+	applicationGenerateCmd.PersistentFlags().StringP("name", "n", "", "Name of application")
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 }
@@ -48,8 +51,11 @@ func init() {
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	name, _ := cmd.Flags().GetString("name")
+	panic(name)
 
+	templateData := application.TemplateData{}
+	// cmd.PersistentFlags().StringVarP(&templateData.Name, "name", "n", "", "Name of application")
 	err := application.RunPrompt(&templateData)
 	if err != nil {
 		return err
