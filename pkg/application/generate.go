@@ -36,8 +36,12 @@ func Generate(data *TemplateData) error {
 	}
 
 	// TODO: only do this for templates w/ a helm chart
-	modifyHelmTemplate(tempDir, *data)
-	modifyAppYaml(tempDir, *data)
+	if errModifyHelm := modifyHelmTemplate(tempDir, *data); errModifyHelm != nil {
+		return errModifyHelm
+	}
+	if errModify := modifyAppYaml(tempDir, *data); errModify != nil {
+		return errModify
+	}
 
 	return nil
 }
