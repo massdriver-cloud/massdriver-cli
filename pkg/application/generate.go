@@ -1,7 +1,6 @@
 package application
 
 import (
-	"errors"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -9,82 +8,70 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
-	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
 
-const MassdriverHelmChartRepository = "https://massdriver-cloud.github.io/helm-charts"
 const MassdriverApplicationTemplatesRepository = "https://github.com/massdriver-cloud/application-templates"
 
 func Generate(data *TemplateData) error {
-	tempDir, err := ioutil.TempDir("/tmp/foo", "app-")
+	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
 	if err != nil {
 		return err
 	}
-	// defer os.RemoveAll(tempDir)
+	defer os.RemoveAll(tempDir)
 
 	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
 		URL:      MassdriverApplicationTemplatesRepository,
 		Progress: os.Stdout,
+		Depth:    1,
 	})
-	if cloneErr != nil {
-		return errors.New("failed to clone application templates repository")
-	}
-	log.Info().Msg("starting copy")
 
-	templateFiles, _ := fs.Sub(os.DirFS(tempDir), "kubernetes-deployment")
-	// templateFiles := path.Join(tempDir, "kubernetes-deployment")
-	err = fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
-		log.Info().Msg("filePath" + filePath)
+	if cloneErr != nil {
+		return ErrCloneFail
+	}
+
+	errCopy := copyTemplate(tempDir, data.TemplateName, data.OutputDir)
+	if errCopy != nil {
+		return ErrCopyFail
+	}
+
+	// TODO: only do this for templates w/ a helm chart
+	modifyHelmTemplate(tempDir, *data)
+
+	return nil
+}
+
+func copyTemplate(templateDir string, templateName string, outputDir string) error {
+	templateFiles, _ := fs.Sub(os.DirFS(templateDir), templateName)
+
+	return fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		// outputPath := path.Join(data.Location, filePath)
-		outputPath := path.Join(".", filePath)
+		outputPath := path.Join(outputDir, filePath)
 		if info.IsDir() {
 			if filePath == "." {
-				// return os.MkdirAll(data.Location, common.AllRWX
 				return os.MkdirAll(".", common.AllRWX)
 			}
 
 			return os.Mkdir(outputPath, common.AllRWX)
 		}
 
-		// var tmpl *template.Template
-		// var outputFile *os.File
-		// tmpl, _ = template.ParseFS(templateFiles, filePath)
-		// outputFile, err = os.Create(outputPath)
-
-		file, readErr := os.ReadFile(tempDir + "/kubernetes-deployment/" + filePath)
+		file, readErr := os.ReadFile(templateDir + "/" + templateName + "/" + filePath)
 		if readErr != nil {
-			panic(readErr)
+			return readErr
 		}
 
 		writeErr := os.WriteFile(outputPath, file, common.AllRWX)
 		if writeErr != nil {
-			panic(writeErr)
-			// return err
+			return writeErr
 		}
 
-		// defer outputFile.Close()
-		// return tmpl.Execute(outputFile, data)
 		return nil
 	})
-	if err != nil {
-		return errors.New("failed to copy files")
-	}
+}
 
-	// chartLocation := path.Join("app/chart/Chart.yaml")
-
-	// if _, err := os.Stat(chartLocation); !os.IsNotExist(err) {
-	// 	return errors.New("specified directory already exists")
-	// }
-
-	// err = os.MkdirAll(data.Location, common.AllRX|common.UserRW)
-	// if err != nil {
-	// 	return err
-	// }
-
+func modifyHelmTemplate(tempDir string, data TemplateData) error {
 	// regenerate Chart.yaml to match their config
 	chart := ChartYAML{
 		APIVersion:  "v2",
@@ -95,18 +82,16 @@ func Generate(data *TemplateData) error {
 	}
 	chartBytes, err := yaml.Marshal(chart)
 	if err != nil {
-		panic("marshal error")
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(tempDir, "kubernetes-deployment/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
-	if err != nil {
-		return err
-	}
-
-	err = os.Rename(path.Join(tempDir, "kubernetes-deployment/app/chart/Chart.yaml"), "app/chart/Chart.yaml")
-	if err != nil {
-		return err
+	errWrite := ioutil.WriteFile(path.Join(tempDir, data.TemplateName+"/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	if errWrite != nil {
+		return errWrite
 	}
 
+	errRename := os.Rename(path.Join(tempDir, data.TemplateName+"/app/chart/Chart.yaml"), "app/chart/Chart.yaml")
+	if errRename != nil {
+		return errRename
+	}
 	return nil
 }

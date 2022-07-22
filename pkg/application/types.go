@@ -1,15 +1,18 @@
 package application
 
 type TemplateData struct {
+	// kubernetes-deployment, kubernetes-job
+	TemplateName string
+	// application name
 	Name        string
 	Description string
 	Access      string
-	Chart       string
-	Location    string
+	OutputDir   string
 }
 
 type Application struct {
 	Schema       string                  `json:"schema" yaml:"schema"`
+	TemplateName string                  `json:"template" yaml:"template"`
 	Name         string                  `json:"name" yaml:"name"`
 	Description  string                  `json:"description" yaml:"description"`
 	Ref          string                  `json:"ref" yaml:"ref"`

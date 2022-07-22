@@ -2,7 +2,6 @@ package application
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -13,15 +12,17 @@ var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
 var prompts = []func(t *TemplateData) error{
 	getName,
-	getAccessLevel,
+	// returns a const
 	getDescription,
-	getChart,
-	getLocation,
+	getTempalte,
+	// returns a const
+	getAccessLevel,
+	// returns a const
+	getOutputDir,
 }
 
 func RunPrompt(t *TemplateData) error {
 	var err error
-	fmt.Println("in run prompt")
 
 	for _, prompt := range prompts {
 		err = prompt(t)
@@ -58,42 +59,22 @@ func getName(t *TemplateData) error {
 	return nil
 }
 
+// TODO: remove when you come back to command flags
 func getAccessLevel(t *TemplateData) error {
-	// prompt := promptui.Select{
-	// 	Label: "Access Level",
-	// 	Items: []string{"public", "private"},
-	// }
-
-	// _, result, err := prompt.Run()
-
-	// if err != nil {
-	// 	return err
-	// }
-
 	t.Access = "private"
 	return nil
 }
 
 func getDescription(t *TemplateData) error {
-	prompt := promptui.Prompt{
-		Label: "Description",
-	}
-
-	result, err := prompt.Run()
-
-	if err != nil {
-		return err
-	}
-
-	t.Description = result
+	t.Description = "placeholder description, written to app.yaml"
 	return nil
 }
 
-func getChart(t *TemplateData) error {
+func getTempalte(t *TemplateData) error {
 	prompt := promptui.Select{
-		Label: "Type",
+		Label: "Template",
 		// TODO: list types from the templates repo
-		Items: []string{"kubernetes-deployment", "adhoc-job", "scheduled-job"},
+		Items: []string{"kubernetes-deployment"},
 	}
 
 	_, result, err := prompt.Run()
@@ -102,23 +83,11 @@ func getChart(t *TemplateData) error {
 		return err
 	}
 
-	t.Chart = result
+	t.TemplateName = result
 	return nil
 }
 
-func getLocation(t *TemplateData) error {
-	// prompt := promptui.Prompt{
-	// 	Label:     "Chart Location",
-	// 	Default:   "./chart",
-	// 	AllowEdit: true,
-	// }
-
-	// result, err := prompt.Run()
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	t.Location = "./chart"
+func getOutputDir(t *TemplateData) error {
+	t.OutputDir = "."
 	return nil
 }
