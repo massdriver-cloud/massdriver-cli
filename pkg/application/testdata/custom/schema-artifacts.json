@@ -2,6 +2,6 @@
     "$id": "https://schemas.massdriver.cloud/schemas/bundles/my-app/schema-artifacts.json",
     "$schema": "http://json-schema.org/draft-07/schema",
     "description": "An application",
-    "name": "my-app",
+    "title": "my-app",
     "properties": {}
 }
