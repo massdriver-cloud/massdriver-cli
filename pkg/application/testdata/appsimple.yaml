@@ -13,3 +13,6 @@ params:
     name:
       type: string
       title: Name
+
+ui:order:
+  - "*"
