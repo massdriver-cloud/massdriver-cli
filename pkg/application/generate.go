@@ -21,18 +21,21 @@ func Generate(data *TemplateData) error {
 		Version:               ">0.0.0-0",
 	}
 
-	chartLocation := path.Join(data.Location, data.Name)
+	// TODO: write template source as top-level in app.yaml
+	// TODO: write cli-version as top-level in app.yaml
+
+	chartLocation := path.Join(data.OutputDir, data.Name)
 
 	if _, err := os.Stat(chartLocation); !os.IsNotExist(err) {
 		return errors.New("specified directory already exists")
 	}
 
-	err := os.MkdirAll(data.Location, common.AllRX|common.UserRW)
+	err := os.MkdirAll(data.OutputDir, common.AllRX|common.UserRW)
 	if err != nil {
 		return err
 	}
 
-	tempDir, err := ioutil.TempDir(data.Location, "helm-")
+	tempDir, err := ioutil.TempDir(data.OutputDir, "helm-")
 	if err != nil {
 		return err
 	}
@@ -44,12 +47,12 @@ func Generate(data *TemplateData) error {
 	client.Settings = cli.New()
 
 	client.Untar = true
-	client.UntarDir = tempDir // data.Location
+	client.UntarDir = tempDir // data.OutputDir
 
-	_, err = client.Run(data.Chart)
-	if err != nil {
-		return err
-	}
+	// _, err = client.Run(data.Chart)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// regenerate Chart.yaml to match their config
 	chart := ChartYAML{
@@ -63,12 +66,12 @@ func Generate(data *TemplateData) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	err = ioutil.WriteFile(path.Join(tempDir, "", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
 	if err != nil {
 		return err
 	}
 
-	err = os.Rename(path.Join(tempDir, data.Chart), chartLocation)
+	err = os.Rename(path.Join(tempDir, ""), chartLocation)
 	if err != nil {
 		return err
 	}

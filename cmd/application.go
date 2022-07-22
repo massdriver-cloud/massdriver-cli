@@ -43,18 +43,43 @@ var applicationPublishCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
-	applicationGenerateCmd.PersistentFlags().StringP("name", "n", "", "Name of application")
+	applicationAddFlags(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 }
 
+var nameDefault = ""
+var descriptionDefault = ""
+var accessDefault = "private"
+
+func applicationAddFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("name", "n", nameDefault, "What's it called?")
+	cmd.PersistentFlags().StringP("description", "d", descriptionDefault, "What is this?")
+
+	// access is not exposed in the CLI, but can be manually set in the generated app.yaml
+	// cmd.PersistentFlags().StringP("access", "a", accessDefault, "public or priviate")
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
+	// setupLogging(cmd)
 
-	name, _ := cmd.Flags().GetString("name")
-	panic(name)
+	name, nameErr := cmd.Flags().GetString("name")
+	check(nameErr)
+	description, descriptionErr := cmd.Flags().GetString("description")
+	check(descriptionErr)
+	access := accessDefault
 
-	templateData := application.TemplateData{}
+	templateData := application.TemplateData{
+		Name:        name,
+		Description: description,
+		Access:      access,
+	}
 	// cmd.PersistentFlags().StringVarP(&templateData.Name, "name", "n", "", "Name of application")
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -70,7 +95,7 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 }
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
+	// setupLogging(cmd)
 
 	var err error
 	appPath := args[0]
@@ -108,6 +133,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// log
 	fmt.Println("Application published successfully!")
 
 	return nil
