@@ -73,12 +73,6 @@ func applicationAddFlags(cmd *cobra.Command) {
 	// cmd.PersistentFlags().StringP("access", "a", accessDefault, "public or priviate")
 }
 
-func check(err error) {
-	if err != nil {
-		log.Err(err).Msg("Failed to generate an application")
-	}
-}
-
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
@@ -166,7 +160,9 @@ func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(tempDir)
 	// TODO: read massrc file, globally -> Jake
-	cache.GetMassdriverTemplates()
+	if errCache := cache.GetMassdriverTemplates(); errCache != nil {
+		return errCache
+	}
 
 	templates := []string{}
 	templateDirs, err := ioutil.ReadDir(cache.TemplateCacheDir)

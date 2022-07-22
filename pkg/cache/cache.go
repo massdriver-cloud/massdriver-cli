@@ -14,25 +14,26 @@ const (
 
 func checkCacheDir() error {
 	if _, err := os.Stat(cacheDir); !os.IsNotExist(err) {
-		return nil
+		return err
 	}
 
-	err := os.Mkdir(cacheDir, 0755)
-	if err != nil {
-		return err
+	if errMkdir := os.Mkdir(cacheDir, 0755); errMkdir != nil {
+		return errMkdir
 	}
 	return nil
 }
 
 func GetMassdriverTemplates() error {
-	err := checkCacheDir()
-	if _, err = os.Stat(TemplateCacheDir); !os.IsNotExist(err) {
+	if err := checkCacheDir(); err != nil {
+		return err
+	}
+	if _, errTemplateDir := os.Stat(TemplateCacheDir); !os.IsNotExist(errTemplateDir) {
 		return nil
 	}
 
-	err = os.Mkdir(TemplateCacheDir, 0755)
-	if err != nil {
-		return err
+	errMkdir := os.Mkdir(TemplateCacheDir, 0755)
+	if errMkdir != nil {
+		return errMkdir
 	}
 	_, cloneErr := git.PlainClone(TemplateCacheDir, false, &git.CloneOptions{
 		URL:      common.MassdriverApplicationTemplatesRepository,

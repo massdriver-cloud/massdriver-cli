@@ -35,3 +35,6 @@ dependencies:
         path: .data.infrastructure.arn
     policies:
       - read
+
+ui:order:
+  - "*"

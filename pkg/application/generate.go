@@ -12,7 +12,6 @@ import (
 )
 
 func Generate(data *TemplateData) error {
-
 	errCache := cache.GetMassdriverTemplates()
 	if errCache != nil {
 		return ErrCloneFail
@@ -29,9 +28,13 @@ func Generate(data *TemplateData) error {
 		return ErrCopyFail
 	}
 
-	modifyAppYaml(*data)
+	if errModify := modifyAppYaml(*data); errModify != nil {
+		return errModify
+	}
 	// TODO: only do this for templates w/ a helm chart
-	modifyHelmTemplate(*data)
+	if errModifyHelm := modifyHelmTemplate(*data); errModifyHelm != nil {
+		return errModifyHelm
+	}
 
 	return nil
 }
