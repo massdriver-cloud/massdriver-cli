@@ -4,8 +4,8 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment:
-  type: simple
+metadata:
+  template: kubernetes-application
 
 params:
   required: ["name"]

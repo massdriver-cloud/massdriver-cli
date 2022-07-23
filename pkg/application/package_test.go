@@ -65,9 +65,6 @@ func TestPackage(t *testing.T) {
 			// Create a temp dir, write out the archive, then shell out to untar
 			testDir := t.TempDir()
 
-			// application.SimpleParams = `{"properties":{"simple":{"type":"string"}}}`
-			// application.SimpleUI = `{"properties":{"simple":"ui"}}`
-
 			_, err := application.PackageApplication(tc.applicationPath, c, testDir, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
