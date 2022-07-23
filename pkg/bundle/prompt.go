@@ -2,7 +2,6 @@ package bundle
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -19,12 +18,8 @@ var prompts = []func(t *TemplateData) error{
 }
 
 func RunPrompt(t *TemplateData) error {
-	var err error
-	fmt.Println("in run prompt")
-
 	for _, prompt := range prompts {
-		err = prompt(t)
-		if err != nil {
+		if err := prompt(t); err != nil {
 			return err
 		}
 	}

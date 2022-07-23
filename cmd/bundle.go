@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 
 	"github.com/rs/zerolog/log"
@@ -59,16 +58,9 @@ func init() {
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
-
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
 	}
 
 	// default the output to the path of the massdriver.yaml file
@@ -86,7 +78,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	b, err := bundle.Parse(configFile, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while parsing bundle")
-		return err
+		return nil
 	}
 
 	err = b.Hydrate(configFile, c)
@@ -151,15 +143,9 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 func runBundlePublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
 	}
 
 	overrides, err := getPublishOverrides(cmd)
@@ -198,7 +184,7 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println("Bundle published successfully!")
+	log.Info().Msg("Bundle published successfully!")
 
 	return nil
 }

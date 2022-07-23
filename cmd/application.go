@@ -6,14 +6,12 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -57,25 +55,55 @@ var templatesRefreshCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
+	applicationAddFlags(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
+var nameDefault = ""
+var descriptionDefault = "placeholder description, written to app.yaml"
+var templateDefault = ""
+var accessDefault = "private"
+
+func applicationAddFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringP("name", "n", nameDefault, "What's it called?")
+	cmd.PersistentFlags().StringP("template", "t", templateDefault, "Which application-template to use?")
+	// access is not exposed in the CLI, but can be manually set in the generated app.yaml
+	// cmd.PersistentFlags().StringP("access", "a", accessDefault, "public or priviate")
+}
+
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
-
-	err := application.RunPrompt(&templateData)
-	if err != nil {
-		return err
+	name, nameErr := cmd.Flags().GetString("name")
+	if nameErr != nil {
+		log.Err(nameErr).Msg("Failed to generate an application")
+		return nil
+	}
+	template, templateErr := cmd.Flags().GetString("template")
+	if templateErr != nil {
+		log.Err(templateErr).Msg("Failed to generate an application")
+		return nil
 	}
 
-	err = application.Generate(&templateData)
-	if err != nil {
-		return err
+	templateData := application.TemplateData{
+		Name:         name,
+		Description:  descriptionDefault,
+		TemplateName: template,
+		Access:       accessDefault,
+	}
+	errPrompt := application.RunPrompt(&templateData)
+	if errPrompt != nil {
+		log.Err(errPrompt).Msg("Failed to generate an application")
+		return nil
+	}
+
+	errGenerate := application.Generate(&templateData)
+	if errGenerate != nil {
+		log.Err(errGenerate).Msg("Failed to generate an application")
+		return nil
 	}
 
 	return nil
@@ -84,18 +112,11 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
-	appPath := args[0]
-
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
 	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
-	}
+	appPath := args[0]
 
 	// Create a temporary working directory
 	workingDir, err := os.MkdirTemp("", "application")
@@ -120,7 +141,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println("Application published successfully!")
+	log.Info().Msg("Application published successfully!")
 
 	return nil
 }

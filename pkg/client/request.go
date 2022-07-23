@@ -2,10 +2,11 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Request struct {
@@ -41,7 +42,7 @@ func (req *Request) ToHTTPRequest(ctx context.Context, c *MassdriverClient) (*ht
 	if c.apiKey != "" {
 		httpReq.Header.Set("X-Md-Api-Key", c.apiKey)
 	} else {
-		fmt.Println("Warning: API Key not specified")
+		log.Warn().Msg("API Key not specified")
 	}
 	// for now assuming everything is json
 	httpReq.Header.Set("Content-Type", "application/json")
