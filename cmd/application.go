@@ -48,9 +48,7 @@ func init() {
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{
-		TemplateName: "kubernetes-deployment",
-	}
+	templateData := application.TemplateData{}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
