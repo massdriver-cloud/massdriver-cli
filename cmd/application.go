@@ -18,19 +18,17 @@ import (
 
 // applicationCmd represents the application command
 var applicationCmd = &cobra.Command{
-	Use:              "application",
-	Aliases:          []string{"app"},
-	Short:            "Application development tools",
-	Long:             ``,
-	TraverseChildren: true,
+	Use:     "application",
+	Aliases: []string{"app"},
+	Short:   "Application development tools",
+	Long:    ``,
 }
 
 var applicationGenerateCmd = &cobra.Command{
-	Use:              "generate",
-	Aliases:          []string{"gen"},
-	Short:            "Generates a new application template",
-	RunE:             runApplicationGenerate,
-	TraverseChildren: true,
+	Use:     "generate",
+	Aliases: []string{"gen"},
+	Short:   "Generates a new application template",
+	RunE:    runApplicationGenerate,
 }
 
 var applicationPublishCmd = &cobra.Command{

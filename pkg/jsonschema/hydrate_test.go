@@ -153,12 +153,10 @@ func TestHydrate(t *testing.T) {
 				if _, err := w.Write([]byte(*recursivePtr)); err != nil {
 					t.Fatalf("Failed to write response: %v", err)
 				}
-				fmt.Println("in recursive")
 			case "/endpoint":
 				if _, err := w.Write([]byte(`{"foo":"bar"}`)); err != nil {
 					t.Fatalf("Failed to write response: %v", err)
 				}
-				fmt.Println("in endpoint")
 			default:
 				w.WriteHeader(http.StatusNotFound)
 				_, err := w.Write([]byte(`404 - not found`))

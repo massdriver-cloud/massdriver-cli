@@ -13,6 +13,7 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
+	"github.com/rs/zerolog/log"
 )
 
 // relativeFilePathPattern only accepts relative file path prefixes "./" and "../"
@@ -53,7 +54,7 @@ func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.Mass
 				// HTTP ref. Pull the schema down via HTTP GET and hydrate
 				hydratedSchema, err = hydrateHTTPRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)
 			} else if fragmentPattern.MatchString(schemaRefValue) {
-				fmt.Println("Fragment refs not supported")
+				log.Warn().Msg("Fragment refs not supported")
 			} else if massdriverDefinitionPattern.MatchString(schemaRefValue) {
 				// this must be a published schema, so fetch from massdriver
 				hydratedSchema, err = hydrateMassdriverRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)

@@ -6,11 +6,11 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -66,7 +66,7 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(string(bytes))
+	log.Info().Msg(string(bytes))
 
 	return nil
 }
@@ -90,7 +90,8 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	} else {
 		defFile, err = os.Open(defPath)
 		if err != nil {
-			fmt.Println(err)
+			log.Err(err)
+			return err
 		}
 		defer defFile.Close()
 	}
@@ -106,7 +107,7 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 		return pubErr
 	}
 
-	fmt.Println("Definition published successfully!")
+	log.Info().Msg("Definition published successfully!")
 
 	return nil
 }
