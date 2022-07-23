@@ -14,3 +14,5 @@ params:
   required:
   - name
 dependencies: {}
+ui:order:
+  - "*"

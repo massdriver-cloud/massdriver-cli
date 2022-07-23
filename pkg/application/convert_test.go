@@ -39,6 +39,9 @@ func TestConvertToBundle(t *testing.T) {
 						"hello": "world",
 					},
 				},
+				UI: map[string]interface{}{
+					"ui:order": []interface{}{"*"},
+				},
 			},
 			want: &bundle.Bundle{
 				Name:        "app-name",

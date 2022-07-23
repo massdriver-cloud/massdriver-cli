@@ -10,11 +10,6 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
-const ArtifactsSchemaFilename = "schema-artifacts.json"
-const ConnectionsSchemaFilename = "schema-connections.json"
-const ParamsSchemaFilename = "schema-params.json"
-const UISchemaFilename = "schema-ui.json"
-
 const idURLPattern = "https://schemas.massdriver.cloud/schemas/bundles/%s/schema-%s.json"
 const jsonSchemaURLPattern = "http://json-schema.org/%s/schema"
 
@@ -39,22 +34,22 @@ func (b *Bundle) GenerateSchemas(dir string) error {
 		return err
 	}
 
-	paramsSchemaFile, err := createFile(dir, ParamsSchemaFilename)
+	paramsSchemaFile, err := createFile(dir, common.ParamsSchemaFilename)
 	if err != nil {
 		return err
 	}
 
-	connectionsSchemaFile, err := createFile(dir, ConnectionsSchemaFilename)
+	connectionsSchemaFile, err := createFile(dir, common.ConnectionsSchemaFilename)
 	if err != nil {
 		return err
 	}
 
-	artifactsSchemaFile, err := createFile(dir, ArtifactsSchemaFilename)
+	artifactsSchemaFile, err := createFile(dir, common.ArtifactsSchemaFilename)
 	if err != nil {
 		return err
 	}
 
-	uiSchemaFile, err := createFile(dir, UISchemaFilename)
+	uiSchemaFile, err := createFile(dir, common.UISchemaFilename)
 	if err != nil {
 		return err
 	}

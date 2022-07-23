@@ -4,9 +4,8 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment:
-  type: custom
-  path: ./test-chart
+metadata:
+  template: kubernetes-application
 
 params:
   required: ["name"]
@@ -14,3 +13,6 @@ params:
     name:
       type: string
       title: Name
+
+ui:order:
+  - "*"

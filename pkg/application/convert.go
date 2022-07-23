@@ -1,9 +1,6 @@
 package application
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 )
 
@@ -23,16 +20,7 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 			Provisioner: "terraform",
 		},
 	}
-
-	if app.Deployment.Type == "simple" {
-		b.Params = make(map[string]interface{})
-		if err := json.Unmarshal([]byte(SimpleParams), &b.Params); err != nil {
-			return b, fmt.Errorf("error parsing simple params: %w", err)
-		}
-	} else {
-		b.Params = app.Params
-	}
-
+	b.Params = app.Params
 	b.Connections = make(map[string]interface{})
 	b.Artifacts = make(map[string]interface{})
 	b.UI = make(map[string]interface{})
@@ -73,31 +61,8 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 
 	b.Connections["required"] = connectionsRequired
 	b.Connections["properties"] = connectionsProperties
-
-	// default artifact is kubernetes-application
-	// TODO: RE-ENABLE THIS WHEN WE HAVE A WORKING ARTIFACT
-	// artifactsRequired := []string{"kubernetes-application"}
-	// artifactsProperties := make(map[string]interface{})
-
-	// artifactsProperties["kubernetes-application"] = map[string]interface{}{
-	// 	"$ref": "massdriver/kubernetes-application",
-	// }
-
-	// b.Artifacts["required"] = artifactsRequired
-	// b.Artifacts["properties"] = artifactsProperties
-
 	b.Artifacts["properties"] = make(map[string]interface{})
-
-	// UI
-	if app.Deployment.Type == "simple" {
-		b.UI = make(map[string]interface{})
-		if jsonErr := json.Unmarshal([]byte(SimpleUI), &b.UI); jsonErr != nil {
-			return b, fmt.Errorf("error parsing simple ui: %w", jsonErr)
-		}
-	} else {
-		uiOrder := []interface{}{"*"}
-		b.UI["ui:order"] = uiOrder
-	}
+	b.UI = app.UI
 
 	return b, nil
 }
