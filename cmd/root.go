@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +53,13 @@ func setupLogging(cmd *cobra.Command) {
 
 	if verbose {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	} else {
-		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	}
+
+	log.Logger = log.Output(zerolog.ConsoleWriter{
+		Out: os.Stdout,
+		PartsExclude: []string{
+			"time",
+			"level",
+		},
+	})
 }

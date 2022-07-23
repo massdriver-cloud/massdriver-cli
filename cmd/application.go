@@ -8,10 +8,13 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -38,11 +41,26 @@ var applicationPublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var applicationTemplatesCmd = &cobra.Command{
+	Use:     "templates",
+	Aliases: []string{"plates"},
+	Short:   "Lists available application templates",
+	RunE:    runApplicationTemplates,
+}
+
+var templatesRefreshCmd = &cobra.Command{
+	Use:   "refresh",
+	Short: "Refreshes local copy of application templates",
+	RunE:  runTemplatesRefresh,
+}
+
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
+	applicationCmd.AddCommand(applicationTemplatesCmd)
+	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
@@ -103,6 +121,29 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("Application published successfully!")
+
+	return nil
+}
+
+func runApplicationTemplates(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	templates, err := cache.ApplicationTemplates()
+	if err != nil {
+		return err
+	}
+	log.Info().Msgf("Application templates:\n  %s", strings.Join(templates, "\n  "))
+
+	return nil
+}
+
+func runTemplatesRefresh(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	if err := cache.RefreshAppTemplates(); err != nil {
+		return err
+	}
+	log.Info().Msg("Application templates refreshed successfully.")
 
 	return nil
 }
