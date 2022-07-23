@@ -13,7 +13,7 @@ import (
 const MassdriverApplicationTemplatesRepository = "https://github.com/massdriver-cloud/application-templates"
 
 func AppTemplateCacheDir() string {
-	dir, _ := templateCacheDir()
+	dir, _ := appTemplateCacheDir()
 	return dir
 }
 
@@ -40,7 +40,7 @@ func RefreshAppTemplates() error {
 	return downloadAppTemplates()
 }
 
-func templateCacheDir() (string, error) {
+func appTemplateCacheDir() (string, error) {
 	cacheDir, err := cacheDir()
 	if err != nil {
 		return "", err
