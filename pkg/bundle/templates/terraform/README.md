@@ -4,6 +4,8 @@
 
 ## Development
 
+<!-- TODO: link to docs -->
+
 ### Enabling Pre-commit
 
 This repo includes Terraform pre-commit hooks.
@@ -37,6 +39,8 @@ mass bundle build
 
 Two development `tfvars` files are provided for setting `params` and `connections`:
 
+TODO: replace this with a Make command / make it easier
+
 ```shell
 cd src
 terraform init
@@ -50,5 +54,8 @@ terraform plan -var-file=./dev.connections.tfvars.json -var-file=./dev.params.tf
 ### Misc
 
 #### Other files
-* `operator.mdx` TBD
-* `schema.stories.json` TBD
+
+- `operator.mdx` TBD
+
+<!-- is probably going away -->
+<!-- * `schema.stories.json` TBD -->
