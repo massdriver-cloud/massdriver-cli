@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +46,7 @@ var applicationPublishCmd = &cobra.Command{
 
 var applicationListTemplatesCmd = &cobra.Command{
 	Use:              "list-templates",
-	Aliases:          []string{"gen"},
+	Aliases:          []string{"plates"},
 	Short:            "Lists available application templates",
 	RunE:             runApplicationListTemplates,
 	TraverseChildren: true,
@@ -73,19 +73,19 @@ func applicationAddFlags(cmd *cobra.Command) {
 	// cmd.PersistentFlags().StringP("access", "a", accessDefault, "public or priviate")
 }
 
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
-	// setupLogging(cmd)
+	setupLogging(cmd)
 
 	name, nameErr := cmd.Flags().GetString("name")
-	check(nameErr)
+	if nameErr != nil {
+		log.Err(nameErr).Msg("Failed to generate an application")
+		return nil
+	}
 	template, templateErr := cmd.Flags().GetString("template")
-	check(templateErr)
+	if templateErr != nil {
+		log.Err(templateErr).Msg("Failed to generate an application")
+		return nil
+	}
 
 	templateData := application.TemplateData{
 		Name:         name,
@@ -93,21 +93,23 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 		TemplateName: template,
 		Access:       accessDefault,
 	}
-	err := application.RunPrompt(&templateData)
-	if err != nil {
-		return err
+	errPrompt := application.RunPrompt(&templateData)
+	if errPrompt != nil {
+		log.Err(errPrompt).Msg("Failed to generate an application")
+		return nil
 	}
 
-	err = application.Generate(&templateData)
-	if err != nil {
-		return err
+	errGenerate := application.Generate(&templateData)
+	if errGenerate != nil {
+		log.Err(errGenerate).Msg("Failed to generate an application")
+		return nil
 	}
 
 	return nil
 }
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
-	// setupLogging(cmd)
+	setupLogging(cmd)
 
 	var err error
 	appPath := args[0]
@@ -145,29 +147,25 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// log
-	fmt.Println("Application published successfully!")
+	log.Info().Msg("Application published successfully!")
 
 	return nil
 }
 
 func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
 	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tempDir) // TODO: read massrc file, globally
-	// TODO: move to shared pkg
-	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL:      common.MassdriverApplicationTemplatesRepository,
-		Progress: os.Stdout,
-		Depth:    1,
-	})
-	if cloneErr != nil {
-		return cloneErr
+	defer os.RemoveAll(tempDir)
+	// TODO: read massrc file, globally -> Jake
+	if errCache := cache.GetMassdriverTemplates(); errCache != nil {
+		return errCache
 	}
+
 	templates := []string{}
-	templateDirs, err := ioutil.ReadDir(tempDir)
+	templateDirs, err := ioutil.ReadDir(cache.TemplateCacheDir)
 	if err != nil {
 		return err
 	}
@@ -176,9 +174,8 @@ func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
 		if f.IsDir() && f.Name() != ".git" {
 			templates = append(templates, f.Name())
 		}
-		templates = append(templates, f.Name())
 	}
 
-	log.Info().Msg(fmt.Sprintf("Application templates: %v", templates))
+	log.Info().Msg(fmt.Sprintf("Application templates: \n%v", strings.Join(templates, "\n")))
 	return nil
 }

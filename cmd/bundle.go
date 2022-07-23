@@ -74,7 +74,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	// default the output to the path of the massdriver.yaml file
 	output, err := cmd.Flags().GetString("output")
 	if err != nil {
-		log.Error().Err(err).Msg("an error occurred while building bundle")
+		// log.Error().Err(err).Msg("an error occurred while building bundle")
 		return err
 	}
 	if output == "" {
@@ -86,7 +86,7 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	b, err := bundle.Parse(configFile, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while parsing bundle")
-		return err
+		return nil
 	}
 
 	err = b.Hydrate(configFile, c)

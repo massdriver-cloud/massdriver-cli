@@ -6,40 +6,34 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-git/go-git/v5"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"gopkg.in/yaml.v3"
 )
 
 func Generate(data *TemplateData) error {
+	errCache := cache.GetMassdriverTemplates()
+	if errCache != nil {
+		return ErrCloneFail
+	}
+	// TODO: copy template from cache to tmp dir
 	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(tempDir)
 
-	// TODO: move to shared pkg
-	_, cloneErr := git.PlainClone(tempDir, false, &git.CloneOptions{
-		URL:      common.MassdriverApplicationTemplatesRepository,
-		Progress: os.Stdout,
-		Depth:    1,
-	})
-
-	if cloneErr != nil {
-		return ErrCloneFail
-	}
-
-	errCopy := copyTemplate(tempDir, data.TemplateName, data.OutputDir)
+	errCopy := copyTemplate(cache.TemplateCacheDir, data.TemplateName, data.OutputDir)
 	if errCopy != nil {
 		return ErrCopyFail
 	}
 
-	// TODO: only do this for templates w/ a helm chart
-	if errModifyHelm := modifyHelmTemplate(tempDir, *data); errModifyHelm != nil {
-		return errModifyHelm
-	}
-	if errModify := modifyAppYaml(tempDir, *data); errModify != nil {
+	if errModify := modifyAppYaml(*data); errModify != nil {
 		return errModify
+	}
+	// TODO: only do this for templates w/ a helm chart
+	if errModifyHelm := modifyHelmTemplate(*data); errModifyHelm != nil {
+		return errModifyHelm
 	}
 
 	return nil
@@ -75,8 +69,8 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 	})
 }
 
-func modifyAppYaml(tempDir string, data TemplateData) error {
-	appYAML, _ := Parse(tempDir + "/" + data.TemplateName + "/app/app.yaml")
+func modifyAppYaml(data TemplateData) error {
+	appYAML, _ := Parse(data.OutputDir + "/app/app.yaml")
 	// TODO: Cory has a PR to change this to title
 	appYAML.Name = data.Name
 	appYAML.Metadata = Metadata{
@@ -90,20 +84,16 @@ func modifyAppYaml(tempDir string, data TemplateData) error {
 		return err
 	}
 
-	errWrite := ioutil.WriteFile(path.Join(tempDir, data.TemplateName+"/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir+"/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
 	}
 
-	errRename := os.Rename(path.Join(tempDir, data.TemplateName+"/app/app.yaml"), "app/app.yaml")
-	if errRename != nil {
-		return errRename
-	}
 	return nil
 }
 
-func modifyHelmTemplate(tempDir string, data TemplateData) error {
-	// regenerate Chart.yaml to match their config
+func modifyHelmTemplate(data TemplateData) error {
+	// regenerate Chart.yaml so k8s labels and selectors are correct
 	chart := ChartYAML{
 		APIVersion:  "v2",
 		Name:        data.Name,
@@ -115,14 +105,10 @@ func modifyHelmTemplate(tempDir string, data TemplateData) error {
 	if err != nil {
 		return err
 	}
-	errWrite := ioutil.WriteFile(path.Join(tempDir, data.TemplateName+"/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, data.TemplateName+"/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
 	}
 
-	errRename := os.Rename(path.Join(tempDir, data.TemplateName+"/app/chart/Chart.yaml"), "app/chart/Chart.yaml")
-	if errRename != nil {
-		return errRename
-	}
 	return nil
 }
