@@ -6,15 +6,12 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -44,12 +41,17 @@ var applicationPublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
-var applicationListTemplatesCmd = &cobra.Command{
-	Use:              "list-templates",
-	Aliases:          []string{"plates"},
-	Short:            "Lists available application templates",
-	RunE:             runApplicationListTemplates,
-	TraverseChildren: true,
+var applicationTemplatesCmd = &cobra.Command{
+	Use:     "templates",
+	Aliases: []string{"plates"},
+	Short:   "Lists available application templates",
+	RunE:    runApplicationTemplates,
+}
+
+var templatesRefreshCmd = &cobra.Command{
+	Use:   "refresh",
+	Short: "Refreshes local copy of application templates",
+	RunE:  runTemplatesRefresh,
 }
 
 func init() {
@@ -58,7 +60,8 @@ func init() {
 	applicationAddFlags(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
-	applicationCmd.AddCommand(applicationListTemplatesCmd)
+	applicationCmd.AddCommand(applicationTemplatesCmd)
+	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
 var nameDefault = ""
@@ -111,18 +114,11 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
-	appPath := args[0]
-
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
 	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
-	}
+	appPath := args[0]
 
 	// Create a temporary working directory
 	workingDir, err := os.MkdirTemp("", "application")
@@ -152,30 +148,25 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runApplicationListTemplates(cmd *cobra.Command, args []string) error {
+func runApplicationTemplates(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
-	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
+
+	templates, err := cache.ApplicationTemplates()
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tempDir)
-	// TODO: read massrc file, globally -> Jake
-	if errCache := cache.GetMassdriverTemplates(); errCache != nil {
-		return errCache
-	}
+	log.Info().Msgf("Application templates:\n  %s", strings.Join(templates, "\n  "))
 
-	templates := []string{}
-	templateDirs, err := ioutil.ReadDir(cache.TemplateCacheDir)
-	if err != nil {
+	return nil
+}
+
+func runTemplatesRefresh(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	if err := cache.RefreshAppTemplates(); err != nil {
 		return err
 	}
-	for _, f := range templateDirs {
-		// cheap first
-		if f.IsDir() && f.Name() != ".git" {
-			templates = append(templates, f.Name())
-		}
-	}
+	log.Info().Msg("Application templates refreshed successfully.")
 
-	log.Info().Msg(fmt.Sprintf("Application templates: \n%v", strings.Join(templates, "\n")))
 	return nil
 }

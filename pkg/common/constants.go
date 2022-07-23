@@ -1,8 +1,11 @@
 package common
 
 const (
-	MassdriverURL                            = "https://api.massdriver.cloud/"
-	MassdriverApplicationTemplatesRepository = "https://github.com/massdriver-cloud/application-templates"
+	MassdriverURL             = "https://api.massdriver.cloud/"
+	ArtifactsSchemaFilename   = "schema-artifacts.json"
+	ConnectionsSchemaFilename = "schema-connections.json"
+	ParamsSchemaFilename      = "schema-params.json"
+	UISchemaFilename          = "schema-ui.json"
 )
 
 // named constants for common unix file permissions logic

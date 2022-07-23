@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 )
 
@@ -23,7 +23,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	err = Compile(path.Join(bundlePath, bundle.ParamsSchemaFilename), paramsVariablesFile)
+	err = Compile(path.Join(bundlePath, common.ParamsSchemaFilename), paramsVariablesFile)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	err = Compile(path.Join(bundlePath, bundle.ConnectionsSchemaFilename), connectionsVariablesFile)
+	err = Compile(path.Join(bundlePath, common.ConnectionsSchemaFilename), connectionsVariablesFile)
 	if err != nil {
 		return err
 	}

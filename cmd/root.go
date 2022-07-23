@@ -7,6 +7,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -68,4 +69,16 @@ func setupLogging(cmd *cobra.Command) {
 			"level",
 		},
 	})
+}
+
+func initClient(cmd *cobra.Command) (*client.MassdriverClient, error) {
+	c := client.NewClient()
+	apiKey, err := cmd.Flags().GetString("api-key")
+	if err != nil {
+		return c, err
+	}
+	if apiKey != "" {
+		c.WithAPIKey(apiKey)
+	}
+	return c, nil
 }

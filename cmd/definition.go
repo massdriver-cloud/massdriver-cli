@@ -10,12 +10,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
 	"github.com/spf13/cobra"
 )
 
-// applicationCmd represents the application command
 var definitionCmd = &cobra.Command{
 	Use:   "definition",
 	Short: "artifact definition management",
@@ -52,18 +50,12 @@ func init() {
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
-
-	defName := args[0]
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
 	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
-	}
 
+	defName := args[0]
 	def, err := definition.GetDefinition(c, defName)
 	if err != nil {
 		return err
@@ -82,19 +74,14 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
+	c, err := initClient(cmd)
+	if err != nil {
+		return err
+	}
 
 	defPath, err := cmd.Flags().GetString("file")
 	if err != nil {
 		return err
-	}
-
-	apiKey, err := cmd.Flags().GetString("api-key")
-	if err != nil {
-		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
 	}
 
 	var defFile *os.File

@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -11,19 +12,23 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func Generate(data *TemplateData) error {
-	errCache := cache.GetMassdriverTemplates()
-	if errCache != nil {
-		return ErrCloneFail
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
 	}
-	// TODO: copy template from cache to tmp dir
-	tempDir, err := ioutil.TempDir("/tmp/", "md-app-")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tempDir)
 
-	errCopy := copyTemplate(cache.TemplateCacheDir, data.TemplateName, data.OutputDir)
+	return false
+}
+
+func Generate(data *TemplateData) error {
+	templates, _ := cache.ApplicationTemplates()
+	if !contains(templates, data.TemplateName) {
+		return fmt.Errorf("template '%s' not found, try `mass app templates refresh`", data.TemplateName)
+	}
+
+	errCopy := copyTemplate(cache.AppTemplateCacheDir(), data.TemplateName, data.OutputDir)
 	if errCopy != nil {
 		return ErrCopyFail
 	}
