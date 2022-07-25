@@ -1,4 +1,5 @@
 #! ruby
+# NOTE: this is a temporary file, this will be baked into the cli down the road.
 
 require 'json'
 

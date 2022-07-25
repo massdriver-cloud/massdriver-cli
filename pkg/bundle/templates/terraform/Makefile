@@ -1,3 +1,4 @@
+# NOTE: this is a temporary file, this will be baked into the cli down the road.
 .PHONY: plan
 
  plan: ## Plans all examples
