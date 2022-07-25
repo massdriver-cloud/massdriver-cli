@@ -15,36 +15,11 @@ func TestParse(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:    "simple",
-			appPath: "./testdata/appsimple.yaml",
+			name:    "k8s-app",
+			appPath: "./testdata/k8s-app.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
-				Name:        "my-app",
-				Description: "An application",
-				Ref:         "github.com/user/app",
-				Access:      "private",
-				Metadata: application.Metadata{
-					Template: "kubernetes-application",
-				},
-				Params: map[string]interface{}{
-					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
-						},
-					},
-					"required": []interface{}{
-						"name",
-					},
-				},
-			},
-		},
-		{
-			name:    "custom",
-			appPath: "./testdata/appcustom.yaml",
-			want: application.Application{
-				Schema:      "draft-07",
-				Name:        "my-app",
+				Title:       "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
@@ -66,10 +41,10 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:    "deps",
-			appPath: "./testdata/appdeps.yaml",
+			appPath: "./testdata/k8s-app-deps.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
-				Name:        "my-app",
+				Title:       "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",

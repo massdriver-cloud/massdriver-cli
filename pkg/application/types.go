@@ -12,7 +12,7 @@ type TemplateData struct {
 
 type Application struct {
 	Schema       string                  `json:"schema" yaml:"schema"`
-	Name         string                  `json:"name" yaml:"name"`
+	Title        string                  `json:"title" yaml:"title"`
 	Description  string                  `json:"description" yaml:"description"`
 	Ref          string                  `json:"ref" yaml:"ref"`
 	Access       string                  `json:"access" yaml:"access"`

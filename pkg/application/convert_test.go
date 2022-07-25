@@ -18,7 +18,7 @@ func TestConvertToBundle(t *testing.T) {
 		{
 			name: "simple",
 			app: &application.Application{
-				Name:        "app-name",
+				Title:       "app-name",
 				Description: "description",
 				Ref:         "github.com/some-repo",
 				Access:      "public",

@@ -77,7 +77,7 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 func modifyAppYaml(data TemplateData) error {
 	appYAML, _ := Parse(data.OutputDir + "/" + data.TemplateName + "/app/app.yaml")
 	// TODO: Cory has a PR to change this to title
-	appYAML.Name = data.Name
+	appYAML.Title = data.Name
 	appYAML.Metadata = Metadata{
 		Template: data.TemplateName,
 	}
