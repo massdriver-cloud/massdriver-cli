@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 )
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
@@ -14,7 +15,7 @@ var prompts = []func(t *TemplateData) error{
 	getName,
 	// returns a const
 	getDescription,
-	getTempalte,
+	getTemplate,
 	// returns a const
 	getAccessLevel,
 	// returns a const
@@ -70,11 +71,15 @@ func getDescription(t *TemplateData) error {
 	return nil
 }
 
-func getTempalte(t *TemplateData) error {
+func getTemplate(t *TemplateData) error {
+	templates, errGetTemplates := cache.ApplicationTemplates()
+	if errGetTemplates != nil {
+		return errGetTemplates
+	}
+
 	prompt := promptui.Select{
 		Label: "Template",
-		// TODO: list types from the templates repo
-		Items: []string{"kubernetes-deployment"},
+		Items: templates,
 	}
 
 	_, result, err := prompt.Run()

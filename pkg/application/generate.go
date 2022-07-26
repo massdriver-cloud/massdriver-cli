@@ -75,7 +75,7 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 }
 
 func modifyAppYaml(data TemplateData) error {
-	appYAML, _ := Parse(data.OutputDir + "/" + data.TemplateName + "/app/app.yaml")
+	appYAML, _ := Parse(data.OutputDir + "/app/app.yaml")
 	// TODO: Cory has a PR to change this to title
 	appYAML.Title = data.Name
 	appYAML.Metadata = Metadata{
@@ -89,15 +89,11 @@ func modifyAppYaml(data TemplateData) error {
 		return err
 	}
 
-	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, data.TemplateName+"/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
 	}
 
-	errRename := os.Rename(path.Join(data.OutputDir, data.TemplateName+"/app/app.yaml"), "app/app.yaml")
-	if errRename != nil {
-		return errRename
-	}
 	return nil
 }
 
@@ -114,14 +110,10 @@ func modifyHelmTemplate(data TemplateData) error {
 	if err != nil {
 		return err
 	}
-	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, data.TemplateName+"/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
 	}
 
-	errRename := os.Rename(path.Join(data.OutputDir, data.TemplateName+"/app/chart/Chart.yaml"), "app/chart/Chart.yaml")
-	if errRename != nil {
-		return errRename
-	}
 	return nil
 }
