@@ -2,6 +2,7 @@ package bundle
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -35,21 +36,35 @@ func Generate(data *TemplateData) error {
 				return os.MkdirAll(data.OutputDir, common.AllRWX)
 			}
 
-			return os.Mkdir(outputPath, common.AllRWX)
+			return os.MkdirAll(outputPath, common.AllRWX)
 		}
 
 		var tmpl *template.Template
-		var outputFile *os.File
 		tmpl, _ = template.ParseFS(templateFiles, filePath)
-		outputFile, err = os.Create(outputPath)
 
-		if err != nil {
-			return err
+		if _, err = os.Stat(outputPath); err == nil {
+			fmt.Printf("%s exists. Overwrite? (y|N): ", outputPath)
+			var response string
+			fmt.Scanln(&response)
+
+			if response == "y" || response == "Y" || response == "yes" {
+				return writeFile(outputPath, tmpl, data)
+			}
 		}
 
-		defer outputFile.Close()
-		return tmpl.Execute(outputFile, data)
+		return writeFile(outputPath, tmpl, data)
 	})
 
 	return err
+}
+
+func writeFile(outputPath string, tmpl *template.Template, data *TemplateData) error {
+	outputFile, err := os.Create(outputPath)
+
+	if err != nil {
+		return err
+	}
+
+	defer outputFile.Close()
+	return tmpl.Execute(outputFile, data)
 }
