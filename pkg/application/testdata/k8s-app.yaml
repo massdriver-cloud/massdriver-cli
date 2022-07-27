@@ -1,5 +1,5 @@
 schema: draft-07
-title: my-app
+name: my-app
 description: An application
 ref: github.com/user/app
 access: private

@@ -1,0 +1,36 @@
+{
+    "variable": {
+        "autoscaling": {
+            "type": "any",
+            "default": null
+        },
+        "envs": {
+            "type": "any",
+            "default": null
+        },
+        "image": {
+            "type": "any",
+            "default": null
+        },
+        "ingress": {
+            "type": "any",
+            "default": null
+        },
+        "name": {
+            "type": "string",
+            "default": null
+        },
+        "namespace": {
+            "type": "string",
+            "default": null
+        },
+        "port": {
+            "type": "number",
+            "default": null
+        },
+        "resource_requests": {
+            "type": "any",
+            "default": null
+        }
+    }
+}

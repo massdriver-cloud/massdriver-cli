@@ -8,24 +8,22 @@ type TemplateData struct {
 	Description string
 	Access      string
 	OutputDir   string
+	// defaults to https://github.com/massdriver-cloud/application-templates
+	TemplateSource string
+	// Deprecated:
+	Chart    string
+	Location string
 }
 
 type Application struct {
 	Schema       string                  `json:"schema" yaml:"schema"`
-	Title        string                  `json:"title" yaml:"title"`
+	Name         string                  `json:"name" yaml:"name"`
 	Description  string                  `json:"description" yaml:"description"`
 	Ref          string                  `json:"ref" yaml:"ref"`
 	Access       string                  `json:"access" yaml:"access"`
-	Metadata     Metadata                `json:"metadata" yaml:"metadata"`
 	Params       map[string]interface{}  `json:"params" yaml:"params"`
 	Dependencies map[string]Dependencies `json:"dependencies" yaml:"dependencies"`
 	UI           map[string]interface{}  `json:"ui" yaml:"ui"`
-}
-
-type Metadata struct {
-	Template           string `json:"template" yaml:"template"`
-	TemplateRepository string `json:"repository,omitempty" yaml:"repository,omitempty"`
-	Path               string `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 type Dependencies struct {

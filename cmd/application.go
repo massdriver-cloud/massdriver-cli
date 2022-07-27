@@ -26,11 +26,24 @@ var applicationCmd = &cobra.Command{
 	Long:    ``,
 }
 
+// TODO: deprecation warning
 var applicationGenerateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
-	Short:   "Generates a new application template",
+	Short:   "Deprecated: Generates a new application template",
 	RunE:    runApplicationGenerate,
+}
+
+var applicationNewCmd = &cobra.Command{
+	Use:     "new",
+	Aliases: []string{"new"},
+	Short:   "Creates a new application from a template",
+	RunE:    runApplicationNew,
+}
+
+var applicationBuildCmd = &cobra.Command{
+	Use:  "build",
+	RunE: runApplicationBuild,
 }
 
 var applicationPublishCmd = &cobra.Command{
@@ -58,15 +71,21 @@ func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationGenerateCmd)
+	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
+	applicationCmd.AddCommand(applicationBuildCmd)
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	templateData := application.TemplateData{
+		TemplateName: "application",
+		Chart:        "application",
+		Location:     ".",
+	}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -76,6 +95,43 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	err = application.Generate(&templateData)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func runApplicationNew(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	templateData := application.TemplateData{}
+
+	err := application.RunPrompt(&templateData)
+	if err != nil {
+		return err
+	}
+
+	err = application.GenerateFromTemplate(&templateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runApplicationBuild(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+	c := client.NewClient()
+
+	apiKey, err := cmd.Flags().GetString("api-key")
+	if err != nil {
+		return err
+	}
+	if apiKey != "" {
+		c.WithAPIKey(apiKey)
+	}
+
+	if errBuild := application.Build("app.yaml", ".", c); errBuild != nil {
+		return errBuild
 	}
 
 	return nil

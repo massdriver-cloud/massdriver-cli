@@ -7,9 +7,15 @@ import (
 	"os"
 	"path"
 
+	"errors"
+
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
+
+	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli"
 )
 
 func contains(s []string, str string) bool {
@@ -22,14 +28,19 @@ func contains(s []string, str string) bool {
 	return false
 }
 
-func Generate(data *TemplateData) error {
+func GenerateFromTemplate(data *TemplateData) error {
 	templates, _ := cache.ApplicationTemplates()
 	if !contains(templates, data.TemplateName) {
 		return fmt.Errorf("template '%s' not found, try `mass app templates refresh`", data.TemplateName)
 	}
+	source := data.TemplateSource
+	if source == "" {
+		source = cache.AppTemplateCacheDir()
+	}
 
-	errCopy := copyTemplate(cache.AppTemplateCacheDir(), data.TemplateName, data.OutputDir)
+	errCopy := copyTemplate(source, data.TemplateName, data.OutputDir)
 	if errCopy != nil {
+		log.Debug().Msg("error copying template")
 		return ErrCopyFail
 	}
 
@@ -74,13 +85,11 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 	})
 }
 
+// TODO: both of these modify methods will use golang templating in the future
 func modifyAppYaml(data TemplateData) error {
-	appYAML, _ := Parse(data.OutputDir + "/app/app.yaml")
+	appYAML, _ := Parse(data.OutputDir + "/app.yaml")
 	// TODO: Cory has a PR to change this to title
-	appYAML.Title = data.Name
-	appYAML.Metadata = Metadata{
-		Template: data.TemplateName,
-	}
+	appYAML.Name = data.Name
 	appYAML.Description = data.Description
 	appYAML.Access = data.Access
 
@@ -89,7 +98,7 @@ func modifyAppYaml(data TemplateData) error {
 		return err
 	}
 
-	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "/app/", "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "app.yaml"), appYAMLBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
 	}
@@ -110,9 +119,73 @@ func modifyHelmTemplate(data TemplateData) error {
 	if err != nil {
 		return err
 	}
-	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "/app/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	errWrite := ioutil.WriteFile(path.Join(data.OutputDir, "/chart", "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
 	if errWrite != nil {
 		return errWrite
+	}
+
+	return nil
+}
+
+const MassdriverHelmChartRepository = "https://massdriver-cloud.github.io/helm-charts"
+
+func Generate(data *TemplateData) error {
+	cpo := action.ChartPathOptions{
+		InsecureSkipTLSverify: true,
+		RepoURL:               MassdriverHelmChartRepository,
+		Version:               ">0.0.0-0",
+	}
+
+	chartLocation := path.Join(data.Location, data.Name)
+
+	if _, err := os.Stat(chartLocation); !os.IsNotExist(err) {
+		return errors.New("specified directory already exists")
+	}
+
+	err := os.MkdirAll(data.Location, common.AllRX|common.UserRW)
+	if err != nil {
+		return err
+	}
+
+	tempDir, err := ioutil.TempDir(data.Location, "helm-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	client := action.NewPullWithOpts(action.WithConfig(&action.Configuration{}))
+	client.RepoURL = MassdriverHelmChartRepository
+	client.ChartPathOptions = cpo
+	client.Settings = cli.New()
+
+	client.Untar = true
+	client.UntarDir = tempDir // data.Location
+
+	_, err = client.Run(data.Chart)
+	if err != nil {
+		return err
+	}
+
+	// regenerate Chart.yaml to match their config
+	chart := ChartYAML{
+		APIVersion:  "v2",
+		Name:        data.Name,
+		Description: data.Description,
+		Type:        "application",
+		Version:     "1.0.0",
+	}
+	chartBytes, err := yaml.Marshal(chart)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path.Join(tempDir, data.Chart, "Chart.yaml"), chartBytes, common.AllRead|common.UserRW)
+	if err != nil {
+		return err
+	}
+
+	err = os.Rename(path.Join(tempDir, data.Chart), chartLocation)
+	if err != nil {
+		return err
 	}
 
 	return nil

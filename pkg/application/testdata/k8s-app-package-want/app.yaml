@@ -1,0 +1,88 @@
+schema: draft-07
+name: my-test-app
+description: ""
+ref: github.com/massdriver-cloud/k8s-app
+access: ""
+params:
+  properties:
+    autoscaling:
+      properties:
+        enabled:
+          default: false
+          type: boolean
+        maxReplicas:
+          default: 2
+          type: integer
+        minReplicas:
+          default: 1
+          type: integer
+        targetCPUUtilizationPercentage:
+          default: 90
+          type: integer
+      type: object
+    envs:
+      items:
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+        type: object
+      type: array
+    image:
+      properties:
+        repository:
+          type: string
+        sha:
+          type: string
+        tag:
+          type: string
+      type: object
+    ingress:
+      properties:
+        enabled:
+          type: boolean
+        host:
+          type: string
+        path:
+          default: /
+          type: string
+      type: object
+    name:
+      type: string
+    namespace:
+      default: default
+      type: string
+    port:
+      type: integer
+    resource_requests:
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
+      type: object
+dependencies: {}
+ui:
+  autoscaling:
+    items:
+      ui:order:
+      - enabled
+      - minReplicas
+      - maxReplicas
+      - targetCPUUtilizationPercentage
+  ingress:
+    items:
+      ui:order:
+      - enabled
+      - host
+      - path
+  ui:order:
+  - name
+  - namespace
+  - image
+  - resource_requests
+  - autoscaling
+  - envs
+  - port
+  - ingress

@@ -3,11 +3,15 @@ package application
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
@@ -54,17 +58,17 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, writeErr
 	}
 
-	// if app.Deployment.Type == "custom" {
-	// 	// Make chart directory
-	// 	err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	// TODO: need to make this driven off of the massdriver.yaml metadata field
+	err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
+	if err != nil {
+		return nil, err
+	}
+	// default path for now
+	// errPackage := packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
+	errPackage := packageChart(path.Join(path.Dir(appPath), "chart"), path.Join(workingDir, "chart"))
+	if errPackage != nil {
+		return nil, errPackage
+	}
 
 	// Make src directory
 	err = os.MkdirAll(path.Join(workingDir, "src"), 0744)
@@ -113,20 +117,20 @@ func generateStep(step bundle.Step, workingDir, bundlePath string) error {
 	return nil
 }
 
-// func packageChart(chartPath string, destPath string) error {
-// 	err := filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
-// 		var relPath = strings.TrimPrefix(path, chartPath)
-// 		if relPath == "" {
-// 			return nil
-// 		}
-// 		if info.IsDir() {
-// 			return os.Mkdir(filepath.Join(destPath, relPath), common.AllRX|common.UserRW)
-// 		}
-// 		var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
-// 		if err1 != nil {
-// 			return err1
-// 		}
-// 		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, common.AllRWX)
-// 	})
-// 	return err
-// }
+func packageChart(chartPath string, destPath string) error {
+	err := filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
+		var relPath = strings.TrimPrefix(path, chartPath)
+		if relPath == "" {
+			return nil
+		}
+		if info.IsDir() {
+			return os.Mkdir(filepath.Join(destPath, relPath), common.AllRX|common.UserRW)
+		}
+		var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+		if err1 != nil {
+			return err1
+		}
+		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, common.AllRWX)
+	})
+	return err
+}

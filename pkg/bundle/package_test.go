@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
-	"golang.org/x/mod/sumdb/dirhash"
 )
 
 func TestPackageBundle(t *testing.T) {
@@ -46,20 +45,7 @@ func TestPackageBundle(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
-
-			wantMD5, err := dirhash.HashDir(tc.wantPath, "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			gotMD5, err := dirhash.HashDir(path.Join(testDir, "bundle"), "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			if gotMD5 != wantMD5 {
-				t.Errorf("got %v, want %v", gotMD5, wantMD5)
-			}
+			compareDirs(t, tc.wantPath, path.Join(testDir, "bundle"))
 		})
 	}
 }

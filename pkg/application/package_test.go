@@ -8,7 +8,6 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
-	"golang.org/x/mod/sumdb/dirhash"
 )
 
 func TestPackage(t *testing.T) {
@@ -18,17 +17,11 @@ func TestPackage(t *testing.T) {
 		wantPath        string
 	}
 	tests := []test{
-		// TODO: in later PRs, these will be the app template tests
-		// {
-		// 	name:            "simple",
-		// 	applicationPath: "testdata/appsimple.yaml",
-		// 	wantPath:        "testdata/simple",
-		// },
-		// {
-		// 	name:            "custom",
-		// 	applicationPath: "testdata/appcustom.yaml",
-		// 	wantPath:        "testdata/custom",
-		// },
+		{
+			name:            "k8s-app",
+			applicationPath: "testdata/k8s-app-generate-want/app.yaml",
+			wantPath:        "testdata/k8s-app-package-want",
+		},
 	}
 
 	for _, tc := range tests {
@@ -70,19 +63,7 @@ func TestPackage(t *testing.T) {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
-			wantMD5, err := dirhash.HashDir(tc.wantPath, "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			gotMD5, err := dirhash.HashDir(testDir, "", dirhash.DefaultHash)
-			if err != nil {
-				t.Fatalf("%d, unexpected error", err)
-			}
-
-			if gotMD5 != wantMD5 {
-				t.Errorf("got %v, want %v", gotMD5, wantMD5)
-			}
+			compareDirs(t, tc.wantPath, testDir)
 		})
 	}
 }

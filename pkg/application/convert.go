@@ -8,12 +8,13 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 	b := new(bundle.Bundle)
 
 	b.Schema = app.Schema
-	b.Name = app.Title
+	b.Name = app.Name
 	b.Description = app.Description
 	b.Ref = app.Ref
 	b.Type = "application"
 	b.Access = app.Access
 
+	// TODO: yank when xo ships
 	b.Steps = []bundle.Step{
 		{
 			Path:        "src",

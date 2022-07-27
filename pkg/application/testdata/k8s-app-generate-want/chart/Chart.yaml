@@ -1,0 +1,5 @@
+apiVersion: v2
+name: my-test-app
+description: ""
+type: application
+version: 1.0.0

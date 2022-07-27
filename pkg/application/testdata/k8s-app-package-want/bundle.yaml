@@ -1,0 +1,105 @@
+schema: draft-07
+name: my-test-app
+description: ""
+ref: github.com/massdriver-cloud/k8s-app
+type: application
+access: ""
+steps:
+- path: src
+  provisioner: terraform
+artifacts:
+  properties: {}
+params:
+  properties:
+    autoscaling:
+      properties:
+        enabled:
+          default: false
+          type: boolean
+        maxReplicas:
+          default: 2
+          type: integer
+        minReplicas:
+          default: 1
+          type: integer
+        targetCPUUtilizationPercentage:
+          default: 90
+          type: integer
+      type: object
+    envs:
+      items:
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+        type: object
+      type: array
+    image:
+      properties:
+        repository:
+          type: string
+        sha:
+          type: string
+        tag:
+          type: string
+      type: object
+    ingress:
+      properties:
+        enabled:
+          type: boolean
+        host:
+          type: string
+        path:
+          default: /
+          type: string
+      type: object
+    name:
+      type: string
+    namespace:
+      default: default
+      type: string
+    port:
+      type: integer
+    resource_requests:
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
+      type: object
+connections:
+  properties:
+    aws_authentication:
+      $ref: massdriver/aws-iam-role
+    azure_authentication:
+      $ref: massdriver/azure-service-principal
+    gcp_authentication:
+      $ref: massdriver/gcp-service-account
+    kubernetes_cluster:
+      $ref: massdriver/kubernetes-cluster
+  required:
+  - kubernetes_cluster
+ui:
+  autoscaling:
+    items:
+      ui:order:
+      - enabled
+      - minReplicas
+      - maxReplicas
+      - targetCPUUtilizationPercentage
+  ingress:
+    items:
+      ui:order:
+      - enabled
+      - host
+      - path
+  ui:order:
+  - name
+  - namespace
+  - image
+  - resource_requests
+  - autoscaling
+  - envs
+  - port
+  - ingress

@@ -1,0 +1,31 @@
+{
+    "autoscaling": {
+        "items": {
+            "ui:order": [
+                "enabled",
+                "minReplicas",
+                "maxReplicas",
+                "targetCPUUtilizationPercentage"
+            ]
+        }
+    },
+    "ingress": {
+        "items": {
+            "ui:order": [
+                "enabled",
+                "host",
+                "path"
+            ]
+        }
+    },
+    "ui:order": [
+        "name",
+        "namespace",
+        "image",
+        "resource_requests",
+        "autoscaling",
+        "envs",
+        "port",
+        "ingress"
+    ]
+}

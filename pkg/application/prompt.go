@@ -67,11 +67,26 @@ func getAccessLevel(t *TemplateData) error {
 }
 
 func getDescription(t *TemplateData) error {
-	t.Description = "placeholder description, written to app.yaml"
+	t.Description = "The is a short description about my application"
 	return nil
 }
 
 func getTemplate(t *TemplateData) error {
+	// hack to support old helm templates for now
+	if t.TemplateName == "application" {
+		prompt := promptui.Select{
+			Label: "Template",
+			Items: []string{"adhoc-job", "application", "scheduled-job"},
+		}
+
+		_, result, err := prompt.Run()
+		if err != nil {
+			return err
+		}
+		t.TemplateName = result
+		return nil
+	}
+
 	templates, errGetTemplates := cache.ApplicationTemplates()
 	if errGetTemplates != nil {
 		return errGetTemplates
