@@ -50,7 +50,7 @@ var applicationPublishCmd = &cobra.Command{
 
 var applicationTemplatesCmd = &cobra.Command{
 	Use:     "templates",
-	Aliases: []string{"plates"},
+	Aliases: []string{"tmpl"},
 	Short:   "Lists available application templates",
 	RunE:    runApplicationTemplates,
 }
