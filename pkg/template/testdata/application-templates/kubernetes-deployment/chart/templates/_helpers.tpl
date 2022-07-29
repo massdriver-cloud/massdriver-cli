@@ -26,7 +26,7 @@ app.kubernetes.io/managed-by: massdriver.cloud
 {{- end }}
 
 {{/*
-Selector labels for <md data.title md>
+Selector labels for <md .Name md>
 */}}
 {{- define "application.selectorLabels" -}}
 app.kubernetes.io/name: {{ .Chart.Name }}

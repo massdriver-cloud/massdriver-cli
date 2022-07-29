@@ -27,7 +27,7 @@ func GenerateFromTemplate(data *template.Data) error {
 		Description:  data.Description,
 	}
 
-	errCopy := template.CopyTemplate(source, tmplData)
+	errCopy := template.Copy(source, tmplData)
 	if errCopy != nil {
 		log.Err(errCopy).Msg("error copying template")
 		return errCopy

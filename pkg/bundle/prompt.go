@@ -6,19 +6,21 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
+
 	"github.com/manifoldco/promptui"
 )
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{5,}`)
 
-var prompts = []func(t *TemplateData) error{
+var prompts = []func(t *template.Data) error{
 	getName,
 	getAccessLevel,
 	getDescription,
 	getOutputDir,
 }
 
-func RunPrompt(t *TemplateData) error {
+func RunPrompt(t *template.Data) error {
 	var err error
 	fmt.Println("in run prompt")
 
@@ -32,7 +34,7 @@ func RunPrompt(t *TemplateData) error {
 	return nil
 }
 
-func getName(t *TemplateData) error {
+func getName(t *template.Data) error {
 	validate := func(input string) error {
 		if !bundleTypeFormat.MatchString(input) {
 			return errors.New("name must be greater than 4 characters and can only include lowercase letters and dashes")
@@ -57,7 +59,7 @@ func getName(t *TemplateData) error {
 	return nil
 }
 
-func getAccessLevel(t *TemplateData) error {
+func getAccessLevel(t *template.Data) error {
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"public", "private"},
@@ -73,7 +75,7 @@ func getAccessLevel(t *TemplateData) error {
 	return nil
 }
 
-func getDescription(t *TemplateData) error {
+func getDescription(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label: "Description",
 	}
@@ -88,7 +90,7 @@ func getDescription(t *TemplateData) error {
 	return nil
 }
 
-func getOutputDir(t *TemplateData) error {
+func getOutputDir(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label:   `Output directory`,
 		Default: t.Name,

@@ -38,9 +38,11 @@ func TestAppFromTemplate(t *testing.T) {
 				Name:         tc.name,
 				Description:  tc.description,
 				TemplateName: tc.templateName,
-				OutputDir:    t.TempDir(),
+				// OutputDir:    t.TempDir(),
+
+				OutputDir: "_local-test",
 			}
-			err := template.CopyTemplate(tc.templateDir, &templateData)
+			err := template.Copy(tc.templateDir, &templateData)
 			if err != nil {
 				t.Errorf("unexpected error copying template: %v", err)
 			}

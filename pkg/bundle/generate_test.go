@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
 
 func TestGenerate(t *testing.T) {
-	bundleData := bundle.TemplateData{
+	bundleData := template.Data{
 		Name:        "aws-vpc",
 		Access:      "Private",
 		Description: "a vpc",
@@ -32,6 +33,7 @@ func TestGenerate(t *testing.T) {
 
 	testDir := t.TempDir()
 	bundleData.OutputDir = testDir
+	bundleData.OutputDir = "terraform"
 
 	err := bundle.Generate(&bundleData)
 	if err != nil {

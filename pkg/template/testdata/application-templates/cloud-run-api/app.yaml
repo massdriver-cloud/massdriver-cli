@@ -1,4 +1,4 @@
 # Massdriver Application Template
-# Name: <md data.template md>
-title: <md data.title md>
-description: <md data.description md>
+# Name: <md .TemplateName md>
+title: <md .Name md>
+description: <md .Description md>
