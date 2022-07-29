@@ -1,5 +1,4 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 
 */
 package cmd
@@ -25,7 +24,7 @@ func runVersion(cmd *cobra.Command, args []string) {
 	if err != nil {
 		fmt.Printf("could not check for newer versions at %v: %v. skipping...\n", version.LatestReleaseURL, err.Error())
 	} else if isOld {
-		fmt.Printf("WARNING: there is a new version of the mass CLI %v you can download the appropriate binary from %v\n", latest, version.LatestReleaseURL)
+		fmt.Printf("A newer version of the CLI is available, you can download it here: %v\n", version.LatestReleaseURL)
 	}
 	fmt.Printf("mass version: %v (git SHA: %v) \n", version.MassVersion(), version.MassGitSHA())
 }
