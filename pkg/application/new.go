@@ -43,7 +43,7 @@ func GenerateFromTemplate(data *TemplateData) error {
 	if errModifyHelm := modifyHelmTemplate(data); errModifyHelm != nil {
 		return errModifyHelm
 	}
-	if errModify := modifyAppYaml(*data); errModify != nil {
+	if errModify := modifyAppYaml(data); errModify != nil {
 		return errModify
 	}
 
