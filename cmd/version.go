@@ -1,6 +1,6 @@
 /*
 
-*/
+ */
 package cmd
 
 import (
@@ -20,7 +20,7 @@ var versionCmd = &cobra.Command{
 }
 
 func runVersion(cmd *cobra.Command, args []string) {
-	isOld, latest, err := version.CheckForNewerVersionAvailable()
+	isOld, _, err := version.CheckForNewerVersionAvailable()
 	if err != nil {
 		fmt.Printf("could not check for newer versions at %v: %v. skipping...\n", version.LatestReleaseURL, err.Error())
 	} else if isOld {
