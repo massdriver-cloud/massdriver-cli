@@ -14,7 +14,7 @@ const (
 // var needs to be used instead of const as ldflags is used to fill this
 // information in the release process
 var (
-	version = "v0.1.0"
+	version = "unknown" // this will be the release tag
 	gitSHA  = "unknown" // sha1 from git, output of $(git rev-parse HEAD)
 )
 
