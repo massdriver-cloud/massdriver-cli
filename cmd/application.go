@@ -35,7 +35,6 @@ var applicationGenerateCmd = &cobra.Command{
 
 var applicationNewCmd = &cobra.Command{
 	Use:     "new",
-	Aliases: []string{"new"},
 	Short:   "Creates a new application from a template",
 	RunE:    runApplicationNew,
 }
