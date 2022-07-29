@@ -24,7 +24,6 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// adds the canonical -verison flag to the root command which some users might expect
 	// note we are also adding mass version subcommand which will additionally print a warning if there is a newer version of the CLI
-	Version: version.MassVersion(),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
