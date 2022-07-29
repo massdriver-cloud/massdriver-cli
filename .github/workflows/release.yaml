@@ -22,3 +22,7 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: 1.17
         binary_name: mass
+        # ldflags is the canonical way of setting dynamic values (like version) at compile time
+        ldflags:
+         - "-X github.com/massdriver-cloud/massdriver-cli/pkg/version.version=${GITHUB_REF_NAME}"
+         - "-X github.com/massdriver-cloud/massdriver-cli/pkg/version.gitCommit=${GITHUB_SHA}"
