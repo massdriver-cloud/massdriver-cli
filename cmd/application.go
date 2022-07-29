@@ -35,10 +35,9 @@ var applicationGenerateCmd = &cobra.Command{
 }
 
 var applicationNewCmd = &cobra.Command{
-	Use:     "new",
-	Aliases: []string{"new"},
-	Short:   "Creates a new application from a template",
-	RunE:    runApplicationNew,
+	Use:   "new",
+	Short: "Creates a new application from a template",
+	RunE:  runApplicationNew,
 }
 
 var applicationPublishCmd = &cobra.Command{
@@ -75,7 +74,7 @@ func init() {
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := template.TemplateData{}
+	templateData := template.Data{}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -93,11 +92,13 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 func runApplicationNew(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := template.TemplateData{
-		TemplateName: "kubernetes-deployment",
+	templateData := template.Data{
+		Access: "private",
+		// TODO: unify bundle build and app build outputDir logic and support
+		OutputDir: ".",
 	}
 
-	err := application.RunPrompt(&templateData)
+	err := application.RunPromptNew(&templateData)
 	if err != nil {
 		return err
 	}

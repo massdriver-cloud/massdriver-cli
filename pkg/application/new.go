@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func GenerateFromTemplate(data *template.TemplateData) error {
+func GenerateFromTemplate(data *template.Data) error {
 	log.Info().Msgf("Generating application from template %v", data)
 	templates, _ := cache.ApplicationTemplates()
 	if !common.Contains(templates, data.TemplateName) {
@@ -20,10 +20,11 @@ func GenerateFromTemplate(data *template.TemplateData) error {
 		source = cache.AppTemplateCacheDir()
 	}
 
-	// TODO: use template.TemplateData higher up the call chain
-	tmplData := &template.TemplateData{
+	// TODO: use template.Data higher up the call chain
+	tmplData := &template.Data{
 		TemplateName: data.TemplateName,
 		Name:         data.Name,
+		Description:  data.Description,
 	}
 
 	errCopy := template.CopyTemplate(source, tmplData)

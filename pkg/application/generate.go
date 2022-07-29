@@ -15,7 +15,7 @@ import (
 
 const MassdriverHelmChartRepository = "https://massdriver-cloud.github.io/helm-charts"
 
-func Generate(data *template.TemplateData) error {
+func Generate(data *template.Data) error {
 	cpo := action.ChartPathOptions{
 		InsecureSkipTLSverify: true,
 		RepoURL:               MassdriverHelmChartRepository,

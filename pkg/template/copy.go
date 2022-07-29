@@ -9,7 +9,7 @@ import (
 	"gopkg.in/osteele/liquid.v1"
 )
 
-type TemplateData struct {
+type Data struct {
 	Name           string
 	Description    string
 	Access         string
@@ -20,15 +20,18 @@ type TemplateData struct {
 	OutputDir      string
 }
 
-func CopyTemplate(templateDir string, data *TemplateData) error {
+func CopyTemplate(templateDir string, data *Data) error {
 	templateName := data.TemplateName
 	outputDir := data.OutputDir
 	templateFiles, _ := fs.Sub(os.DirFS(templateDir), templateName)
 
-	engine := liquid.NewEngine().Delims("[[", "]]", "[%", "%]")
+	engine := liquid.NewEngine().Delims("<md", "md>", "<tag", "tag>")
 	bindings := map[string]interface{}{
-		"md": map[string]string{
-			"title": data.Name,
+		"data": map[string]string{
+			"title":       data.Name,
+			"description": data.Description,
+			"template":    data.TemplateName,
+			"cli-version": "v0.1.0",
 		},
 	}
 
