@@ -2,28 +2,49 @@ package application
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 )
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
 var prompts = []func(t *TemplateData) error{
 	getName,
-	getAccessLevel,
 	getDescription,
+	getAccessLevel,
+	getTemplate,
+	// TODO: deprecate
 	getChart,
 	getLocation,
 }
 
+var promptsNew = []func(t *TemplateData) error{
+	getName,
+	getDescription,
+	getAccessLevel,
+	getTemplate,
+}
+
 func RunPrompt(t *TemplateData) error {
 	var err error
-	fmt.Println("in run prompt")
 
 	for _, prompt := range prompts {
+		err = prompt(t)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func RunPromptNew(t *TemplateData) error {
+	var err error
+
+	for _, prompt := range promptsNew {
 		err = prompt(t)
 		if err != nil {
 			return err
@@ -59,6 +80,10 @@ func getName(t *TemplateData) error {
 }
 
 func getAccessLevel(t *TemplateData) error {
+	if t.Access != "" {
+		return nil
+	}
+
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"public", "private"},
@@ -89,6 +114,7 @@ func getDescription(t *TemplateData) error {
 	return nil
 }
 
+// TODO: deprecate
 func getChart(t *TemplateData) error {
 	prompt := promptui.Select{
 		Label: "Access Level",
@@ -105,6 +131,27 @@ func getChart(t *TemplateData) error {
 	return nil
 }
 
+func getTemplate(t *TemplateData) error {
+	templates, err := cache.ApplicationTemplates()
+	if err != nil {
+		return err
+	}
+	prompt := promptui.Select{
+		Label: "Template",
+		Items: templates,
+	}
+
+	_, result, err := prompt.Run()
+
+	if err != nil {
+		return err
+	}
+
+	t.TemplateName = result
+	return nil
+}
+
+// TODO: deprecate
 func getLocation(t *TemplateData) error {
 	prompt := promptui.Prompt{
 		Label:     "Chart Location",
