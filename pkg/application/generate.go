@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/cli"
@@ -14,7 +15,7 @@ import (
 
 const MassdriverHelmChartRepository = "https://massdriver-cloud.github.io/helm-charts"
 
-func Generate(data *TemplateData) error {
+func Generate(data *template.TemplateData) error {
 	cpo := action.ChartPathOptions{
 		InsecureSkipTLSverify: true,
 		RepoURL:               MassdriverHelmChartRepository,

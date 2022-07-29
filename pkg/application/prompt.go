@@ -7,11 +7,12 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
-var prompts = []func(t *TemplateData) error{
+var prompts = []func(t *template.TemplateData) error{
 	getName,
 	getAccessLevel,
 	getDescription,
@@ -19,7 +20,7 @@ var prompts = []func(t *TemplateData) error{
 	getLocation,
 }
 
-func RunPrompt(t *TemplateData) error {
+func RunPrompt(t *template.TemplateData) error {
 	var err error
 	fmt.Println("in run prompt")
 
@@ -33,7 +34,7 @@ func RunPrompt(t *TemplateData) error {
 	return nil
 }
 
-func getName(t *TemplateData) error {
+func getName(t *template.TemplateData) error {
 	validate := func(input string) error {
 		if !bundleTypeFormat.MatchString(input) {
 			return errors.New("name must be 2 or more characters and can only include lowercase letters and dashes")
@@ -58,7 +59,7 @@ func getName(t *TemplateData) error {
 	return nil
 }
 
-func getAccessLevel(t *TemplateData) error {
+func getAccessLevel(t *template.TemplateData) error {
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"public", "private"},
@@ -74,7 +75,7 @@ func getAccessLevel(t *TemplateData) error {
 	return nil
 }
 
-func getDescription(t *TemplateData) error {
+func getDescription(t *template.TemplateData) error {
 	prompt := promptui.Prompt{
 		Label: "Description",
 	}
@@ -89,7 +90,7 @@ func getDescription(t *TemplateData) error {
 	return nil
 }
 
-func getChart(t *TemplateData) error {
+func getChart(t *template.TemplateData) error {
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"application", "adhoc-job", "scheduled-job"},
@@ -105,7 +106,7 @@ func getChart(t *TemplateData) error {
 	return nil
 }
 
-func getLocation(t *TemplateData) error {
+func getLocation(t *template.TemplateData) error {
 	prompt := promptui.Prompt{
 		Label:     "Chart Location",
 		Default:   "./chart",

@@ -14,6 +14,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -74,7 +75,7 @@ func init() {
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	templateData := template.TemplateData{}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -92,7 +93,9 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 func runApplicationNew(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	templateData := template.TemplateData{
+		TemplateName: "kubernetes-deployment",
+	}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
