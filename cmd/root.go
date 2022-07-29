@@ -7,7 +7,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/version"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 )
