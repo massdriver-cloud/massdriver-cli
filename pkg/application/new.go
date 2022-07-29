@@ -81,7 +81,7 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 }
 
 // TODO: both of these modify methods will use golang templating in the future
-func modifyAppYaml(data TemplateData) error {
+func modifyAppYaml(data *TemplateData) error {
 	appYAML, _ := Parse(data.OutputDir + "/app.yaml")
 	// TODO: Cory has a PR to change this to title
 	appYAML.Name = data.Name
