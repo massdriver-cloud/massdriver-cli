@@ -40,7 +40,7 @@ func GenerateFromTemplate(data *TemplateData) error {
 	}
 
 	// TODO: only do this for templates w/ a helm chart
-	if errModifyHelm := modifyHelmTemplate(*data); errModifyHelm != nil {
+	if errModifyHelm := modifyHelmTemplate(data); errModifyHelm != nil {
 		return errModifyHelm
 	}
 	if errModify := modifyAppYaml(*data); errModify != nil {
