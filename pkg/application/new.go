@@ -28,11 +28,7 @@ func GenerateFromTemplate(data *TemplateData) error {
 	if !contains(templates, data.TemplateName) {
 		return fmt.Errorf("template '%s' not found, try `mass app templates refresh`", data.TemplateName)
 	}
-	source := data.TemplateSource
-	if source == "" {
-		source = cache.AppTemplateCacheDir()
-	}
-
+	source := cache.AppTemplateCacheDir()
 	errCopy := copyTemplate(source, data.TemplateName, data.OutputDir)
 	if errCopy != nil {
 		log.Err(errCopy).Msg("error copying template")
@@ -71,7 +67,7 @@ func copyTemplate(templateDir string, templateName string, outputDir string) err
 			return readErr
 		}
 
-		writeErr := os.WriteFile(outputPath, file, common.AllRWX)
+		writeErr := os.WriteFile(outputPath, file, common.AllRead|common.UserRW)
 		if writeErr != nil {
 			return writeErr
 		}
@@ -101,7 +97,7 @@ func modifyAppYaml(data *TemplateData) error {
 	return nil
 }
 
-func modifyHelmTemplate(data TemplateData) error {
+func modifyHelmTemplate(data *TemplateData) error {
 	// regenerate Chart.yaml to match their config
 	chart := ChartYAML{
 		APIVersion:  "v2",

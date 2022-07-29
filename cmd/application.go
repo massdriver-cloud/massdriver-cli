@@ -34,9 +34,9 @@ var applicationGenerateCmd = &cobra.Command{
 }
 
 var applicationNewCmd = &cobra.Command{
-	Use:     "new",
-	Short:   "Creates a new application from a template",
-	RunE:    runApplicationNew,
+	Use:   "new",
+	Short: "Creates a new application from a template",
+	RunE:  runApplicationNew,
 }
 
 var applicationPublishCmd = &cobra.Command{
@@ -91,9 +91,13 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 func runApplicationNew(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	templateData := application.TemplateData{
+		Access: "private",
+		// TODO: unify bundle build and app build outputDir logic and support
+		OutputDir: ".",
+	}
 
-	err := application.RunPrompt(&templateData)
+	err := application.RunPromptNew(&templateData)
 	if err != nil {
 		return err
 	}
