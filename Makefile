@@ -1,18 +1,22 @@
 INSTALL_PATH ?= /usr/local/bin
+GIT_SHA := $(shell git log -1 --pretty=format:"%H")
+LD_FLAGS := "-X github.com/massdriver-cloud/massdriver-cli/pkg/version.version=dev -X github.com/massdriver-cloud/massdriver-cli/pkg/version.gitSHA=local-dev-${GIT_SHA}"
 
 .PHONY: test
 test:
 	go test ./cmd
 	go test ./pkg/...
-	go build -o ./mass
+	go build -o ./mass -ldflags=${LD_FLAGS}
+
 
 bin:
 	mkdir bin
 
 .PHONY: build
 build: bin
-	GOOS=darwin GOARCH=arm64 go build -o bin/mass-darwin-arm64
-	GOOS=linux GOARCH=amd64 go build -o bin/mass-linux-amd64
+	GOOS=darwin GOARCH=arm64 go build -o bin/mass-darwin-arm64 -ldflags=${LD_FLAGS}
+	GOOS=linux GOARCH=amd64 go build -o bin/mass-linux-amd64 -ldflags=${LD_FLAGS}
+
 
 .PHONY: install.macos
 install.macos: build
