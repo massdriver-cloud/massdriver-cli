@@ -22,6 +22,6 @@ var templatesFs embed.FS
 // }
 
 func Generate(data *template.Data) error {
-	templateFiles, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
-	return template.CopyFS(templateFiles, data)
+	templateDir, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
+	return template.RenderEmbededDirectory(templateDir, data)
 }

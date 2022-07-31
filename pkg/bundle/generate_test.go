@@ -33,7 +33,6 @@ func TestGenerate(t *testing.T) {
 
 	testDir := t.TempDir()
 	bundleData.OutputDir = testDir
-	bundleData.OutputDir = "terraform"
 
 	err := bundle.Generate(&bundleData)
 	if err != nil {
