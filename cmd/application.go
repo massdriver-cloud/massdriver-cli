@@ -5,12 +5,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
-	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -115,32 +112,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	}
 	appPath := args[0]
 
-	// Create a temporary working directory
-	workingDir, err := os.MkdirTemp("", "application")
-	if err != nil {
-		return (err)
-	}
-	defer os.RemoveAll(workingDir)
-
-	var buf bytes.Buffer
-	b, err := application.PackageApplication(appPath, c, workingDir, &buf)
-	if err != nil {
-		return err
-	}
-
-	uploadURL, err := b.Publish(c)
-	if err != nil {
-		return err
-	}
-
-	err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
-	if err != nil {
-		return err
-	}
-
-	log.Info().Msg("Application published successfully!")
-
-	return nil
+	return application.Publish(appPath, c)
 }
 
 func runApplicationTemplates(cmd *cobra.Command, args []string) error {
