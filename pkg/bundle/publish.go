@@ -12,6 +12,7 @@ import (
 	"net/http"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/rs/zerolog/log"
 )
 
 func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
@@ -39,7 +40,7 @@ func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
 	}
 
 	if resp.Status != "200 OK" {
-		fmt.Println(string(respBodyBytes))
+		log.Debug().Msg(string(respBodyBytes))
 		return "", errors.New("received non-200 response from Massdriver: " + resp.Status)
 	}
 

@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -55,11 +55,11 @@ func runSchemaValidate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if result.Valid() {
-		fmt.Println("The document is valid!")
+		log.Info().Msg("The document is valid!")
 	} else {
-		fmt.Printf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", document, schema)
+		log.Info().Msgf("The document failed validation:\n\tDocument: %s\n\tSchema: %s\nErrors:\n", document, schema)
 		for _, violation := range result.Errors() {
-			fmt.Printf("\t- %v\n", violation)
+			log.Info().Msgf("\t- %v\n", violation)
 		}
 		if exitError {
 			os.Exit(1)

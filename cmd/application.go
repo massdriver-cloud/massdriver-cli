@@ -6,14 +6,12 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -93,8 +91,6 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 
 	templateData := application.TemplateData{
 		Access: "private",
-		// TODO: unify bundle build and app build outputDir logic and support
-		OutputDir: ".",
 	}
 
 	err := application.RunPromptNew(&templateData)
@@ -113,18 +109,11 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
-	appPath := args[0]
-
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
 	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
-	}
+	appPath := args[0]
 
 	// Create a temporary working directory
 	workingDir, err := os.MkdirTemp("", "application")
@@ -149,7 +138,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println("Application published successfully!")
+	log.Info().Msg("Application published successfully!")
 
 	return nil
 }

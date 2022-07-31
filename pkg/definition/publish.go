@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/rs/zerolog/log"
 )
 
 func (art *Definition) Publish(c *client.MassdriverClient) error {
@@ -30,7 +30,7 @@ func (art *Definition) Publish(c *client.MassdriverClient) error {
 		if err2 != nil {
 			return err2
 		}
-		fmt.Println(string(respBodyBytes))
+		log.Debug().Msg(string(respBodyBytes))
 		return errors.New("received non-200 response from Massdriver: " + resp.Status)
 	}
 

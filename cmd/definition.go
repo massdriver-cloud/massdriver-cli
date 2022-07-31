@@ -6,12 +6,11 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -52,17 +51,11 @@ func init() {
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
-
-	defName := args[0]
-
-	apiKey, err := cmd.Flags().GetString("api-key")
+	c, err := initClient(cmd)
 	if err != nil {
 		return err
 	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
-	}
+	defName := args[0]
 
 	def, err := definition.GetDefinition(c, defName)
 	if err != nil {
@@ -74,7 +67,7 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Println(string(bytes))
+	log.Info().Msg(string(bytes))
 
 	return nil
 }
@@ -82,19 +75,13 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
-
+	c, err := initClient(cmd)
+	if err != nil {
+		return err
+	}
 	defPath, err := cmd.Flags().GetString("file")
 	if err != nil {
 		return err
-	}
-
-	apiKey, err := cmd.Flags().GetString("api-key")
-	if err != nil {
-		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
 	}
 
 	var defFile *os.File
@@ -103,7 +90,7 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	} else {
 		defFile, err = os.Open(defPath)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
 		defer defFile.Close()
 	}
@@ -119,7 +106,7 @@ func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 		return pubErr
 	}
 
-	fmt.Println("Definition published successfully!")
+	log.Info().Msg("Definition published successfully!")
 
 	return nil
 }

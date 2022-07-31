@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -41,7 +41,7 @@ func (req *Request) ToHTTPRequest(ctx context.Context, c *MassdriverClient) (*ht
 	if c.apiKey != "" {
 		httpReq.Header.Set("X-Md-Api-Key", c.apiKey)
 	} else {
-		fmt.Println("Warning: API Key not specified")
+		return nil, errors.New("API Key not specified")
 	}
 	// for now assuming everything is json
 	httpReq.Header.Set("Content-Type", "application/json")
