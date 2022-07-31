@@ -6,8 +6,6 @@ LD_FLAGS := "-X github.com/massdriver-cloud/massdriver-cli/pkg/version.version=d
 test:
 	go test ./cmd
 	go test ./pkg/...
-	go build -o ./mass -ldflags=${LD_FLAGS}
-
 
 bin:
 	mkdir bin
@@ -15,14 +13,22 @@ bin:
 .PHONY: build
 build: bin
 	GOOS=darwin GOARCH=arm64 go build -o bin/mass-darwin-arm64 -ldflags=${LD_FLAGS}
+
+.PHONY: build.linux
+build.linux: bin
 	GOOS=linux GOARCH=amd64 go build -o bin/mass-linux-amd64 -ldflags=${LD_FLAGS}
 
+.PHONY: install
+install: build
+	rm -f ${INSTALL_PATH}/mass
+	cp bin/mass-darwin-arm64 ${INSTALL_PATH}/mass
 
 .PHONY: install.macos
 install.macos: build
 	rm -f ${INSTALL_PATH}/mass
 	cp bin/mass-darwin-arm64 ${INSTALL_PATH}/mass
 
+
 .PHONY: install.linux
-install.linux: build
+install.linux: build.linux
 	cp -f bin/mass-linux-amd64 ${INSTALL_PATH}/mass

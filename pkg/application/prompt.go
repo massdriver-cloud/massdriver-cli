@@ -7,11 +7,12 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
-var prompts = []func(t *TemplateData) error{
+var prompts = []func(t *template.Data) error{
 	getName,
 	getDescription,
 	getAccessLevel,
@@ -21,14 +22,15 @@ var prompts = []func(t *TemplateData) error{
 	getLocation,
 }
 
-var promptsNew = []func(t *TemplateData) error{
+var promptsNew = []func(t *template.Data) error{
 	getName,
 	getDescription,
 	getAccessLevel,
 	getTemplate,
+	getOutputDir,
 }
 
-func RunPrompt(t *TemplateData) error {
+func RunPrompt(t *template.Data) error {
 	var err error
 
 	for _, prompt := range prompts {
@@ -41,7 +43,7 @@ func RunPrompt(t *TemplateData) error {
 	return nil
 }
 
-func RunPromptNew(t *TemplateData) error {
+func RunPromptNew(t *template.Data) error {
 	var err error
 
 	for _, prompt := range promptsNew {
@@ -54,7 +56,7 @@ func RunPromptNew(t *TemplateData) error {
 	return nil
 }
 
-func getName(t *TemplateData) error {
+func getName(t *template.Data) error {
 	validate := func(input string) error {
 		if !bundleTypeFormat.MatchString(input) {
 			return errors.New("name must be 2 or more characters and can only include lowercase letters and dashes")
@@ -79,7 +81,7 @@ func getName(t *TemplateData) error {
 	return nil
 }
 
-func getAccessLevel(t *TemplateData) error {
+func getAccessLevel(t *template.Data) error {
 	if t.Access != "" {
 		return nil
 	}
@@ -99,7 +101,7 @@ func getAccessLevel(t *TemplateData) error {
 	return nil
 }
 
-func getDescription(t *TemplateData) error {
+func getDescription(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label: "Description",
 	}
@@ -115,7 +117,7 @@ func getDescription(t *TemplateData) error {
 }
 
 // TODO: deprecate
-func getChart(t *TemplateData) error {
+func getChart(t *template.Data) error {
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"application", "adhoc-job", "scheduled-job"},
@@ -131,7 +133,7 @@ func getChart(t *TemplateData) error {
 	return nil
 }
 
-func getTemplate(t *TemplateData) error {
+func getTemplate(t *template.Data) error {
 	templates, err := cache.ApplicationTemplates()
 	if err != nil {
 		return err
@@ -152,7 +154,7 @@ func getTemplate(t *TemplateData) error {
 }
 
 // TODO: deprecate
-func getLocation(t *TemplateData) error {
+func getLocation(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label:     "Chart Location",
 		Default:   "./chart",
@@ -166,5 +168,21 @@ func getLocation(t *TemplateData) error {
 	}
 
 	t.Location = result
+	return nil
+}
+
+func getOutputDir(t *template.Data) error {
+	prompt := promptui.Prompt{
+		Label:   `Output directory`,
+		Default: t.Name,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return err
+	}
+
+	t.OutputDir = result
 	return nil
 }

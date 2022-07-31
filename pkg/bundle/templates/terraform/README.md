@@ -1,6 +1,6 @@
-# {{ .Name }}
+# <md .Name md>
 
-{{ .Description }}
+<md .Description md>
 
 ## Development
 
@@ -50,5 +50,6 @@ terraform plan -var-file=./dev.connections.tfvars.json -var-file=./dev.params.tf
 ### Misc
 
 #### Other files
-* `operator.mdx` TBD
-* `schema.stories.json` TBD
+
+- `operator.mdx` TBD
+- `schema.stories.json` TBD
