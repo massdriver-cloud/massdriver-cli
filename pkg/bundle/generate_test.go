@@ -12,10 +12,11 @@ import (
 
 func TestGenerate(t *testing.T) {
 	bundleData := template.Data{
-		Name:        "aws-vpc",
-		Access:      "Private",
-		Description: "a vpc",
-		Type:        "bundle",
+		Name:         "aws-vpc",
+		Access:       "Private",
+		Description:  "a vpc",
+		Type:         "bundle",
+		TemplateName: "terraform",
 	}
 
 	assertFileCreatedAndContainsText := func(t testing.TB, filename string, expectedPattern *regexp.Regexp) {

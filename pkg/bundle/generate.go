@@ -3,6 +3,7 @@ package bundle
 import (
 	"embed"
 	"io/fs"
+	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
@@ -12,6 +13,6 @@ import (
 var templatesFs embed.FS
 
 func Generate(data *template.Data) error {
-	templateDir, _ := fs.Sub(fs.FS(templatesFs), "templates/terraform")
+	templateDir, _ := fs.Sub(fs.FS(templatesFs), path.Join("templates", data.TemplateName))
 	return template.RenderEmbededDirectory(templateDir, data)
 }
