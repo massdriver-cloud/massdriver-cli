@@ -38,6 +38,12 @@ func readFileFunc(dir string) func(filePath string) ([]byte, error) {
 }
 
 func mkDirOrWriteFile(outputDir string, filePath string, info fs.DirEntry, data *Data, fileReadFunc func(path string) ([]byte, error)) error {
+	// create the output dir if it doesn't exist
+	if outputDir != "" && outputDir != "." {
+		if _, err := os.Stat(outputDir); err != nil {
+			return os.Mkdir(outputDir, common.AllRWX)
+		}
+	}
 	outputPath := path.Join(outputDir, filePath)
 
 	if info.IsDir() {

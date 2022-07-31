@@ -31,6 +31,7 @@ description: <md .Description md>
 				Name:         "App Name",
 				Description:  "App Description",
 				TemplateName: "app-template",
+				OutputDir:    "app-diretory",
 			},
 			fileName: "here-file",
 			wantFile: "testdata/templates/yaml.yaml",

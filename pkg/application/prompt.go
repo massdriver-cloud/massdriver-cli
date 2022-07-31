@@ -27,6 +27,7 @@ var promptsNew = []func(t *template.Data) error{
 	getDescription,
 	getAccessLevel,
 	getTemplate,
+	getOutputDir,
 }
 
 func RunPrompt(t *template.Data) error {
@@ -167,5 +168,21 @@ func getLocation(t *template.Data) error {
 	}
 
 	t.Location = result
+	return nil
+}
+
+func getOutputDir(t *template.Data) error {
+	prompt := promptui.Prompt{
+		Label:   `Output directory`,
+		Default: t.Name,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return err
+	}
+
+	t.OutputDir = result
 	return nil
 }
