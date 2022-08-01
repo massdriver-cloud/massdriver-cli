@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
 	"github.com/spf13/cobra"
 )
@@ -52,16 +51,10 @@ func init() {
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
-
 	defName := args[0]
-
-	apiKey, err := cmd.Flags().GetString("api-key")
-	if err != nil {
-		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
 	}
 
 	def, err := definition.GetDefinition(c, defName)
@@ -82,19 +75,14 @@ func runDefinitionGet(cmd *cobra.Command, args []string) error {
 func runDefinitionPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	c := client.NewClient()
-
 	defPath, err := cmd.Flags().GetString("file")
 	if err != nil {
 		return err
 	}
 
-	apiKey, err := cmd.Flags().GetString("api-key")
-	if err != nil {
-		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
 	}
 
 	var defFile *os.File

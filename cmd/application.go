@@ -13,7 +13,6 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -25,6 +24,11 @@ var applicationCmd = &cobra.Command{
 	Aliases: []string{"app"},
 	Short:   "Application development tools",
 	Long:    ``,
+}
+
+var applicationBuildCmd = &cobra.Command{
+	Use:  "build",
+	RunE: runApplicationBuild,
 }
 
 var applicationGenerateCmd = &cobra.Command{
@@ -64,11 +68,25 @@ var templatesRefreshCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
+	applicationCmd.AddCommand(applicationBuildCmd)
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
+}
+
+func runApplicationBuild(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
+	}
+
+	// TODO: app/bundle build directories
+	output := "."
+	return application.Build(c, output)
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
@@ -114,17 +132,10 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
 	appPath := args[0]
-
-	c := client.NewClient()
-
-	apiKey, err := cmd.Flags().GetString("api-key")
-	if err != nil {
-		return err
-	}
-	if apiKey != "" {
-		c.WithAPIKey(apiKey)
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
 	}
 
 	// Create a temporary working directory

@@ -5,6 +5,7 @@ type Application struct {
 	Name         string                  `json:"name" yaml:"name"`
 	Description  string                  `json:"description" yaml:"description"`
 	Ref          string                  `json:"ref" yaml:"ref"`
+	Type         string                  `json:"type" yaml:"type"`
 	Access       string                  `json:"access" yaml:"access"`
 	Deployment   Deployment              `json:"deployment" yaml:"deployment"`
 	Params       map[string]interface{}  `json:"params" yaml:"params"`

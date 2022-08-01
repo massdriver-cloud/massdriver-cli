@@ -2,6 +2,7 @@ schema: draft-07
 name: my-app
 description: An application
 ref: github.com/user/app
+type: ""
 access: private
 deployment:
   type: custom
