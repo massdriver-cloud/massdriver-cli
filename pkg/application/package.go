@@ -17,25 +17,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func PackageApplication(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
+func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
 	app, parseErr := Parse(appPath)
 	if parseErr != nil {
 		return nil, parseErr
 	}
 
-	// Write app.yaml
-	appYaml, err := os.Create(path.Join(workingDir, "app.yaml"))
-	if err != nil {
-		return nil, err
-	}
-	defer appYaml.Close()
-	appYamlBytes, marshalErr := yaml.Marshal(*app)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-
-	if _, yamlErr := appYaml.Write(appYamlBytes); yamlErr != nil {
-		return nil, yamlErr
+	bytes, errMarshal := yaml.Marshal(*app)
+	errWrite := writeFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
+	if errWrite != nil {
+		return nil, errWrite
 	}
 
 	// Write bundle.yaml
@@ -45,46 +36,10 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 	}
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	bundlePath := path.Join(workingDir, "bundle.yaml")
-	bundleYaml, err := os.Create(bundlePath)
-	if err != nil {
-		return nil, err
-	}
-	defer bundleYaml.Close()
-	bundleYamlBytes, marshalErr := yaml.Marshal(*b)
-	if marshalErr != nil {
-		return nil, marshalErr
-	}
-	if _, writeErr := bundleYaml.Write(bundleYamlBytes); writeErr != nil {
-		return nil, writeErr
-	}
-
-	// TODO: move chart into src dir
-	if app.Deployment.Type == "custom" {
-		// Make chart directory
-		err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
-		if err != nil {
-			return nil, err
-		}
-		err = packageChart(path.Join(path.Dir(appPath), app.Deployment.Path), path.Join(workingDir, "chart"))
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Make src directory
-	err = os.MkdirAll(path.Join(workingDir, "src"), 0744)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.Hydrate(bundlePath, c)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.GenerateSchemas(workingDir)
-	if err != nil {
-		return nil, err
+	bytesB, errMarshalB := yaml.Marshal(*b)
+	errWriteB := writeFile(bundlePath, bytesB, errMarshalB)
+	if errWriteB != nil {
+		return nil, errWriteB
 	}
 
 	steps := b.Steps
@@ -97,7 +52,30 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		}
 	}
 
+	err = b.Hydrate(bundlePath, c)
+	if err != nil {
+		return nil, err
+	}
+
+	err = b.GenerateSchemas(workingDir)
+	if err != nil {
+		return nil, err
+	}
+	appDir := filepath.Dir(appPath)
+	bundleDir := filepath.Dir(bundlePath)
+	// Make all directories, generate provisioner-specific files
 	for _, step := range steps {
+		err = os.MkdirAll(path.Join(workingDir, step.Path), 0744)
+		if err != nil {
+			return nil, err
+		}
+		log.Debug().Msgf("copy from: %s", path.Join(appDir, step.Path))
+		log.Debug().Msgf("copy to: %s", path.Join(bundleDir, step.Path))
+		errCopy := copyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path))
+		if errCopy != nil {
+			return nil, errCopy
+		}
+
 		if stepErr := generateStep(step, workingDir, bundlePath); stepErr != nil {
 			return nil, stepErr
 		}
@@ -128,20 +106,37 @@ func generateStep(step bundle.Step, workingDir, bundlePath string) error {
 	return nil
 }
 
-func packageChart(chartPath string, destPath string) error {
-	err := filepath.Walk(chartPath, func(path string, info os.FileInfo, err error) error {
-		var relPath = strings.TrimPrefix(path, chartPath)
+func copyFolder(sourcePath string, destPath string) error {
+	err := filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
+		log.Info().Msgf("copy from: %s", path)
+		var relPath = strings.TrimPrefix(path, sourcePath)
 		if relPath == "" {
 			return nil
 		}
 		if info.IsDir() {
 			return os.Mkdir(filepath.Join(destPath, relPath), common.AllRX|common.UserRW)
 		}
-		var data, err1 = ioutil.ReadFile(filepath.Join(chartPath, relPath))
+		var data, err1 = ioutil.ReadFile(filepath.Join(sourcePath, relPath))
 		if err1 != nil {
 			return err1
 		}
 		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, common.AllRWX)
 	})
 	return err
+}
+
+func writeFile(filePath string, data []byte, errMarshal error) error {
+	if errMarshal != nil {
+		return errMarshal
+	}
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if _, errWrite := file.Write(data); errWrite != nil {
+		return errWrite
+	}
+	return nil
 }

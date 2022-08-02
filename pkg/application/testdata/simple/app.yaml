@@ -5,7 +5,7 @@ ref: github.com/user/app
 type: ""
 access: private
 deployment:
-  type: simple
+  type: ""
 params:
   properties:
     name:

@@ -150,7 +150,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	defer os.RemoveAll(workingDir)
 
 	var buf bytes.Buffer
-	b, err := application.PackageApplication(appPath, c, workingDir, &buf)
+	b, err := application.Package(appPath, c, workingDir, &buf)
 	if err != nil {
 		return err
 	}

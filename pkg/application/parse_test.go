@@ -16,7 +16,7 @@ func TestParse(t *testing.T) {
 	tests := []test{
 		{
 			name:    "simple",
-			appPath: "./testdata/appsimple.yaml",
+			appPath: "./testdata/appsimple/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",
@@ -38,7 +38,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name:    "custom",
-			appPath: "./testdata/appcustom.yaml",
+			appPath: "./testdata/appcustom/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",
