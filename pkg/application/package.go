@@ -3,11 +3,9 @@ package application
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -24,7 +22,7 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 	}
 
 	bytes, errMarshal := yaml.Marshal(*app)
-	errWrite := writeFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
+	errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
 	if errWrite != nil {
 		return nil, errWrite
 	}
@@ -37,7 +35,7 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	bundlePath := path.Join(workingDir, "bundle.yaml")
 	bytesB, errMarshalB := yaml.Marshal(*b)
-	errWriteB := writeFile(bundlePath, bytesB, errMarshalB)
+	errWriteB := common.WriteFile(bundlePath, bytesB, errMarshalB)
 	if errWriteB != nil {
 		return nil, errWriteB
 	}
@@ -71,7 +69,7 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		}
 		log.Debug().Msgf("copy from: %s", path.Join(appDir, step.Path))
 		log.Debug().Msgf("copy to: %s", path.Join(bundleDir, step.Path))
-		errCopy := copyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path))
+		errCopy := common.CopyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path))
 		if errCopy != nil {
 			return nil, errCopy
 		}
@@ -102,41 +100,6 @@ func generateStep(step bundle.Step, workingDir, bundlePath string) error {
 	default:
 		log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
 		return fmt.Errorf("unknown provisioner: %v", step.Provisioner)
-	}
-	return nil
-}
-
-func copyFolder(sourcePath string, destPath string) error {
-	err := filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
-		log.Info().Msgf("copy from: %s", path)
-		var relPath = strings.TrimPrefix(path, sourcePath)
-		if relPath == "" {
-			return nil
-		}
-		if info.IsDir() {
-			return os.Mkdir(filepath.Join(destPath, relPath), common.AllRX|common.UserRW)
-		}
-		var data, err1 = ioutil.ReadFile(filepath.Join(sourcePath, relPath))
-		if err1 != nil {
-			return err1
-		}
-		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, common.AllRWX)
-	})
-	return err
-}
-
-func writeFile(filePath string, data []byte, errMarshal error) error {
-	if errMarshal != nil {
-		return errMarshal
-	}
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if _, errWrite := file.Write(data); errWrite != nil {
-		return errWrite
 	}
 	return nil
 }
