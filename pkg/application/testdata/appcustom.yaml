@@ -4,10 +4,6 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment:
-  type: custom
-  path: ./test-chart
-
 params:
   required: ["name"]
   properties:

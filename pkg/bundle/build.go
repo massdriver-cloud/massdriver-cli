@@ -11,26 +11,26 @@ import (
 
 const configFile = "massdriver.yaml"
 
-func Build(c *client.MassdriverClient, output string) error {
-	b, err := Parse(configFile, nil)
-	if err != nil {
-		log.Error().Err(err).Msg("an error occurred while parsing bundle")
-		return err
-	}
+func (bundle *Bundle) Build(c *client.MassdriverClient, output string) error {
+	// b, err := Parse(configFile, nil)
+	// if err != nil {
+	// 	log.Error().Err(err).Msg("an error occurred while parsing bundle")
+	// 	return err
+	// }
 
-	err = b.Hydrate(configFile, c)
+	err := bundle.Hydrate(configFile, c)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while hydrating bundle")
 		return err
 	}
 
-	err = b.GenerateSchemas(output)
+	err = bundle.GenerateSchemas(output)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while generating bundle schema files")
 		return err
 	}
 
-	for _, step := range b.Steps {
+	for _, step := range bundle.Steps {
 		switch step.Provisioner {
 		case "terraform":
 			err = terraform.GenerateFiles(output, step.Path)

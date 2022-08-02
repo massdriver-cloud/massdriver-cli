@@ -149,6 +149,20 @@ func getTemplate(t *template.Data) error {
 		return err
 	}
 
+	if strings.HasPrefix(result, "kubernetes-") {
+		promptCloud := promptui.Select{
+			Label: "For Kubernetes, What's Your Cloud Provider?",
+			Items: []string{"aws", "azure", "gcp"},
+		}
+
+		_, resultCloud, err := promptCloud.Run()
+
+		if err != nil {
+			return err
+		}
+		t.CloudProvider = resultCloud
+	}
+
 	t.TemplateName = result
 	return nil
 }
@@ -185,4 +199,25 @@ func getOutputDir(t *template.Data) error {
 
 	t.OutputDir = result
 	return nil
+}
+
+func getDependencies(t *template.Data) error {
+	result, err := promptYesNo("Does your app have any dependencies?")
+	if err != nil {
+		return err
+	}
+	if result == "Yes" {
+
+	}
+
+	t.OutputDir = result
+	return nil
+}
+
+func promptYesNo(question string) (string, error) {
+	prompt := promptui.Prompt{
+		Label:   question,
+		Default: "No",
+	}
+	return prompt.Run()
 }

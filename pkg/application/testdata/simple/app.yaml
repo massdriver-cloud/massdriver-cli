@@ -14,3 +14,4 @@ params:
   required:
   - name
 dependencies: {}
+ui: {}

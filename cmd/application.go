@@ -83,10 +83,14 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	if errClient != nil {
 		return errClient
 	}
-
 	// TODO: app/bundle build directories
 	output := "."
-	return application.Build(c, output)
+
+	app, err := application.Parse("massdriver.yaml")
+	if err != nil {
+		return err
+	}
+	return app.Build(c, output)
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {

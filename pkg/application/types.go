@@ -10,6 +10,7 @@ type Application struct {
 	Deployment   Deployment              `json:"deployment" yaml:"deployment"`
 	Params       map[string]interface{}  `json:"params" yaml:"params"`
 	Dependencies map[string]Dependencies `json:"dependencies" yaml:"dependencies"`
+	UI           map[string]interface{}  `json:"ui" yaml:"ui"`
 }
 
 type Deployment struct {

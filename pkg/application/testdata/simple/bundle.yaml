@@ -4,27 +4,19 @@ description: An application
 ref: github.com/user/app
 type: application
 access: private
-steps:
-- path: src
-  provisioner: terraform
+steps: []
 artifacts:
   properties: {}
 params:
   properties:
-    simple:
+    name:
+      title: Name
       type: string
-connections:
-  properties:
-    aws_authentication:
-      $ref: massdriver/aws-iam-role
-    azure_authentication:
-      $ref: massdriver/azure-service-principal
-    gcp_authentication:
-      $ref: massdriver/gcp-service-account
-    kubernetes_cluster:
-      $ref: massdriver/kubernetes-cluster
   required:
-  - kubernetes_cluster
+  - name
+connections:
+  properties: {}
+  required: []
 ui:
-  properties:
-    simple: ui
+  ui:order:
+  - '*'

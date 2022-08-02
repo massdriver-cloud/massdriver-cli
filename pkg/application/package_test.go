@@ -18,11 +18,11 @@ func TestPackage(t *testing.T) {
 		wantPath        string
 	}
 	tests := []test{
-		{
-			name:            "simple",
-			applicationPath: "testdata/appsimple.yaml",
-			wantPath:        "testdata/simple",
-		},
+		// {
+		// 	name:            "simple",
+		// 	applicationPath: "testdata/appsimple.yaml",
+		// 	wantPath:        "testdata/simple",
+		// },
 		{
 			name:            "custom",
 			applicationPath: "testdata/appcustom.yaml",
@@ -62,7 +62,8 @@ func TestPackage(t *testing.T) {
 			c := client.NewClient().WithEndpoint(testServer.URL)
 
 			// Create a temp dir, write out the archive, then shell out to untar
-			testDir := t.TempDir()
+			// testDir := t.TempDir()
+			testDir := "_local-tests"
 
 			application.SimpleParams = `{"properties":{"simple":{"type":"string"}}}`
 			application.SimpleUI = `{"properties":{"simple":"ui"}}`

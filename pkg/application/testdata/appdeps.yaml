@@ -4,9 +4,6 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment:
-  type: simple
-
 params:
   required: ["name"]
   properties:

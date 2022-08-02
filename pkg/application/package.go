@@ -58,6 +58,7 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, writeErr
 	}
 
+	// TODO: move chart into src dir
 	if app.Deployment.Type == "custom" {
 		// Make chart directory
 		err = os.MkdirAll(path.Join(workingDir, "chart"), 0744)
@@ -86,7 +87,17 @@ func PackageApplication(appPath string, c *client.MassdriverClient, workingDir s
 		return nil, err
 	}
 
-	for _, step := range b.Steps {
+	steps := b.Steps
+	if b.Steps == nil {
+		steps = []bundle.Step{
+			{
+				Path:        "src",
+				Provisioner: "terraform",
+			},
+		}
+	}
+
+	for _, step := range steps {
 		if stepErr := generateStep(step, workingDir, bundlePath); stepErr != nil {
 			return nil, stepErr
 		}

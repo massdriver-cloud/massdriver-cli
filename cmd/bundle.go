@@ -73,7 +73,8 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Info().Msg("building bundle")
-	if errBuild := bundle.Build(c, output); errBuild != nil {
+	bun, err := bundle.Parse(configFile, nil)
+	if errBuild := bun.Build(c, output); errBuild != nil {
 		return errBuild
 	}
 	log.Info().Str("output", output).Msg("bundle built")

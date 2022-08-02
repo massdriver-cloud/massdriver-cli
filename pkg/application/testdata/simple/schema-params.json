@@ -4,8 +4,12 @@
     "description": "An application",
     "name": "my-app",
     "properties": {
-        "simple": {
+        "name": {
+            "title": "Name",
             "type": "string"
         }
-    }
+    },
+    "required": [
+        "name"
+    ]
 }

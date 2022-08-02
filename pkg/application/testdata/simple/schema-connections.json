@@ -3,21 +3,6 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "description": "An application",
     "name": "my-app",
-    "properties": {
-        "aws_authentication": {
-            "aws": "authentication"
-        },
-        "azure_authentication": {
-            "azure": "authentication"
-        },
-        "gcp_authentication": {
-            "gcp": "authentication"
-        },
-        "kubernetes_cluster": {
-            "kube": "cluster"
-        }
-    },
-    "required": [
-        "kubernetes_cluster"
-    ]
+    "properties": {},
+    "required": []
 }

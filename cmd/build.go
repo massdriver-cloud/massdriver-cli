@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// applicationCmd represents the application command
 var buildCmd = &cobra.Command{
 	Use:  "build",
 	Long: ``,
@@ -30,7 +29,7 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	// TODO: app/bundle build directories
 	output := "."
 
-	// TODO: mo-betta, apps / bunbdles / etc should share metadata
+	// TODO: apps / bundles / etc should share metadata
 	app, err := application.Parse("massdriver.yaml")
 	if err != nil {
 		return err
@@ -38,9 +37,13 @@ func runBuild(cmd *cobra.Command, args []string) error {
 
 	switch app.Type {
 	case "application":
-		return application.Build(c, output)
+		return app.Build(c, output)
 	case "bundle":
-		return bundle.Build(c, output)
+		bun, errParse := bundle.Parse("massdriver.yaml", nil)
+		if errParse != nil {
+			return errParse
+		}
+		return bun.Build(c, output)
 	default:
 		return errors.New("unknown type")
 	}
