@@ -12,12 +12,6 @@ import (
 const configFile = "massdriver.yaml"
 
 func (b *Bundle) Build(c *client.MassdriverClient, output string) error {
-	// b, err := Parse(configFile, nil)
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("an error occurred while parsing bundle")
-	// 	return err
-	// }
-
 	err := b.Hydrate(configFile, c)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while hydrating bundle")
