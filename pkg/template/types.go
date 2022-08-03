@@ -10,4 +10,6 @@ type Data struct {
 	TemplateSource string
 	OutputDir      string
 	Type           string
+	CloudProvider  string
+	Dependencies   []string
 }

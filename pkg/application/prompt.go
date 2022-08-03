@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/manifoldco/promptui"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
@@ -28,6 +29,7 @@ var promptsNew = []func(t *template.Data) error{
 	getAccessLevel,
 	getTemplate,
 	getOutputDir,
+	getDeps,
 }
 
 func RunPrompt(t *template.Data) error {
@@ -184,5 +186,22 @@ func getOutputDir(t *template.Data) error {
 	}
 
 	t.OutputDir = result
+	return nil
+}
+
+// TODO fetch these from the API instead of hardcoding
+var artifacts = []string{"(None)", "massdriver/draft-node", "massdriver/aws-s3-bucket"}
+
+func getDeps(t *template.Data) error {
+	var deps []string
+	multiselect := &survey.MultiSelect{
+		Message: "What artifacts does your application depend on?",
+		Options: artifacts,
+	}
+	err := survey.AskOne(multiselect, &deps)
+	if err != nil {
+		return err
+	}
+	t.Dependencies = deps
 	return nil
 }
