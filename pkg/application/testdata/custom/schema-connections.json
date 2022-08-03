@@ -3,6 +3,12 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "description": "An application",
     "name": "my-app",
-    "properties": {},
-    "required": []
+    "properties": {
+        "azure_service_principal": {
+            "azure": "authentication"
+        }
+    },
+    "required": [
+        "azure_service_principal"
+    ]
 }

@@ -10,3 +10,8 @@ params:
     name:
       type: string
       title: Name
+
+dependencies:
+  gcp_authentication:
+    type: massdriver/gcp-service-account
+    required: true

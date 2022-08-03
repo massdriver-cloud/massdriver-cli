@@ -14,5 +14,9 @@ params:
       type: string
   required:
   - name
-dependencies: {}
+dependencies:
+  azure_service_principal:
+    type: massdriver/azure-service-principal
+    required: true
+    envs: []
 ui: {}

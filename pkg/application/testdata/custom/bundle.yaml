@@ -15,8 +15,11 @@ params:
   required:
   - name
 connections:
-  properties: {}
-  required: []
+  properties:
+    azure_service_principal:
+      $ref: massdriver/azure-service-principal
+  required:
+  - azure_service_principal
 ui:
   ui:order:
   - '*'

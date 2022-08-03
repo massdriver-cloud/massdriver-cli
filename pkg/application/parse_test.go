@@ -34,6 +34,12 @@ func TestParse(t *testing.T) {
 						"name",
 					},
 				},
+				Dependencies: map[string]application.Dependencies{
+					"gcp_authentication": {
+						Type:     "massdriver/gcp-service-account",
+						Required: true,
+					},
+				},
 			},
 		},
 		{
@@ -54,6 +60,12 @@ func TestParse(t *testing.T) {
 					},
 					"required": []interface{}{
 						"name",
+					},
+				},
+				Dependencies: map[string]application.Dependencies{
+					"azure_service_principal": {
+						Type:     "massdriver/azure-service-principal",
+						Required: true,
 					},
 				},
 			},

@@ -14,5 +14,9 @@ params:
       type: string
   required:
   - name
-dependencies: {}
+dependencies:
+  gcp_authentication:
+    type: massdriver/gcp-service-account
+    required: true
+    envs: []
 ui: {}
