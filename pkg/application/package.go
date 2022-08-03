@@ -15,6 +15,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// TODO: dedupe w/ build
 func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
 	app, parseErr := Parse(appPath)
 	if parseErr != nil {
@@ -27,7 +28,6 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		return nil, errWrite
 	}
 
-	// Write bundle.yaml
 	b, err := app.ConvertToBundle()
 	if err != nil {
 		return nil, fmt.Errorf("could not convert app to bundle: %w", err)
@@ -40,6 +40,8 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		return nil, errWriteB
 	}
 
+	// if the bundle doesn't have Steps
+	// use default steps to generate the provisioner files
 	steps := b.Steps
 	if b.Steps == nil {
 		steps = []bundle.Step{
@@ -68,7 +70,7 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 			return nil, err
 		}
 		log.Debug().Msgf("copy from: %s", path.Join(appDir, step.Path))
-		log.Debug().Msgf("copy to: %s", path.Join(bundleDir, step.Path))
+		log.Debug().Msgf("copy to  : %s", path.Join(bundleDir, step.Path))
 		errCopy := common.CopyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path))
 		if errCopy != nil {
 			return nil, errCopy

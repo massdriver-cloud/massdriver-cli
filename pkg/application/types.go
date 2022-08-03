@@ -1,5 +1,7 @@
 package application
 
+import "github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+
 type Application struct {
 	Schema       string                  `json:"schema" yaml:"schema"`
 	Name         string                  `json:"name" yaml:"name"`
@@ -8,6 +10,7 @@ type Application struct {
 	Type         string                  `json:"type" yaml:"type"`
 	Access       string                  `json:"access" yaml:"access"`
 	Deployment   Deployment              `json:"deployment" yaml:"deployment"`
+	Steps        []bundle.Step           `json:"steps" yaml:"steps"`
 	Params       map[string]interface{}  `json:"params" yaml:"params"`
 	Dependencies map[string]Dependencies `json:"dependencies" yaml:"dependencies"`
 	UI           map[string]interface{}  `json:"ui" yaml:"ui"`

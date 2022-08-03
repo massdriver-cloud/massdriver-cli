@@ -16,7 +16,9 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 	b.Params = app.Params
 	b.Connections = make(map[string]interface{})
 	b.Artifacts = make(map[string]interface{})
-	b.UI = make(map[string]interface{})
+	if app.Steps != nil {
+		b.Steps = app.Steps
+	}
 
 	connectionsRequired := []string{}
 	connectionsProperties := make(map[string]interface{})
@@ -38,6 +40,7 @@ func (app *Application) ConvertToBundle() (*bundle.Bundle, error) {
 		b.UI = app.UI
 	} else {
 		uiOrder := []interface{}{"*"}
+		b.UI = make(map[string]interface{})
 		b.UI["ui:order"] = uiOrder
 	}
 
