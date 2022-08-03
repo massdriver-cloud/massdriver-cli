@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
+set -e
 
 CACHE_DIR="$HOME/.massdriver/templates"
 TEST_DATA_DIR="pkg/template/testdata/application-templates"
 mass application templates refresh
+if [ $? -eq 127 ]; then
+  echo "mass CLI is not installed. Please run 'make install.macos' (or 'make install.linux' if in the dev container) and try again."
+  exit 1
+fi
 
-cp -r "$CACHE_DIR/*" "$TEST_DATA_DIR/"
-rm -r "${TEST_DATA_DIR}/.git
+echo "overwriting $TEST_DATA_DIR with $CACHE_DIR"
+cp -r ${CACHE_DIR}/* "$TEST_DATA_DIR/"
+rm -r "${TEST_DATA_DIR}/README.md"
+# check if any tracked files are changed
+if [ `git status --porcelain --untracked-files=no` ]; then
+  exit 1
+fi
+exit 0
