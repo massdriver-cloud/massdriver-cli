@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+CACHE_DIR="$HOME/.massdriver/templates"
+TEST_DATA_DIR="pkg/template/testdata/application-templates"
+mass application templates refresh
+
+cp -r "$CACHE_DIR/*" "$TEST_DATA_DIR/"
+rm -r "${TEST_DATA_DIR}/.git
