@@ -8,10 +8,14 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -26,8 +30,14 @@ var applicationCmd = &cobra.Command{
 var applicationGenerateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
-	Short:   "Generates a new application template",
+	Short:   "Deprecated: Generates a new application template",
 	RunE:    runApplicationGenerate,
+}
+
+var applicationNewCmd = &cobra.Command{
+	Use:   "new",
+	Short: "Creates a new application from a template",
+	RunE:  runApplicationNew,
 }
 
 var applicationPublishCmd = &cobra.Command{
@@ -38,17 +48,33 @@ var applicationPublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var applicationTemplatesCmd = &cobra.Command{
+	Use:     "templates",
+	Aliases: []string{"tmpl"},
+	Short:   "Lists available application templates",
+	RunE:    runApplicationTemplates,
+}
+
+var templatesRefreshCmd = &cobra.Command{
+	Use:   "refresh",
+	Short: "Refreshes local copy of application templates",
+	RunE:  runTemplatesRefresh,
+}
+
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationGenerateCmd)
+	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
+	applicationCmd.AddCommand(applicationTemplatesCmd)
+	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
 func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	templateData := application.TemplateData{}
+	templateData := template.Data{}
 
 	err := application.RunPrompt(&templateData)
 	if err != nil {
@@ -56,6 +82,28 @@ func runApplicationGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	err = application.Generate(&templateData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runApplicationNew(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	templateData := template.Data{
+		Access: "private",
+		// TODO: unify bundle build and app build outputDir logic and support
+		OutputDir: ".",
+	}
+
+	err := application.RunPromptNew(&templateData)
+	if err != nil {
+		return err
+	}
+
+	err = application.GenerateFromTemplate(&templateData)
 	if err != nil {
 		return err
 	}
@@ -103,6 +151,29 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("Application published successfully!")
+
+	return nil
+}
+
+func runApplicationTemplates(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	templates, err := cache.ApplicationTemplates()
+	if err != nil {
+		return err
+	}
+	log.Info().Msgf("Application templates:\n  %s", strings.Join(templates, "\n  "))
+
+	return nil
+}
+
+func runTemplatesRefresh(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	if err := cache.RefreshAppTemplates(); err != nil {
+		return err
+	}
+	log.Info().Msg("Application templates refreshed successfully.")
 
 	return nil
 }

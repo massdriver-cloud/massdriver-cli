@@ -9,6 +9,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -130,9 +131,10 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	templateData := bundle.TemplateData{
-		OutputDir: outputDir,
-		Type:      "bundle",
+	templateData := template.Data{
+		OutputDir:    outputDir,
+		Type:         "bundle",
+		TemplateName: "terraform",
 	}
 
 	err = bundle.RunPrompt(&templateData)

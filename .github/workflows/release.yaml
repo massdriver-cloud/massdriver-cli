@@ -3,6 +3,7 @@ on:
   release:
     types:
       - created
+      - released
 jobs:
   generate:
     name: Generate cross-platform builds
@@ -22,3 +23,5 @@ jobs:
         goarch: ${{ matrix.goarch }}
         goversion: 1.17
         binary_name: mass
+        # ldflags is the canonical way of setting dynamic values (like version) at compile time
+        ldflags: -X github.com/massdriver-cloud/massdriver-cli/pkg/version.version=${{github.ref_name}} -X github.com/massdriver-cloud/massdriver-cli/pkg/version.gitSHA=${{github.sha}}

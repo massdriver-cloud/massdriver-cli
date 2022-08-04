@@ -7,14 +7,16 @@ import (
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
 
 func TestGenerate(t *testing.T) {
-	bundleData := bundle.TemplateData{
-		Name:        "aws-vpc",
-		Access:      "Private",
-		Description: "a vpc",
-		Type:        "bundle",
+	bundleData := template.Data{
+		Name:         "aws-vpc",
+		Access:       "Private",
+		Description:  "a vpc",
+		Type:         "bundle",
+		TemplateName: "terraform",
 	}
 
 	assertFileCreatedAndContainsText := func(t testing.TB, filename string, expectedPattern *regexp.Regexp) {

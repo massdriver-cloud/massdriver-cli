@@ -1,13 +1,5 @@
 package application
 
-type TemplateData struct {
-	Name        string
-	Description string
-	Access      string
-	Chart       string
-	Location    string
-}
-
 type Application struct {
 	Schema       string                  `json:"schema" yaml:"schema"`
 	Name         string                  `json:"name" yaml:"name"`
