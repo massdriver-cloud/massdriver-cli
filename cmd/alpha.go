@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// applicationCmd represents the application command
 var alphaCmd = &cobra.Command{
 	Use:   "alpha",
 	Short: "command group for alpha features",
