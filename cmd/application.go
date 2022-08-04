@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -62,7 +58,8 @@ var templatesRefreshCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(applicationCmd)
+	// TODO switch this to rootCmd.AddCommand(applicationCmd) once apps are stable
+	alphaCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
