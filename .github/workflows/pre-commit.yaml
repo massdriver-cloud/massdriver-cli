@@ -17,3 +17,4 @@ jobs:
         # however, we don't want it to fail on commits to main in CI.
         # we use the golangci-lint gh action in lint.yaml because it generates useful comments.
         SKIP: no-commit-to-branch,golangci-lint
+        INSTALL_MASS_LINUX: "true"

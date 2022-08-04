@@ -41,6 +41,7 @@ func TestAppFromTemplate(t *testing.T) {
 				TemplateName:   tc.templateName,
 				TemplateSource: tc.templatesDir,
 				OutputDir:      t.TempDir(),
+				CloudProvider:  "gcp",
 			}
 			templateDir := path.Join(tc.templatesDir, tc.templateName)
 			err := template.RenderDirectory(templateDir, &templateData)

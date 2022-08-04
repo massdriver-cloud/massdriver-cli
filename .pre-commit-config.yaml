@@ -1,5 +1,13 @@
 fail_fast: false
 repos:
+  - repo: local
+    hooks:
+      - id: refresh-app-templates
+        name: refresh-app-templates
+        language: system
+        entry: scripts/refresh-app-templates
+        always_run: true
+        pass_filenames: false
   - repo: https://github.com/dnephin/pre-commit-golang
     rev: v0.5.0
     hooks:
@@ -27,7 +35,9 @@ repos:
         args: [--autofix, --no-sort-keys, --indent=4]
         exclude: .devcontainer/
       - id: check-yaml
+        exclude: ^pkg/template/testdata/application-templates.*
       - id: end-of-file-fixer
+        exclude: ^pkg/template/testdata/application-templates.*
       - id: detect-aws-credentials
         args: [--allow-missing-credentials]
       - id: no-commit-to-branch

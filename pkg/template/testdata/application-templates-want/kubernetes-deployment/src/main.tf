@@ -1,3 +1,9 @@
-resource "random_pet" "main" {
-  name = var.md_metadata.name_prefix
+
+
+
+
+
+module "k8s_application" {
+  source = "github.com/massdriver-cloud/terraform-modules//k8s-application-gcp?ref=TODO"
 }
+
