@@ -11,5 +11,5 @@ type Data struct {
 	OutputDir      string
 	Type           string
 	CloudProvider  string
-	Dependencies   []string
+	Dependencies   map[string]string
 }
