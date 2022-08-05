@@ -217,9 +217,9 @@ func getDeps(t *template.Data) error {
 			}
 			return nil
 		}
-		// TODO may have to replace the slash in artifact names
 		// dependencies are a map with indexed key so in the future we could allow selecting multiple of the same artifact type
-		depMap[fmt.Sprintf("%v_%v", v, i)] = selectedDeps[i]
+		dependencyName := template.TypeToName(v)
+		depMap[dependencyName] = selectedDeps[i]
 	}
 	t.Dependencies = depMap
 	return nil

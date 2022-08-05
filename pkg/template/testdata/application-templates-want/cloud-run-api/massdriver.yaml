@@ -25,7 +25,7 @@ dependencies:
     type: massdriver/gcp-service-account
     required: true
 
-  massdriver/draft-node_0:
+  massdriver_draft_node:
     type: massdriver/draft-node
     required: true
 
