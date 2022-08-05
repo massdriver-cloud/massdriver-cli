@@ -11,6 +11,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
+
 const noneDep = "(None)"
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
@@ -212,7 +213,7 @@ func getDeps(t *template.Data) error {
 		if v == noneDep {
 			t.Dependencies = make(map[string]string)
 			if len(selectedDeps) > 1 {
-				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v",noneDep, selectedDeps)
+				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v", noneDep, selectedDeps)
 			}
 			return nil
 		}
