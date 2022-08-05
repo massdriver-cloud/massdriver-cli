@@ -34,6 +34,6 @@ var MassdriverArtifacts = []string{
 }
 
 func GetArtifacts() ([]string, error) {
-	// TODO this should list these artifacts from the massdriver API 
+	// TODO this should list these artifacts from the massdriver API
 	return MassdriverArtifacts, nil
 }

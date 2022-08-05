@@ -204,7 +204,7 @@ func getDeps(t *template.Data) error {
 		return err
 	}
 	depMap := make(map[string]string)
-	for i, v  := range deps {
+	for i, v := range deps {
 		// TODO may have to replace the slash in artifact names
 		// dependencies are a map with indexed key so in the future we could allow selecting multiple of the same artifact type
 		depMap[fmt.Sprintf("%v_%v", v, i)] = artifacts[i]
