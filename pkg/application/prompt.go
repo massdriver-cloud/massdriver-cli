@@ -11,6 +11,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
+const noneDep = "(None)"
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
@@ -197,20 +198,27 @@ func getDeps(t *template.Data) error {
 	if err != nil {
 		return err
 	}
-	var deps []string
+	var selectedDeps []string
 	multiselect := &survey.MultiSelect{
-		Message: "What artifacts does your application depend on?",
-		Options: artifacts,
+		Message: "What artifacts does your application depend on? If you have no dependencies just hit enter or only select (None)",
+		Options: append([]string{noneDep}, artifacts...),
 	}
-	err = survey.AskOne(multiselect, &deps)
+	err = survey.AskOne(multiselect, &selectedDeps)
 	if err != nil {
 		return err
 	}
 	depMap := make(map[string]string)
-	for i, v := range deps {
+	for i, v := range selectedDeps {
+		if v == noneDep {
+			t.Dependencies = make(map[string]string)
+			if len(selectedDeps) > 1 {
+				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v",noneDep, selectedDeps)
+			}
+			return nil
+		}
 		// TODO may have to replace the slash in artifact names
 		// dependencies are a map with indexed key so in the future we could allow selecting multiple of the same artifact type
-		depMap[fmt.Sprintf("%v_%v", v, i)] = deps[i]
+		depMap[fmt.Sprintf("%v_%v", v, i)] = selectedDeps[i]
 	}
 	t.Dependencies = depMap
 	return nil
