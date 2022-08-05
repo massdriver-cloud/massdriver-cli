@@ -31,6 +31,13 @@ func TestAppFromTemplate(t *testing.T) {
 			templatesDir: "testdata/application-templates",
 			wantPath:     "testdata/application-templates-want/cloud-run-api",
 		},
+		{
+			name:         "my-job",
+			description:  "my cool Massdriver cron job",
+			templateName: "kubernetes-cronjob",
+			templatesDir: "testdata/application-templates",
+			wantPath:     "testdata/application-templates-want/kubernetes-cronjob",
+		},
 	}
 
 	for _, tc := range tests {
@@ -43,7 +50,7 @@ func TestAppFromTemplate(t *testing.T) {
 				OutputDir:      t.TempDir(),
 				CloudProvider:  "gcp",
 				Dependencies: map[string]string{
-					"foo": "massdriver/bar",
+					"massdriver/draft-node_0": "massdriver/draft-node",
 				},
 			}
 			templateDir := path.Join(tc.templatesDir, tc.templateName)

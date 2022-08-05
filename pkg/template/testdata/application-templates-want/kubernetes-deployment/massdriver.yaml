@@ -76,6 +76,11 @@ dependencies:
     required: true
 
 
+  massdriver/draft-node_0:
+    type: massdriver/draft-node
+    required: true
+
+
 
 ui:
   ui:order:

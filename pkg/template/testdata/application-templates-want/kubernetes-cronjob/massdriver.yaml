@@ -1,7 +1,7 @@
 schema: draft-07
-name: <md .Name md>
-description: <md .Description md>
-ref: github.com/YOUR_ORG/<md .Name md>
+name: my-job
+description: my cool Massdriver cron job
+ref: github.com/YOUR_ORG/my-job
 access: private
 type: application
 
@@ -57,23 +57,17 @@ dependencies:
   kubernetes_cluster:
     type: massdriver/kubernetes-cluster
     required: true
-<md if (eq .CloudProvider "aws") md>  aws_authentication:
-    type: massdriver/aws-iam-role
-    required: true
-<md end md>
-<md if (eq .CloudProvider "azure") md>  azure_service_principal:
-    type: massdriver/azure-service-principal
-    required: true
-<md end md>
-<md if (eq .CloudProvider "gcp") md>  gcp_authentication:
+
+
+  gcp_authentication:
     type: massdriver/gcp-service-account
     required: true
-<md end md>
-<md range $key, $art:= .Dependencies md>
-  <md $key md>:
-    type: <md $art md>
+
+
+  massdriver/draft-node_0:
+    type: massdriver/draft-node
     required: true
-<md end md>
+
 
 
 ui:
