@@ -200,7 +200,7 @@ func getDeps(t *template.Data) error {
 	var deps []string
 	multiselect := &survey.MultiSelect{
 		Message: "What artifacts does your application depend on?",
-		Options: artifacts, 
+		Options: artifacts,
 	}
 	err = survey.AskOne(multiselect, &deps)
 	if err != nil {
