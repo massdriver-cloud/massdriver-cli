@@ -191,15 +191,18 @@ func getOutputDir(t *template.Data) error {
 }
 
 // TODO fetch these from the API instead of hardcoding
-var artifacts = []string{"(None)", "massdriver/draft-node", "massdriver/aws-s3-bucket"}
 
 func getDeps(t *template.Data) error {
+	artifacts, err := GetMassdriverArtifacts()
+	if err != nil {
+		return err
+	}
 	var deps []string
 	multiselect := &survey.MultiSelect{
 		Message: "What artifacts does your application depend on?",
-		Options: artifacts,
+		Options: artifacts, 
 	}
-	err := survey.AskOne(multiselect, &deps)
+	err = survey.AskOne(multiselect, &deps)
 	if err != nil {
 		return err
 	}
@@ -207,7 +210,7 @@ func getDeps(t *template.Data) error {
 	for i, v := range deps {
 		// TODO may have to replace the slash in artifact names
 		// dependencies are a map with indexed key so in the future we could allow selecting multiple of the same artifact type
-		depMap[fmt.Sprintf("%v_%v", v, i)] = artifacts[i]
+		depMap[fmt.Sprintf("%v_%v", v, i)] = deps[i]
 	}
 	t.Dependencies = depMap
 	return nil

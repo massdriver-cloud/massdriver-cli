@@ -33,7 +33,7 @@ var MassdriverArtifacts = []string{
 	"redis-authentication",
 }
 
-func GetArtifacts() ([]string, error) {
+func GetMassdriverArtifacts() ([]string, error) {
 	// TODO this should list these artifacts from the massdriver API
 	return MassdriverArtifacts, nil
 }
