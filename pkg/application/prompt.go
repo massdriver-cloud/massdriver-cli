@@ -149,20 +149,6 @@ func getTemplate(t *template.Data) error {
 		return err
 	}
 
-	if strings.HasPrefix(result, "kubernetes-") {
-		promptCloud := promptui.Select{
-			Label: "For Kubernetes, What's Your Cloud Provider?",
-			Items: []string{"aws", "azure", "gcp"},
-		}
-
-		_, resultCloud, errCloud := promptCloud.Run()
-
-		if errCloud != nil {
-			return errCloud
-		}
-		t.CloudProvider = resultCloud
-	}
-
 	t.TemplateName = result
 	return nil
 }
