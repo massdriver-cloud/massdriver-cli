@@ -51,8 +51,7 @@ func TestAppFromTemplate(t *testing.T) {
 				CloudProvider:  "gcp",
 				Dependencies:   map[string]string{},
 			}
-			dependencyName := template.TypeToName("massdriver/draft-node")
-			templateData.Dependencies[dependencyName] = "massdriver/draft-node"
+			templateData.Dependencies["draft_node"] = "massdriver/draft-node"
 
 			templateDir := path.Join(tc.templatesDir, tc.templateName)
 			err := template.RenderDirectory(templateDir, &templateData)

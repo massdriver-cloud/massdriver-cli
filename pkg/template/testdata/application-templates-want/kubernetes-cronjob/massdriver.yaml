@@ -64,7 +64,7 @@ dependencies:
     required: true
 
 
-  massdriver_draft_node:
+  draft_node:
     type: massdriver/draft-node
     required: true
 
