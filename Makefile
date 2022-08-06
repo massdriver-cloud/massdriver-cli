@@ -32,3 +32,7 @@ install.macos: build
 .PHONY: install.linux
 install.linux: build.linux
 	cp -f bin/mass-linux-amd64 ${INSTALL_PATH}/mass
+
+.PHONY: refresh-templates
+refresh-templates:
+	./scripts/refresh-templates.sh

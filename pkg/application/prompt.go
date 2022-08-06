@@ -2,13 +2,17 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
+	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/manifoldco/promptui"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
+
+const noneDep = "(None)"
 
 var bundleTypeFormat = regexp.MustCompile(`^[a-z0-9-]{2,}`)
 
@@ -28,6 +32,7 @@ var promptsNew = []func(t *template.Data) error{
 	getAccessLevel,
 	getTemplate,
 	getOutputDir,
+	getDeps,
 }
 
 func RunPrompt(t *template.Data) error {
@@ -184,5 +189,38 @@ func getOutputDir(t *template.Data) error {
 	}
 
 	t.OutputDir = result
+	return nil
+}
+
+// TODO fetch these from the API instead of hardcoding
+
+func getDeps(t *template.Data) error {
+	artifacts, err := GetMassdriverArtifacts()
+	if err != nil {
+		return err
+	}
+	var selectedDeps []string
+	multiselect := &survey.MultiSelect{
+		Message: "What artifacts does your application depend on? If you have no dependencies just hit enter or only select (None)",
+		Options: append([]string{noneDep}, artifacts...),
+	}
+	err = survey.AskOne(multiselect, &selectedDeps)
+	if err != nil {
+		return err
+	}
+	depMap := make(map[string]string)
+	for i, v := range selectedDeps {
+		if v == noneDep {
+			t.Dependencies = make(map[string]string)
+			if len(selectedDeps) > 1 {
+				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v", noneDep, selectedDeps)
+			}
+			return nil
+		}
+		// TODO may have to replace the slash in artifact names
+		// dependencies are a map with indexed key so in the future we could allow selecting multiple of the same artifact type
+		depMap[fmt.Sprintf("%v_%v", v, i)] = selectedDeps[i]
+	}
+	t.Dependencies = depMap
 	return nil
 }

@@ -1,0 +1,75 @@
+schema: draft-07
+name: <md .Name md>
+description: <md .Description md>
+ref: github.com/YOUR_ORG/<md .Name md>
+access: private
+type: application
+
+params:
+  properties:
+    name:
+      type: string
+    namespace:
+      type: string
+      default: default
+    image:
+      type: object
+      properties:
+        repository:
+          type: string
+        sha:
+          type: string
+        tag:
+          type: string
+    resource_requests:
+      type: object
+      properties:
+        cpu:
+          type: string
+        memory:
+          type: string
+    autoscaling:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          default: false
+        minReplicas:
+          type: integer
+          default: 1
+        maxReplicas:
+          type: integer
+          default: 2
+        targetCPUUtilizationPercentage:
+          type: integer
+          default: 90
+    envs:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+          value:
+            type: string
+
+dependencies:
+  kubernetes_cluster:
+    type: massdriver/kubernetes-cluster
+    required: true
+<md if (eq .CloudProvider "aws") md>  aws_authentication:
+    type: massdriver/aws-iam-role
+    required: true
+<md end md>
+<md if (eq .CloudProvider "azure") md>  azure_service_principal:
+    type: massdriver/azure-service-principal
+    required: true
+<md end md>
+<md if (eq .CloudProvider "gcp") md>  gcp_authentication:
+    type: massdriver/gcp-service-account
+    required: true
+<md end md>
+
+ui:
+  ui:order:
+    - "*"
