@@ -1,0 +1,26 @@
+schema: draft-07
+name: renders-dependencies
+description: Renders selectected Dependencies
+ref: github.com/YOUR_ORG/renders-dependencies
+access: private
+type: application
+
+params:
+  properties:
+    hostname:
+      type: string
+    app_env:
+      type: string
+
+dependencies:
+  database:
+    type: massdriver/postgresql-authentication
+    required: true
+  draft_node:
+    type: massdriver/draft-node
+    required: true
+
+ui:
+  ui:order:
+    - hostname
+    - app_env
