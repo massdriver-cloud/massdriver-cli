@@ -126,7 +126,7 @@ func TestHydrate(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			c := client.NewClient().WithEndpoint(testServer.URL)
+			c := client.NewClient().WithBaseURL(testServer.URL)
 			ctx := context.TODO()
 
 			got, gotErr := jsonschema.Hydrate(ctx, test.Input, ".", c)
@@ -169,7 +169,7 @@ func TestHydrate(t *testing.T) {
 		}))
 		defer testServer.Close()
 
-		c := client.NewClient().WithEndpoint(testServer.URL)
+		c := client.NewClient().WithBaseURL(testServer.URL)
 		ctx := context.TODO()
 
 		recursive := fmt.Sprintf(`{"baz":{"$ref":"%s/endpoint"}}`, testServer.URL)

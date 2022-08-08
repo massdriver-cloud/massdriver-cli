@@ -59,7 +59,7 @@ func TestPackage(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			c := client.NewClient().WithEndpoint(testServer.URL)
+			c := client.NewClient().WithBaseURL(testServer.URL)
 
 			// Create a temp dir, write out the archive, then shell out to untar
 			testDir := t.TempDir()

@@ -11,18 +11,18 @@ type HTTPClient interface {
 }
 
 type MassdriverClient struct {
-	Client   HTTPClient
-	endpoint string
-	apiKey   string
+	Client  HTTPClient
+	baseURL string
+	apiKey  string
 }
 
-const MassdriverEndpoint = "https://api.massdriver.cloud"
+const MassdriverBaseURL = "https://api.massdriver.cloud"
 
 func NewClient() *MassdriverClient {
 	c := new(MassdriverClient)
 
 	c.Client = http.DefaultClient
-	c.endpoint = MassdriverEndpoint
+	c.baseURL = getBaseURL()
 	c.apiKey = getAPIKey()
 
 	return c
@@ -33,13 +33,20 @@ func getAPIKey() string {
 	return os.Getenv("MASSDRIVER_API_KEY")
 }
 
+func getBaseURL() string {
+	if endpoint, ok := os.LookupEnv("MASSDRIVER_URL"); ok {
+		return endpoint
+	}
+	return MassdriverBaseURL
+}
+
 func (c *MassdriverClient) WithAPIKey(apiKey string) *MassdriverClient {
 	c.apiKey = apiKey
 	return c
 }
 
-func (c *MassdriverClient) WithEndpoint(endpoint string) *MassdriverClient {
-	c.endpoint = endpoint
+func (c *MassdriverClient) WithBaseURL(endpoint string) *MassdriverClient {
+	c.baseURL = endpoint
 	return c
 }
 
