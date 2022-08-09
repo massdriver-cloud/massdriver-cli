@@ -69,9 +69,19 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		if err != nil {
 			return nil, err
 		}
-		log.Debug().Msgf("copy from: %s", path.Join(appDir, step.Path))
-		log.Debug().Msgf("copy to  : %s", path.Join(bundleDir, step.Path))
-		errCopy := common.CopyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path))
+		// ignore these, copy the rest
+		ignores := []string{
+			".terraform",
+			"terraform.tfstate",
+			"auto.tfvars.json",
+			"connections.auto.tfvars.json",
+			"dev.connections.tfvars",
+			"dev.params.tfvars",
+			"_connections_variables.tf.json",
+			"_md_variables.tf.json",
+			"_params_variables.tf.json",
+		}
+		errCopy := common.CopyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path), ignores)
 		if errCopy != nil {
 			return nil, errCopy
 		}
