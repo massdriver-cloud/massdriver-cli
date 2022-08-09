@@ -124,3 +124,7 @@ schema-ui.json
 src/_connections_variables.tf.json
 src/_md_variables.tf.json
 src/_params_variables.tf.json
+
+
+# vscode configuration
+.vscode/
