@@ -27,13 +27,6 @@ var applicationCmd = &cobra.Command{
 	Long:    ``,
 }
 
-var applicationGenerateCmd = &cobra.Command{
-	Use:     "generate",
-	Aliases: []string{"gen"},
-	Short:   "Deprecated: Generates a new application template",
-	RunE:    runApplicationGenerate,
-}
-
 var applicationNewCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Creates a new application from a template",
@@ -64,29 +57,10 @@ var templatesRefreshCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
-	applicationCmd.AddCommand(applicationGenerateCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
-}
-
-func runApplicationGenerate(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
-
-	templateData := template.Data{}
-
-	err := application.RunPrompt(&templateData)
-	if err != nil {
-		return err
-	}
-
-	err = application.Generate(&templateData)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func runApplicationNew(cmd *cobra.Command, args []string) error {

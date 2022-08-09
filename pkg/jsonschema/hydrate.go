@@ -24,7 +24,7 @@ var fragmentPattern = regexp.MustCompile(`^#`)
 func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.MassdriverClient) (interface{}, error) {
 	val := getValue(anyVal)
 
-	switch val.Kind() { // nolint:exhaustive
+	switch val.Kind() { //nolint:exhaustive
 	case reflect.Slice, reflect.Array:
 		return hydrateList(ctx, c, cwd, val)
 	case reflect.Map:

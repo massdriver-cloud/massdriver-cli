@@ -1,10 +1,17 @@
 package template_test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -18,18 +25,18 @@ func TestAppFromTemplate(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:         "my-app",
-			description:  "my cool Massdriver app",
-			templateName: "kubernetes-deployment",
-			templatesDir: "testdata/application-templates",
-			wantPath:     "testdata/application-templates-want/kubernetes-deployment",
+			name:         "renders-successfully",
+			description:  "Renders an application config & subdirectories",
+			templateName: "renders-successfully",
+			templatesDir: "testdata/application-templates/",
+			wantPath:     "testdata/application-templates-want/renders-successfully",
 		},
 		{
-			name:         "cloud-run-hyperscale-serverless-api",
-			description:  "my cool Massdriver app serverless",
-			templateName: "cloud-run-api",
-			templatesDir: "testdata/application-templates",
-			wantPath:     "testdata/application-templates-want/cloud-run-api",
+			name:         "renders-dependencies",
+			description:  "Renders selectected Dependencies",
+			templateName: "renders-dependencies",
+			templatesDir: "testdata/application-templates/",
+			wantPath:     "testdata/application-templates-want/renders-dependencies",
 		},
 	}
 
@@ -41,7 +48,11 @@ func TestAppFromTemplate(t *testing.T) {
 				TemplateName:   tc.templateName,
 				TemplateSource: tc.templatesDir,
 				OutputDir:      t.TempDir(),
+				CloudProvider:  "gcp",
+				Dependencies:   map[string]string{},
 			}
+			templateData.Dependencies["draft_node"] = "massdriver/draft-node"
+
 			templateDir := path.Join(tc.templatesDir, tc.templateName)
 			err := template.RenderDirectory(templateDir, &templateData)
 			if err != nil {
@@ -59,9 +70,60 @@ func TestAppFromTemplate(t *testing.T) {
 			}
 
 			if gotMD5 != wantMD5 {
-				// TODO: need to print out which file is different
 				t.Errorf("got %v, want %v", gotMD5, wantMD5)
+				walkAndCompare(tc.wantPath, templateData.OutputDir)
 			}
 		})
 	}
+}
+
+func walkAndCompare(wantDir string, gotDir string) {
+	_ = gotDir
+	err := filepath.Walk(wantDir,
+		func(path string, info os.FileInfo, err error) error {
+			isDir, _ := isDirectory(path)
+
+			if isDir {
+				return nil
+			}
+
+			relativeFilePath := strings.TrimPrefix(path, wantDir)
+			gotFilePath := filepath.Join(gotDir, relativeFilePath)
+
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
+
+			dmp := diffmatchpatch.New()
+			gotText, _ := readFile(gotFilePath)
+			wantText, _ := readFile(path)
+			diffs := dmp.DiffMain(wantText, gotText, false)
+
+			fmt.Println(dmp.DiffToDelta(diffs))
+
+			return nil
+		})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func isDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), err
+}
+
+func readFile(path string) (string, error) {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
 }

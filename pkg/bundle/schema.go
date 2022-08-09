@@ -18,7 +18,7 @@ func (b *Bundle) Metadata(schemaType string) map[string]string {
 	return map[string]string{
 		"$schema":     generateSchemaURL(b.Schema),
 		"$id":         generateIDURL(b.Name, schemaType),
-		"name":        b.Name,
+		"title":       b.Name,
 		"description": b.Description,
 	}
 }

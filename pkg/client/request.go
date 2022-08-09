@@ -25,7 +25,7 @@ func NewRequest(method string, path string, body io.Reader) *Request {
 }
 
 func (req *Request) ToHTTPRequest(ctx context.Context, c *MassdriverClient) (*http.Request, error) {
-	url, err := url.Parse(c.endpoint)
+	url, err := url.Parse(c.baseURL)
 	if err != nil {
 		return nil, err
 	}

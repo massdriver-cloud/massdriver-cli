@@ -1,0 +1,28 @@
+schema: draft-07
+name: <md .Name md>
+description: <md .Description md>
+ref: github.com/YOUR_ORG/<md .Name md>
+access: private
+type: application
+
+params:
+  properties:
+    hostname:
+      type: string
+    app_env:
+      type: string
+
+dependencies:
+  database:
+    type: massdriver/postgresql-authentication
+    required: true
+<md- range $key, $art:= .Dependencies md>
+  <md $key md>:
+    type: <md $art md>
+    required: true
+<md- end md>
+
+ui:
+  ui:order:
+    - hostname
+    - app_env

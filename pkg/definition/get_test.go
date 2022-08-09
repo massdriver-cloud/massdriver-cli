@@ -43,7 +43,7 @@ func TestGet(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			c := client.NewClient().WithEndpoint(testServer.URL)
+			c := client.NewClient().WithBaseURL(testServer.URL)
 
 			got, err := definition.GetDefinition(c, "massdriver/test-schema")
 			if err != nil {

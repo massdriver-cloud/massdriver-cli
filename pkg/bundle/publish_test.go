@@ -62,7 +62,7 @@ func TestPublish(t *testing.T) {
 			}))
 			defer testServer.Close()
 
-			c := client.NewClient().WithEndpoint(testServer.URL)
+			c := client.NewClient().WithBaseURL(testServer.URL)
 
 			gotResponse, err := tc.bundle.Publish(c)
 			if err != nil {
