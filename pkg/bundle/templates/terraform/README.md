@@ -52,4 +52,3 @@ terraform plan -var-file=./dev.connections.tfvars.json -var-file=./dev.params.tf
 #### Other files
 
 - `operator.mdx` TBD
-- `schema.stories.json` TBD
