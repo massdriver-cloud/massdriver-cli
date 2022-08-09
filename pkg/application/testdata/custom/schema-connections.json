@@ -2,7 +2,6 @@
     "$id": "https://schemas.massdriver.cloud/schemas/bundles/my-app/schema-connections.json",
     "$schema": "http://json-schema.org/draft-07/schema",
     "description": "An application",
-    "title": "my-app",
     "properties": {
         "aws_authentication": {
             "aws": "authentication"
@@ -19,5 +18,6 @@
     },
     "required": [
         "kubernetes_cluster"
-    ]
+    ],
+    "title": "my-app"
 }
