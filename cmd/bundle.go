@@ -74,12 +74,19 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 
 	log.Info().Msg("building bundle")
 	bun, err := bundle.Parse(configFile, nil)
+	if err != nil {
+		return err
+	}
+	if bun.Type != "bundle" {
+		return fmt.Errorf("mass bundle build can only be used with bundle type massdriver.yaml")
+	}
+
 	if errBuild := bun.Build(c, output); errBuild != nil {
 		return errBuild
 	}
 	log.Info().Str("output", output).Msg("bundle built")
 
-	return err
+	return nil
 }
 
 func runBundleGenerate(cmd *cobra.Command, args []string) error {

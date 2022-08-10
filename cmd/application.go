@@ -82,6 +82,9 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	if app.Type != "application" {
+		return fmt.Errorf("mass app build can only be used with application type massdriver.yaml")
+	}
 	return app.Build(c, output)
 }
 
