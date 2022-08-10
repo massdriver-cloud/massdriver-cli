@@ -22,6 +22,7 @@ func TestParse(t *testing.T) {
 				Name:        "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
+				Type:        "application",
 				Access:      "private",
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
@@ -34,10 +35,14 @@ func TestParse(t *testing.T) {
 						"name",
 					},
 				},
-				Dependencies: map[string]application.Dependencies{
-					"gcp_authentication": {
-						Type:     "massdriver/gcp-service-account",
-						Required: true,
+				Connections: map[string]interface{}{
+					"properties": map[string]interface{}{
+						"gcp_authentication": map[string]interface{}{
+							"$ref": "massdriver/gcp-service-account",
+						},
+					},
+					"required": []interface{}{
+						"*",
 					},
 				},
 			},
@@ -50,44 +55,52 @@ func TestParse(t *testing.T) {
 				Name:        "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
+				Type:        "application",
 				Access:      "private",
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
+						"log_level": map[string]interface{}{
+							"enum": []interface{}{"warn", "error", "info"},
+							"type": "string",
 						},
-						"age": map[string]interface{}{
-							"type":  "integer",
-							"title": "Age",
+						"name": map[string]interface{}{
+							"type": "string",
+						},
+						"namespace": map[string]interface{}{
+							"default": "default",
+							"type":    "string",
+						},
+						"replication": map[string]interface{}{
+							"enum": []interface{}{"async", "sync"},
+							"type": "string",
+						},
+					},
+				},
+				Connections: map[string]interface{}{
+					"properties": map[string]interface{}{
+						"kubernetes_cluster": map[string]interface{}{
+							"$ref": "massdriver/k8s",
+						},
+						"mongo": map[string]interface{}{
+							"$ref": "massdriver/mongo-authentication",
+						},
+						"sqs": map[string]interface{}{
+							"$ref": "massdriver/aws-sqs-pubsub-subscription",
 						},
 					},
 					"required": []interface{}{
-						"name",
+						"*",
 					},
 				},
-				Dependencies: map[string]application.Dependencies{
-					"database": {
-						Type:     "massdriver/rdbms-authentication",
-						Required: true,
-						Envs: []application.DependenciesEnvs{
-							{
-								Name: "DATABASE_URL",
-								Path: ".data.authentication.connection_string",
-							},
-						},
-						Policies: []string{"read-bq", "read-gcs"},
+				App: application.AppBlock{
+					Envs: map[string]string{
+						"LOG_LEVEL":      "params.log_level",
+						"MONGO_USERNAME": "connections.mongo.authentication.username",
+						"STRIPE_KEY":     "secrets.ecomm_site_stripe_key",
 					},
-					"queue": {
-						Type:     "massdriver/aws-sqs-queue",
-						Required: false,
-						Envs: []application.DependenciesEnvs{
-							{
-								Name: "MY_QUEUE_ARN",
-								Path: ".data.infrastructure.arn",
-							},
-						},
-						Policies: []string{"read"},
+					Policies: []string{
+						"connections.sqs.security.policies.read",
+						"connections.s3.security.policies.write",
 					},
 				},
 			},

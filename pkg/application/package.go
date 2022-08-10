@@ -15,18 +15,40 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// TODO: dedupe w/ build
-func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
+func PackageBetter(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
 	app, parseErr := Parse(appPath)
 	if parseErr != nil {
 		return nil, parseErr
 	}
-
-	bytes, errMarshal := yaml.Marshal(*app)
-	errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
-	if errWrite != nil {
-		return nil, errWrite
+	if errBuild := app.Build(c, workingDir); errBuild != nil {
+		return nil, errBuild
 	}
+
+	err := bundle.PackageBundle(workingDir, buf)
+	if err != nil {
+		return nil, err
+	}
+
+	b, parseBErr := bundle.Parse(path.Join(workingDir, "massdriver.yaml"), nil)
+	if parseBErr != nil {
+		return nil, parseBErr
+	}
+
+	return b, nil
+}
+
+// TODO: dedupe w/ build
+func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
+	// app, parseErr := Parse(appPath)
+	// if parseErr != nil {
+	// 	return nil, parseErr
+	// }
+
+	// bytes, errMarshal := yaml.Marshal(*app)
+	// errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
+	// if errWrite != nil {
+	// 	return nil, errWrite
+	// }
 
 	// TODO: be better
 	b, err := bundle.Parse(appPath, nil)
@@ -62,8 +84,10 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 	if err != nil {
 		return nil, err
 	}
+
 	appDir := filepath.Dir(appPath)
 	bundleDir := filepath.Dir(bundlePath)
+
 	// Make all directories, generate provisioner-specific files
 	for _, step := range steps {
 		err = os.MkdirAll(path.Join(workingDir, step.Path), 0744)

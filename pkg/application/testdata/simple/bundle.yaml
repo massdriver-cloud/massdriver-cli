@@ -4,9 +4,10 @@ description: An application
 ref: github.com/user/app
 type: application
 access: private
-steps: []
-artifacts:
-  properties: {}
+steps:
+- path: src
+  provisioner: terraform
+artifacts: {}
 params:
   properties:
     name:
@@ -19,7 +20,5 @@ connections:
     gcp_authentication:
       $ref: massdriver/gcp-service-account
   required:
-  - gcp_authentication
-ui:
-  ui:order:
   - '*'
+ui: {}

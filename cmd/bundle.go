@@ -63,6 +63,13 @@ func init() {
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
 }
 
+func checkIsBundle(b *bundle.Bundle) error {
+	if b.Type != "bundle" {
+		return fmt.Errorf("mass bundle publish can only be used with bundle type massdriver.yaml")
+	}
+	return nil
+}
+
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
@@ -81,15 +88,15 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Info().Msg("building bundle")
-	bun, err := bundle.Parse(configFile, nil)
+	b, err := bundle.Parse(configFile, nil)
 	if err != nil {
 		return err
 	}
-	if bun.Type != "bundle" {
-		return fmt.Errorf("mass bundle build can only be used with bundle type massdriver.yaml")
+	if errType := checkIsBundle(b); errType != nil {
+		return errType
 	}
 
-	if errBuild := bun.Build(c, output); errBuild != nil {
+	if errBuild := b.Build(c, output); errBuild != nil {
 		return errBuild
 	}
 	log.Info().Str("output", output).Msg("bundle built")
@@ -143,15 +150,12 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-
-	err = b.Hydrate(configFile, c)
-	if err != nil {
-		return err
+	if errType := checkIsBundle(b); errType != nil {
+		return errType
 	}
 
-	err = b.GenerateSchemas(path.Dir(configFile))
-	if err != nil {
-		return err
+	if errBuild := b.Build(c, path.Dir(configFile)); errBuild != nil {
+		return errBuild
 	}
 
 	var buf bytes.Buffer

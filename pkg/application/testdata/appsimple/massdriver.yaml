@@ -2,6 +2,7 @@ schema: draft-07
 name: my-app
 description: An application
 ref: github.com/user/app
+type: application
 access: private
 
 params:
@@ -11,7 +12,8 @@ params:
       type: string
       title: Name
 
-dependencies:
-  gcp_authentication:
-    type: massdriver/gcp-service-account
-    required: true
+connections:
+  required: ["*"]
+  properties:
+    gcp_authentication:
+      $ref: massdriver/gcp-service-account
