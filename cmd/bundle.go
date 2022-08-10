@@ -31,8 +31,14 @@ var bundleBuildCmd = &cobra.Command{
 var bundleGenerateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
-	Short:   "Generates a new bundle",
+	Short:   "Deprecated: Generates a new bundle",
 	RunE:    runBundleGenerate,
+}
+
+var bundleNewCmd = &cobra.Command{
+	Use:   "new",
+	Short: "Creates a new bundle from a template",
+	RunE:  runBundleGenerate,
 }
 
 var bundlePublishCmd = &cobra.Command{
@@ -50,6 +56,8 @@ func init() {
 
 	bundleCmd.AddCommand(bundleGenerateCmd)
 	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
+	bundleCmd.AddCommand(bundleNewCmd)
+	bundleNewCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
