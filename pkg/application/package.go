@@ -28,9 +28,10 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		return nil, errWrite
 	}
 
-	b, err := app.ConvertToBundle()
+	// TODO: be better
+	b, err := bundle.Parse(appPath, nil)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert app to bundle: %w", err)
+		return nil, err
 	}
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	bundlePath := path.Join(workingDir, "bundle.yaml")
