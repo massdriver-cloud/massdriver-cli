@@ -4,12 +4,14 @@ description: An application
 ref: github.com/user/app
 access: private
 
-deployment:
-  type: simple
-
 params:
   required: ["name"]
   properties:
     name:
       type: string
       title: Name
+
+dependencies:
+  gcp_authentication:
+    type: massdriver/gcp-service-account
+    required: true

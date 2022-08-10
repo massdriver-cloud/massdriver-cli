@@ -2,9 +2,11 @@ schema: draft-07
 name: my-app
 description: An application
 ref: github.com/user/app
+type: ""
 access: private
 deployment:
-  type: simple
+  type: ""
+steps: []
 params:
   properties:
     name:
@@ -12,4 +14,9 @@ params:
       type: string
   required:
   - name
-dependencies: {}
+dependencies:
+  gcp_authentication:
+    type: massdriver/gcp-service-account
+    required: true
+    envs: []
+ui: {}

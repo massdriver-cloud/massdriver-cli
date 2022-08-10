@@ -1,18 +1,6 @@
 {
     "variable": {
-        "aws_authentication": {
-            "type": "",
-            "default": null
-        },
-        "azure_authentication": {
-            "type": "",
-            "default": null
-        },
         "gcp_authentication": {
-            "type": "",
-            "default": null
-        },
-        "kubernetes_cluster": {
             "type": ""
         }
     }

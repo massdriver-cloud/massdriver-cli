@@ -20,12 +20,12 @@ func TestPackage(t *testing.T) {
 	tests := []test{
 		{
 			name:            "simple",
-			applicationPath: "testdata/appsimple.yaml",
+			applicationPath: "testdata/appsimple/massdriver.yaml",
 			wantPath:        "testdata/simple",
 		},
 		{
 			name:            "custom",
-			applicationPath: "testdata/appcustom.yaml",
+			applicationPath: "testdata/appcustom/massdriver.yaml",
 			wantPath:        "testdata/custom",
 		},
 	}
@@ -64,10 +64,7 @@ func TestPackage(t *testing.T) {
 			// Create a temp dir, write out the archive, then shell out to untar
 			testDir := t.TempDir()
 
-			application.SimpleParams = `{"properties":{"simple":{"type":"string"}}}`
-			application.SimpleUI = `{"properties":{"simple":"ui"}}`
-
-			_, err := application.PackageApplication(tc.applicationPath, c, testDir, &got)
+			_, err := application.Package(tc.applicationPath, c, testDir, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

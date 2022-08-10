@@ -2,10 +2,11 @@ schema: draft-07
 name: my-app
 description: An application
 ref: github.com/user/app
+type: ""
 access: private
 deployment:
-  type: custom
-  path: ./test-chart
+  type: ""
+steps: []
 params:
   properties:
     name:
@@ -13,4 +14,9 @@ params:
       type: string
   required:
   - name
-dependencies: {}
+dependencies:
+  azure_service_principal:
+    type: massdriver/azure-service-principal
+    required: true
+    envs: []
+ui: {}

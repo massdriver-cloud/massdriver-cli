@@ -46,33 +46,16 @@ func TestConvertToBundle(t *testing.T) {
 				Ref:         "github.com/some-repo",
 				Access:      "public",
 				Type:        "application",
-				Steps: []bundle.Step{
-					{
-						Path:        "src",
-						Provisioner: "terraform",
-					},
-				},
 				Params: map[string]interface{}{
 					"params": map[string]interface{}{
 						"hello": "world",
 					},
 				},
 				Connections: map[string]interface{}{
-					"required": []string{"kubernetes_cluster", "another-field"},
+					"required": []string{"another-field"},
 					"properties": map[string]interface{}{
 						"another-field": map[string]interface{}{"$ref": "bar"},
-						// "cloud-authentication": map[string]interface{}{
-						// 	"oneOf": []interface{}{
-						// 		map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
-						// 		map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
-						// 		map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
-						// 	},
-						// },
-						"some-field":           map[string]interface{}{"$ref": "foo"},
-						"kubernetes_cluster":   map[string]interface{}{"$ref": "massdriver/kubernetes-cluster"},
-						"aws_authentication":   map[string]interface{}{"$ref": "massdriver/aws-iam-role"},
-						"azure_authentication": map[string]interface{}{"$ref": "massdriver/azure-service-principal"},
-						"gcp_authentication":   map[string]interface{}{"$ref": "massdriver/gcp-service-account"},
+						"some-field":    map[string]interface{}{"$ref": "foo"},
 					},
 				},
 				Artifacts: map[string]interface{}{
@@ -81,11 +64,6 @@ func TestConvertToBundle(t *testing.T) {
 				UI: map[string]interface{}{
 					"ui:order": []interface{}{"*"},
 				},
-				// 	"required": []string{"kubernetes-application"},
-				// 	"properties": map[string]interface{}{
-				// 		"kubernetes-application": map[string]interface{}{"$ref": "massdriver/kubernetes-application"},
-				// 	},
-				// },
 			},
 		},
 	}

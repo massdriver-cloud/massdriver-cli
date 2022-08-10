@@ -16,16 +16,13 @@ func TestParse(t *testing.T) {
 	tests := []test{
 		{
 			name:    "simple",
-			appPath: "./testdata/appsimple.yaml",
+			appPath: "./testdata/appsimple/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "simple",
-				},
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{
@@ -35,23 +32,25 @@ func TestParse(t *testing.T) {
 					},
 					"required": []interface{}{
 						"name",
+					},
+				},
+				Dependencies: map[string]application.Dependencies{
+					"gcp_authentication": {
+						Type:     "massdriver/gcp-service-account",
+						Required: true,
 					},
 				},
 			},
 		},
 		{
 			name:    "custom",
-			appPath: "./testdata/appcustom.yaml",
+			appPath: "./testdata/appcustom/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "custom",
-					Path: "./test-chart",
-				},
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{
@@ -61,6 +60,12 @@ func TestParse(t *testing.T) {
 					},
 					"required": []interface{}{
 						"name",
+					},
+				},
+				Dependencies: map[string]application.Dependencies{
+					"azure_service_principal": {
+						Type:     "massdriver/azure-service-principal",
+						Required: true,
 					},
 				},
 			},
@@ -74,9 +79,6 @@ func TestParse(t *testing.T) {
 				Description: "An application",
 				Ref:         "github.com/user/app",
 				Access:      "private",
-				Deployment: application.Deployment{
-					Type: "simple",
-				},
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
 						"name": map[string]interface{}{
