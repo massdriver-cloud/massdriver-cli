@@ -43,34 +43,6 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:    "custom",
-			appPath: "./testdata/appcustom/massdriver.yaml",
-			want: application.Application{
-				Schema:      "draft-07",
-				Name:        "my-app",
-				Description: "An application",
-				Ref:         "github.com/user/app",
-				Access:      "private",
-				Params: map[string]interface{}{
-					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
-						},
-					},
-					"required": []interface{}{
-						"name",
-					},
-				},
-				Dependencies: map[string]application.Dependencies{
-					"azure_service_principal": {
-						Type:     "massdriver/azure-service-principal",
-						Required: true,
-					},
-				},
-			},
-		},
-		{
 			name:    "deps",
 			appPath: "./testdata/appdeps.yaml",
 			want: application.Application{
