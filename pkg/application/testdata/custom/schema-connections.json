@@ -8,7 +8,7 @@
         }
     },
     "required": [
-        "kubernetes_cluster"
+        "azure_service_principal"
     ],
     "title": "my-app"
 }
