@@ -1,5 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/terraform,osx,windows,linux
-# Edit at https://www.toptal.com/developers/gitignore?templates=terraform,osx,windows,linux
 
 ### Linux ###
 *~
@@ -45,9 +43,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-### VS Code###
-# Plugins
-.infracost
 
 ### Terraform ###
 # Local .terraform directories
@@ -124,3 +119,9 @@ schema-ui.json
 src/_connections_variables.tf.json
 src/_md_variables.tf.json
 src/_params_variables.tf.json
+
+
+### VS Code###
+# Plugins
+.infracost
+.vscode/
