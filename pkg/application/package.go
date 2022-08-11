@@ -19,12 +19,6 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		return nil, parseErr
 	}
 
-	// bytes, errMarshal := yaml.Marshal(*app)
-	// errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
-	// if errWrite != nil {
-	// 	return nil, errWrite
-	// }
-
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	sourceDir := path.Dir(appPath)
 	bundlePath := path.Join(workingDir, "bundle.yaml")

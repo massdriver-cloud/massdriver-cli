@@ -6,8 +6,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// var configFile = "massdriver.yaml"
-
 func (app *Application) Build(c *client.MassdriverClient, output string, appPath string) error {
 	log.Info().Msg("Building application...")
 
