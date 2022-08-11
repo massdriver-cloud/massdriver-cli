@@ -12,4 +12,5 @@ type Data struct {
 	Type           string
 	CloudProvider  string
 	Dependencies   map[string]string
+	Connections    map[string]interface{}
 }

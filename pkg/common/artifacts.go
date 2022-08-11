@@ -1,4 +1,4 @@
-package application
+package common
 
 var MassdriverArtifacts = []string{
 	"aws-dynamodb-table",
