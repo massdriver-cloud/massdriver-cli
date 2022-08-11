@@ -4,10 +4,7 @@ description: An application
 ref: github.com/user/app
 type: application
 access: private
-steps:
-- path: src
-  provisioner: terraform
-artifacts: {}
+steps: []
 params:
   properties:
     name:
@@ -22,3 +19,11 @@ connections:
   required:
   - '*'
 ui: {}
+app:
+  envs:
+    LOG_LEVEL: params.log_level
+    MONGO_USERNAME: connections.mongo.authentication.username
+    STRIPE_KEY: secrets.ecomm_site_stripe_key
+  policies:
+  - connections.sqs.security.policies.read
+  - connections.s3.security.policies.write

@@ -3,13 +3,16 @@ package application
 import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/rs/zerolog/log"
 )
 
-var configFile = "massdriver.yaml"
+// var configFile = "massdriver.yaml"
 
-func (app *Application) Build(c *client.MassdriverClient, output string) error {
+func (app *Application) Build(c *client.MassdriverClient, output string, appPath string) error {
+	log.Info().Msg("Building application...")
+
 	// TODO: be better
-	bun, err := bundle.Parse(configFile, nil)
+	bun, err := bundle.Parse(appPath, nil)
 	if err != nil {
 		return err
 	}
@@ -17,6 +20,7 @@ func (app *Application) Build(c *client.MassdriverClient, output string) error {
 	if errBuild := bun.Build(c, output); errBuild != nil {
 		return errBuild
 	}
+	log.Info().Msg("Application built")
 
 	return nil
 }

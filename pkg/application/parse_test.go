@@ -15,41 +15,8 @@ func TestParse(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:    "simple",
-			appPath: "./testdata/appsimple/massdriver.yaml",
-			want: application.Application{
-				Schema:      "draft-07",
-				Name:        "my-app",
-				Description: "An application",
-				Ref:         "github.com/user/app",
-				Type:        "application",
-				Access:      "private",
-				Params: map[string]interface{}{
-					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
-						},
-					},
-					"required": []interface{}{
-						"name",
-					},
-				},
-				Connections: map[string]interface{}{
-					"properties": map[string]interface{}{
-						"gcp_authentication": map[string]interface{}{
-							"$ref": "massdriver/gcp-service-account",
-						},
-					},
-					"required": []interface{}{
-						"*",
-					},
-				},
-			},
-		},
-		{
-			name:    "deps",
-			appPath: "./testdata/appdeps.yaml",
+			name:    "app-spec",
+			appPath: "./testdata/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",

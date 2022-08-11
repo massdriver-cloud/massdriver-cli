@@ -3,6 +3,7 @@ package application
 import (
 	"bytes"
 	"os"
+	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
@@ -16,9 +17,15 @@ func Publish(c *client.MassdriverClient, appPath string) error {
 	defer os.RemoveAll(workingDir)
 
 	var buf bytes.Buffer
-	b, err := PackageBetter(appPath, c, workingDir, &buf)
-	if err != nil {
-		return err
+	_, errPackage := Package(appPath, c, workingDir, &buf)
+	if errPackage != nil {
+		return errPackage
+	}
+
+	// hack, resolve app / bundle publish
+	b, parseErr := bundle.Parse(path.Join(workingDir, "bundle.yaml"), nil)
+	if parseErr != nil {
+		return parseErr
 	}
 
 	uploadURL, err := b.Publish(c)

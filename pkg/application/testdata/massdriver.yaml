@@ -36,7 +36,6 @@ app:
     MONGO_USERNAME: connections.mongo.authentication.username
     LOG_LEVEL: params.log_level
     STRIPE_KEY: secrets.ecomm_site_stripe_key # these would be set in MD at the target level
-
   policies:
     - connections.sqs.security.policies.read
     - connections.s3.security.policies.write

@@ -89,7 +89,7 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	if errType := checkIsApplication(app); errType != nil {
 		return errType
 	}
-	return app.Build(c, output)
+	return app.Build(c, output, "massdriver.yaml")
 }
 
 func runApplicationNew(cmd *cobra.Command, args []string) error {

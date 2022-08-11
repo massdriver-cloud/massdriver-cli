@@ -1,48 +1,23 @@
 package application
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
-func PackageBetter(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
+// TODO: dedupe w/ build
+func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*Application, error) {
 	app, parseErr := Parse(appPath)
 	if parseErr != nil {
 		return nil, parseErr
 	}
-	if errBuild := app.Build(c, workingDir); errBuild != nil {
-		return nil, errBuild
-	}
-
-	err := bundle.PackageBundle(workingDir, buf)
-	if err != nil {
-		return nil, err
-	}
-
-	b, parseBErr := bundle.Parse(path.Join(workingDir, "massdriver.yaml"), nil)
-	if parseBErr != nil {
-		return nil, parseBErr
-	}
-
-	return b, nil
-}
-
-// TODO: dedupe w/ build
-func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*bundle.Bundle, error) {
-	// app, parseErr := Parse(appPath)
-	// if parseErr != nil {
-	// 	return nil, parseErr
-	// }
 
 	// bytes, errMarshal := yaml.Marshal(*app)
 	// errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
@@ -50,23 +25,17 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 	// 	return nil, errWrite
 	// }
 
-	// TODO: be better
-	b, err := bundle.Parse(appPath, nil)
-	if err != nil {
-		return nil, err
-	}
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
+	sourceDir := path.Dir(appPath)
 	bundlePath := path.Join(workingDir, "bundle.yaml")
-	bytesB, errMarshalB := yaml.Marshal(*b)
+	bytesB, errMarshalB := yaml.Marshal(*app)
 	errWriteB := common.WriteFile(bundlePath, bytesB, errMarshalB)
 	if errWriteB != nil {
 		return nil, errWriteB
 	}
 
-	// if the bundle doesn't have Steps
-	// use default steps to generate the provisioner files
-	steps := b.Steps
-	if b.Steps == nil {
+	steps := app.Steps
+	if app.Steps == nil {
 		steps = []bundle.Step{
 			{
 				Path:        "src",
@@ -75,22 +44,11 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		}
 	}
 
-	err = b.Hydrate(bundlePath, c)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.GenerateSchemas(workingDir)
-	if err != nil {
-		return nil, err
-	}
-
-	appDir := filepath.Dir(appPath)
-	bundleDir := filepath.Dir(bundlePath)
-
+	// COPY FILES
 	// Make all directories, generate provisioner-specific files
 	for _, step := range steps {
-		err = os.MkdirAll(path.Join(workingDir, step.Path), 0744)
+		log.Info().Msgf("Copying files for step %s", step.Path)
+		err := os.MkdirAll(path.Join(workingDir, step.Path), 0744)
 		if err != nil {
 			return nil, err
 		}
@@ -106,37 +64,20 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 			"_md_variables.tf.json",
 			"_params_variables.tf.json",
 		}
-		errCopy := common.CopyFolder(path.Join(appDir, step.Path), path.Join(bundleDir, step.Path), ignores)
+		errCopy := common.CopyFolder(path.Join(sourceDir, step.Path), path.Join(workingDir, step.Path), ignores)
 		if errCopy != nil {
 			return nil, errCopy
 		}
-
-		if stepErr := generateStep(step, workingDir, bundlePath); stepErr != nil {
-			return nil, stepErr
-		}
 	}
 
-	err = bundle.PackageBundle(bundlePath, buf)
+	if errBuild := app.Build(c, workingDir, appPath); errBuild != nil {
+		return nil, errBuild
+	}
+
+	err := bundle.PackageBundle(workingDir, buf)
 	if err != nil {
 		return nil, err
 	}
 
-	return b, nil
-}
-
-func generateStep(step bundle.Step, workingDir, bundlePath string) error {
-	switch step.Provisioner {
-	case "terraform":
-		err := terraform.GenerateFiles(workingDir, step.Path)
-		if err != nil {
-			log.Error().Err(err).Str("bundle", bundlePath).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
-			return err
-		}
-	case "exec":
-		// No-op (Golang doesn't not fallthrough unless explicitly stated)
-	default:
-		log.Error().Str("bundle", bundlePath).Msg("unknown provisioner: " + step.Provisioner)
-		return fmt.Errorf("unknown provisioner: %v", step.Provisioner)
-	}
-	return nil
+	return app, nil
 }
