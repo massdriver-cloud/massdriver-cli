@@ -76,7 +76,7 @@ func TestParse(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := application.Parse(tc.appPath)
+			got, err := application.Parse(tc.appPath, nil)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

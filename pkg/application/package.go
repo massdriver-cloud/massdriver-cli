@@ -14,15 +14,26 @@ import (
 
 // TODO: dedupe w/ build
 func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*Application, error) {
-	app, parseErr := Parse(appPath)
+	app, parseErr := Parse(appPath, nil)
 	if parseErr != nil {
 		return nil, parseErr
 	}
 
+	// I yanked this at first, but do we need it?
+	// Or, we can just write the "app spec" as the "bundle.yaml"
+	// it would have all the app fields, and be type: application
+	bytes, errMarshal := yaml.Marshal(*app)
+	errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
+	if errWrite != nil {
+		return nil, errWrite
+	}
+
+	b := app.AsBundle()
+
 	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
 	sourceDir := path.Dir(appPath)
 	bundlePath := path.Join(workingDir, "bundle.yaml")
-	bytesB, errMarshalB := yaml.Marshal(*app)
+	bytesB, errMarshalB := yaml.Marshal(*b)
 	errWriteB := common.WriteFile(bundlePath, bytesB, errMarshalB)
 	if errWriteB != nil {
 		return nil, errWriteB
@@ -38,8 +49,8 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		}
 	}
 
-	// COPY FILES
-	// Make all directories, generate provisioner-specific files
+	// COPY FILES.
+	// We need this for any modules, charts, etc included in each step
 	for _, step := range steps {
 		log.Info().Msgf("Copying files for step %s", step.Path)
 		err := os.MkdirAll(path.Join(workingDir, step.Path), 0744)
@@ -64,7 +75,7 @@ func Package(appPath string, c *client.MassdriverClient, workingDir string, buf 
 		}
 	}
 
-	if errBuild := app.Build(c, workingDir, appPath); errBuild != nil {
+	if errBuild := app.Build(c, workingDir); errBuild != nil {
 		return nil, errBuild
 	}
 

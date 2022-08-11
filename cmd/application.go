@@ -82,14 +82,14 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	// TODO: app/bundle build directories
 	output := "."
 
-	app, err := application.Parse("massdriver.yaml")
+	app, err := application.Parse("massdriver.yaml", nil)
 	if err != nil {
 		return err
 	}
 	if errType := checkIsApplication(app); errType != nil {
 		return errType
 	}
-	return app.Build(c, output, "massdriver.yaml")
+	return app.Build(c, output)
 }
 
 func runApplicationNew(cmd *cobra.Command, args []string) error {
@@ -122,7 +122,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if errClient != nil {
 		return errClient
 	}
-	app, err := application.Parse("massdriver.yaml")
+	app, err := application.Parse("massdriver.yaml", nil)
 	if err != nil {
 		return err
 	}
