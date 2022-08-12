@@ -29,6 +29,13 @@ var definitionGetCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var definitionBuildCmd = &cobra.Command{
+	Use:          "build",
+	Args:         cobra.ExactArgs(1),
+	RunE:         runDefinitionBuild,
+	SilenceUsage: true,
+}
+
 var definitionPublishCmd = &cobra.Command{
 	Use:          "publish",
 	Short:        "Publish an artifact definition to Massdriver",
@@ -40,12 +47,23 @@ func init() {
 	rootCmd.AddCommand(definitionCmd)
 
 	definitionCmd.AddCommand(definitionGetCmd)
-
+	definitionCmd.AddCommand(definitionBuildCmd)
 	definitionCmd.AddCommand(definitionPublishCmd)
 	definitionPublishCmd.Flags().StringP("file", "f", "", "File containing artifact definition schema (use - for stdin)")
 	if err := definitionPublishCmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
 	}
+}
+
+func runDefinitionBuild(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	defPath := args[0]
+
+	if errBuild := definition.Build(defPath); errBuild != nil {
+		return errBuild
+	}
+	return nil
 }
 
 func runDefinitionGet(cmd *cobra.Command, args []string) error {
