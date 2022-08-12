@@ -43,3 +43,15 @@ const (
 	AllRW      = AllRead | AllWrite
 	AllRWX     = AllRW | AllExecute
 )
+
+var FileIgnores []string = []string{
+	".terraform",
+	"terraform.tfstate",
+	"auto.tfvars.json",
+	"connections.auto.tfvars.json",
+	"dev.connections.tfvars",
+	"dev.params.tfvars",
+	"_connections_variables.tf.json",
+	"_md_variables.tf.json",
+	"_params_variables.tf.json",
+}

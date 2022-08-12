@@ -2,6 +2,7 @@ package application
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -9,79 +10,57 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/rs/zerolog/log"
-	"gopkg.in/yaml.v2"
 )
 
 // TODO: dedupe w/ build
-func Package(appPath string, c *client.MassdriverClient, workingDir string, buf io.Writer) (*Application, error) {
-	app, parseErr := Parse(appPath, nil)
-	if parseErr != nil {
-		return nil, parseErr
+// TODO: dedupe w/ bundle Package
+// TODO: don't write to disk by default, write to buffer
+func Package(massYamlPath string, c *client.MassdriverClient, destinationDir string, buf io.Writer) (*Application, error) {
+	// since we don't do any app / bundle yaml transforms
+	// we can just copy the entire directory to the destination
+	// then run app build, bundle package
+	sourceDir := path.Dir(massYamlPath)
+	files, errReadDir := ioutil.ReadDir(sourceDir)
+	if errReadDir != nil {
+		return nil, errReadDir
 	}
 
-	// I yanked this at first, but do we need it?
-	// Or, we can just write the "app spec" as the "bundle.yaml"
-	// it would have all the app fields, and be type: application
-	bytes, errMarshal := yaml.Marshal(*app)
-	errWrite := common.WriteFile(path.Join(workingDir, "app.yaml"), bytes, errMarshal)
-	if errWrite != nil {
-		return nil, errWrite
-	}
+	for _, fileInfo := range files {
+		fileName := fileInfo.Name()
+		pathCopyFrom := path.Join(sourceDir, fileName)
+		pathCopyTo := path.Join(destinationDir, fileName)
 
-	b := app.AsBundle()
-
-	// We're using bundle.yaml instead of massdriver.yaml here so we don't overwrite the application config
-	sourceDir := path.Dir(appPath)
-	bundlePath := path.Join(workingDir, "bundle.yaml")
-	bytesB, errMarshalB := yaml.Marshal(*b)
-	errWriteB := common.WriteFile(bundlePath, bytesB, errMarshalB)
-	if errWriteB != nil {
-		return nil, errWriteB
-	}
-
-	steps := app.Steps
-	if app.Steps == nil {
-		steps = []bundle.Step{
-			{
-				Path:        "src",
-				Provisioner: "terraform",
-			},
+		log.Debug().Msgf("Packaging %s", fileName)
+		if fileInfo.IsDir() {
+			errMkdir := os.MkdirAll(pathCopyTo, 0744)
+			if errMkdir != nil {
+				return nil, errMkdir
+			}
+			errCopy := common.CopyFolder(pathCopyFrom, pathCopyTo, common.FileIgnores)
+			if errCopy != nil {
+				return nil, errCopy
+			}
+		} else {
+			fileBytes, errRead := ioutil.ReadFile(pathCopyFrom)
+			errWrite := common.WriteFile(pathCopyTo, fileBytes, errRead)
+			if errWrite != nil {
+				return nil, errWrite
+			}
 		}
 	}
 
-	// COPY FILES.
-	// We need this for any modules, charts, etc included in each step
-	for _, step := range steps {
-		log.Info().Msgf("Copying files for step %s", step.Path)
-		err := os.MkdirAll(path.Join(workingDir, step.Path), 0744)
-		if err != nil {
-			return nil, err
-		}
-		// ignore these, copy the rest
-		ignores := []string{
-			".terraform",
-			"terraform.tfstate",
-			"auto.tfvars.json",
-			"connections.auto.tfvars.json",
-			"dev.connections.tfvars",
-			"dev.params.tfvars",
-			"_connections_variables.tf.json",
-			"_md_variables.tf.json",
-			"_params_variables.tf.json",
-		}
-		errCopy := common.CopyFolder(path.Join(sourceDir, step.Path), path.Join(workingDir, step.Path), ignores)
-		if errCopy != nil {
-			return nil, errCopy
-		}
+	app, errParse := Parse(massYamlPath, nil)
+	if errParse != nil {
+		return nil, errParse
 	}
 
-	if errBuild := app.Build(c, workingDir); errBuild != nil {
+	if errBuild := app.Build(c, destinationDir); errBuild != nil {
 		return nil, errBuild
 	}
 
-	err := bundle.PackageBundle(workingDir, buf)
-	if err != nil {
-		return nil, err
+	errPackage := bundle.PackageBundle(destinationDir, buf)
+	if errPackage != nil {
+		return nil, errPackage
 	}
 
 	return app, nil

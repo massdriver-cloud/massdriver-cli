@@ -4,27 +4,25 @@ description: An application
 ref: github.com/user/app
 type: application
 access: private
-steps: []
+
 params:
+  required: ["name"]
   properties:
     name:
-      title: Name
       type: string
-  required:
-  - name
+      title: Name
+
 connections:
+  required: ["*"]
   properties:
     gcp_authentication:
       $ref: massdriver/gcp-service-account
-  required:
-  - '*'
-artifacts: {}
-ui: {}
+
 app:
   envs:
-    LOG_LEVEL: params.log_level
     MONGO_USERNAME: connections.mongo.authentication.username
+    LOG_LEVEL: params.log_level
     STRIPE_KEY: secrets.ecomm_site_stripe_key
   policies:
-  - connections.sqs.security.policies.read
-  - connections.s3.security.policies.write
+    - connections.sqs.security.policies.read
+    - connections.s3.security.policies.write

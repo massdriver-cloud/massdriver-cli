@@ -47,9 +47,9 @@ func CopyFolder(sourcePath string, destPath string, ignores []string) error {
 	return err
 }
 
-func WriteFile(filePath string, data []byte, errMarshal error) error {
-	if errMarshal != nil {
-		return errMarshal
+func WriteFile(filePath string, data []byte, errToBytes error) error {
+	if errToBytes != nil {
+		return errToBytes
 	}
 	file, err := os.Create(filePath)
 	if err != nil {
