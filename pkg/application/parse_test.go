@@ -56,7 +56,9 @@ func TestParse(t *testing.T) {
 						},
 					},
 					"required": []interface{}{
-						"*",
+						"kubernetes_cluster",
+						"mongo",
+						"sqs",
 					},
 				},
 				App: application.AppBlock{

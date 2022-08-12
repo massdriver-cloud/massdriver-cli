@@ -13,7 +13,8 @@ params:
       title: Name
 
 connections:
-  required: ["*"]
+  required:
+    - gcp_authentication
   properties:
     gcp_authentication:
       $ref: massdriver/gcp-service-account

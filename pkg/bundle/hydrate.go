@@ -13,6 +13,10 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 	cwd := filepath.Dir(path)
 	ctx := context.TODO()
 
+	if b.Artifacts == nil {
+		b.Artifacts = make(map[string]interface{})
+		b.Artifacts["properties"] = make(map[string]interface{})
+	}
 	hydratedArtifacts, err := jsonschema.Hydrate(ctx, b.Artifacts, cwd, c)
 	if err != nil {
 		return err
@@ -45,7 +49,6 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 		b.Connections = make(map[string]interface{})
 		b.Connections["properties"] = make(map[string]interface{})
 	}
-
 	hydratedConnections, err := jsonschema.Hydrate(ctx, b.Connections, cwd, c)
 	if err != nil {
 		return err

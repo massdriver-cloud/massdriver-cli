@@ -22,7 +22,10 @@ params:
         - sync
 
 connections:
-  required: ["*"]
+  required:
+    - kubernetes_cluster
+    - mongo
+    - sqs
   properties:
     kubernetes_cluster:
       $ref: massdriver/k8s

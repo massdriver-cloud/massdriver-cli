@@ -1,8 +1,7 @@
 {
     "variable": {
         "gcp_authentication": {
-            "type": "",
-            "default": null
+            "type": ""
         }
     }
 }
