@@ -1,6 +1,6 @@
 package common
 
-var MassdriverArtifacts = []string{
+var MassdriverArtifactDefinitions = []string{
 	"massdriver/aws-dynamodb-table",
 	"massdriver/aws-efs-file-system",
 	"massdriver/aws-eventbridge",
@@ -32,7 +32,7 @@ var MassdriverArtifacts = []string{
 	"massdriver/redis-authentication",
 }
 
-func GetMassdriverArtifacts() ([]string, error) {
+func ListMassdriverArtifactDefinitions() ([]string, error) {
 	// TODO this should list these artifacts from the massdriver API
-	return MassdriverArtifacts, nil
+	return MassdriverArtifactDefinitions, nil
 }

@@ -115,14 +115,14 @@ func getOutputDir(t *template.Data) error {
 
 // TODO fetch these from the API instead of hardcoding
 func GetConnections(t *template.Data) error {
-	artifacts, err := common.GetMassdriverArtifacts()
+	artDefs, err := common.ListMassdriverArtifactDefinitions()
 	if err != nil {
 		return err
 	}
 	var selectedDeps []string
 	multiselect := &survey.MultiSelect{
-		Message: "What artifacts does your application depend on? If you have no dependencies just hit enter or only select (None)",
-		Options: append([]string{noneDep}, artifacts...),
+		Message: "What connections do you need?\n  If you don't need any, just hit enter or select (None)\n",
+		Options: append([]string{noneDep}, artDefs...),
 	}
 	err = survey.AskOne(multiselect, &selectedDeps)
 	if err != nil {
@@ -144,7 +144,7 @@ func GetConnections(t *template.Data) error {
 			return nil
 		}
 
-		log.Info().Msgf("Please enter a name for the dependency %v", v)
+		log.Info().Msgf("Please enter a name for the connection: \"%v\"\nThis will be the variable name used to reference it in your app|bundle IaC", v)
 		prompt := promptui.Prompt{
 			Label:    `Name`,
 			Validate: validate,
