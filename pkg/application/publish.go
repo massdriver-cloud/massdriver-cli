@@ -7,6 +7,7 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 func Publish(c *client.MassdriverClient, appPath string) error {
@@ -23,7 +24,7 @@ func Publish(c *client.MassdriverClient, appPath string) error {
 	}
 
 	// hack, resolve app / bundle publish
-	b, parseErr := bundle.Parse(path.Join(workingDir, "bundle.yaml"), nil)
+	b, parseErr := bundle.Parse(path.Join(workingDir, common.MassdriverYamlFilename), nil)
 	if parseErr != nil {
 		return parseErr
 	}

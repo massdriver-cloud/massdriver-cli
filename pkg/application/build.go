@@ -7,6 +7,7 @@ import (
 
 func (app *Application) Build(c *client.MassdriverClient, output string) error {
 	log.Info().Msg("Building application...")
+	// pre-bundle app-specific build logic goes here //
 
 	// we were trying to avoid any conversion from app to bundle etc
 	// this is cheap until the build function is consolidated

@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 
 	"github.com/rs/zerolog/log"
 )
 
-const configFile = "massdriver.yaml"
-
 func (b *Bundle) Build(c *client.MassdriverClient, output string) error {
-	err := b.Hydrate(configFile, c)
+	err := b.Hydrate(common.MassdriverYamlFilename, c)
 	if err != nil {
 		log.Error().Err(err).Msg("an error occurred while hydrating bundle")
 		return err

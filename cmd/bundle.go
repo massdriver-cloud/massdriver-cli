@@ -7,13 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
-
-const configFile = "massdriver.yaml"
 
 var bundleCmd = &cobra.Command{
 	Use:   "bundle",
@@ -84,11 +83,11 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if output == "" {
-		output = filepath.Dir(configFile)
+		output = filepath.Dir(common.MassdriverYamlFilename)
 	}
 
 	log.Info().Msg("building bundle")
-	b, err := bundle.Parse(configFile, nil)
+	b, err := bundle.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
 	}
@@ -146,7 +145,7 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	b, err := bundle.Parse(configFile, overrides)
+	b, err := bundle.Parse(common.MassdriverYamlFilename, overrides)
 	if err != nil {
 		return err
 	}
@@ -154,12 +153,12 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return errType
 	}
 
-	if errBuild := b.Build(c, path.Dir(configFile)); errBuild != nil {
+	if errBuild := b.Build(c, path.Dir(common.MassdriverYamlFilename)); errBuild != nil {
 		return errBuild
 	}
 
 	var buf bytes.Buffer
-	err = bundle.PackageBundle(configFile, &buf)
+	err = bundle.PackageBundle(common.MassdriverYamlFilename, &buf)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package common
 
 const (
 	MassdriverURL             = "https://api.massdriver.cloud/"
+	MassdriverYamlFilename    = "massdriver.yaml"
 	ArtifactsSchemaFilename   = "schema-artifacts.json"
 	ConnectionsSchemaFilename = "schema-connections.json"
 	ParamsSchemaFilename      = "schema-params.json"

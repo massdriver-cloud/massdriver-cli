@@ -10,6 +10,7 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -82,7 +83,7 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	// TODO: app/bundle build directories
 	output := "."
 
-	app, err := application.Parse("massdriver.yaml", nil)
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
 	}
@@ -122,7 +123,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if errClient != nil {
 		return errClient
 	}
-	app, err := application.Parse("massdriver.yaml", nil)
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
 	}
