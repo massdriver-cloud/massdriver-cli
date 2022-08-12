@@ -41,6 +41,11 @@ func (b *Bundle) Hydrate(path string, c *client.MassdriverClient) error {
 		return err
 	}
 
+	if b.Connections == nil {
+		b.Connections = make(map[string]interface{})
+		b.Connections["properties"] = make(map[string]interface{})
+	}
+
 	hydratedConnections, err := jsonschema.Hydrate(ctx, b.Connections, cwd, c)
 	if err != nil {
 		return err

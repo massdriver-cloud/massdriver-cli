@@ -12,10 +12,9 @@ params:
     app_env:
       type: string
 
-dependencies:
-  database:
-    type: massdriver/postgresql-authentication
-    required: true
+connections:
+  properties: {}
+
 
 ui:
   ui:order:

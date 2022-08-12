@@ -26,12 +26,19 @@ params:
 
 # schema-connections.json
 # Named list of input connections (artifacts) (map[name]artifact)
+<md if not .Connections md>
 connections:
-   required: ["*"]
-   properties:
-<md- range $key, $art:= .Connections md>
-     <md $key md>:
-       $ref: <md $art md>
+  properties: {}
+<md end -md>
+
+<md if .Connections md>
+connections:
+  required: ["*"]
+  properties:
+  <md- range $key, $art:= .Connections md>
+    <md $key md>:
+      $ref: <md $art md>
+  <md- end md>
 <md- end md>
 
 # schema-artifacts.json

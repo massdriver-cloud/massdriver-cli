@@ -131,7 +131,6 @@ func GetConnections(t *template.Data) error {
 	depMap := make(map[string]interface{})
 	for i, v := range selectedDeps {
 		if v == noneDep {
-			t.Dependencies = make(map[string]string)
 			if len(selectedDeps) > 1 {
 				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v", noneDep, selectedDeps)
 			}
@@ -158,6 +157,7 @@ func GetConnections(t *template.Data) error {
 
 		depMap[result] = fmt.Sprintf("massdriver/%s", selectedDeps[i])
 	}
+
 	t.Connections = depMap
 	return nil
 }

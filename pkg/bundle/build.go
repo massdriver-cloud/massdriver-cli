@@ -33,7 +33,6 @@ func (b *Bundle) Build(c *client.MassdriverClient, output string) error {
 		}
 	}
 
-	// TODO: merge w/ app package
 	for _, step := range steps {
 		switch step.Provisioner {
 		case "terraform":

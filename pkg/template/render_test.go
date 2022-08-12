@@ -22,6 +22,7 @@ func TestAppFromTemplate(t *testing.T) {
 		templateName string
 		wantPath     string
 		templatesDir string
+		connections  map[string]interface{}
 	}
 	tests := []test{
 		{
@@ -32,11 +33,14 @@ func TestAppFromTemplate(t *testing.T) {
 			wantPath:     "testdata/application-templates-want/renders-successfully",
 		},
 		{
-			name:         "renders-dependencies",
-			description:  "Renders selectected Dependencies",
-			templateName: "renders-dependencies",
+			name:         "renders-connections",
+			description:  "Renders selectected dependencies as Connections",
+			templateName: "renders-connections",
 			templatesDir: "testdata/application-templates/",
-			wantPath:     "testdata/application-templates-want/renders-dependencies",
+			wantPath:     "testdata/application-templates-want/renders-connections",
+			connections: map[string]interface{}{
+				"draft_node": "massdriver/draft-node",
+			},
 		},
 	}
 
@@ -48,10 +52,9 @@ func TestAppFromTemplate(t *testing.T) {
 				TemplateName:   tc.templateName,
 				TemplateSource: tc.templatesDir,
 				OutputDir:      t.TempDir(),
-				CloudProvider:  "gcp",
-				Dependencies:   map[string]string{},
+				// OutputDir:   "_local-test",
+				Connections: tc.connections,
 			}
-			templateData.Dependencies["draft_node"] = "massdriver/draft-node"
 
 			templateDir := path.Join(tc.templatesDir, tc.templateName)
 			err := template.RenderDirectory(templateDir, &templateData)
