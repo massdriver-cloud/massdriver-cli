@@ -155,7 +155,7 @@ func GetConnections(t *template.Data) error {
 			return errName
 		}
 
-		depMap[result] = fmt.Sprintf("massdriver/%s", selectedDeps[i])
+		depMap[result] = selectedDeps[i]
 	}
 
 	t.Connections = depMap
