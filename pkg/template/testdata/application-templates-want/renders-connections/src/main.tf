@@ -1,5 +1,5 @@
 resource "random_pet" "server" {
   keepers = {
-    app_name = "renders-dependencies"
+    app_name = "renders-connections"
   }
 }

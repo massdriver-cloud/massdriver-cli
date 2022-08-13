@@ -1,0 +1,44 @@
+schema: draft-07
+name: my-app
+description: An application
+ref: github.com/user/app
+access: private
+type: application
+
+params:
+  properties:
+    name:
+      type: string
+    log_level:
+      type: string
+      enum: ["warn", "error", "info"]
+    namespace:
+      type: string
+      default: default
+    replication:
+      type: string
+      enum:
+        - async
+        - sync
+
+connections:
+  required:
+    - kubernetes_cluster
+    - mongo
+    - sqs
+  properties:
+    kubernetes_cluster:
+      $ref: massdriver/k8s
+    mongo:
+      $ref: massdriver/mongo-authentication
+    sqs:
+      $ref: massdriver/aws-sqs-pubsub-subscription
+
+app:
+  envs:
+    MONGO_USERNAME: connections.mongo.authentication.username
+    LOG_LEVEL: params.log_level
+    STRIPE_KEY: secrets.ecomm_site_stripe_key # these would be set in MD at the target level
+  policies:
+    - connections.sqs.security.policies.read
+    - connections.s3.security.policies.write

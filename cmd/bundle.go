@@ -7,13 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
-
-const configFile = "massdriver.yaml"
 
 var bundleCmd = &cobra.Command{
 	Use:   "bundle",
@@ -31,8 +30,14 @@ var bundleBuildCmd = &cobra.Command{
 var bundleGenerateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
-	Short:   "Generates a new bundle",
+	Short:   "Deprecated: Generates a new bundle",
 	RunE:    runBundleGenerate,
+}
+
+var bundleNewCmd = &cobra.Command{
+	Use:   "new",
+	Short: "Creates a new bundle from a template",
+	RunE:  runBundleGenerate,
 }
 
 var bundlePublishCmd = &cobra.Command{
@@ -50,9 +55,18 @@ func init() {
 
 	bundleCmd.AddCommand(bundleGenerateCmd)
 	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
+	bundleCmd.AddCommand(bundleNewCmd)
+	bundleNewCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
+}
+
+func checkIsBundle(b *bundle.Bundle) error {
+	if b.Type != "bundle" {
+		return fmt.Errorf("mass bundle publish can only be used with bundle type massdriver.yaml")
+	}
+	return nil
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -69,17 +83,24 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if output == "" {
-		output = filepath.Dir(configFile)
+		output = filepath.Dir(common.MassdriverYamlFilename)
 	}
 
 	log.Info().Msg("building bundle")
-	bun, err := bundle.Parse(configFile, nil)
-	if errBuild := bun.Build(c, output); errBuild != nil {
+	b, err := bundle.Parse(common.MassdriverYamlFilename, nil)
+	if err != nil {
+		return err
+	}
+	if errType := checkIsBundle(b); errType != nil {
+		return errType
+	}
+
+	if errBuild := b.Build(c, output); errBuild != nil {
 		return errBuild
 	}
 	log.Info().Str("output", output).Msg("bundle built")
 
-	return err
+	return nil
 }
 
 func runBundleGenerate(cmd *cobra.Command, args []string) error {
@@ -124,23 +145,20 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	b, err := bundle.Parse(configFile, overrides)
+	b, err := bundle.Parse(common.MassdriverYamlFilename, overrides)
 	if err != nil {
 		return err
 	}
-
-	err = b.Hydrate(configFile, c)
-	if err != nil {
-		return err
+	if errType := checkIsBundle(b); errType != nil {
+		return errType
 	}
 
-	err = b.GenerateSchemas(path.Dir(configFile))
-	if err != nil {
-		return err
+	if errBuild := b.Build(c, path.Dir(common.MassdriverYamlFilename)); errBuild != nil {
+		return errBuild
 	}
 
 	var buf bytes.Buffer
-	err = bundle.PackageBundle(configFile, &buf)
+	err = bundle.PackageBundle(common.MassdriverYamlFilename, &buf)
 	if err != nil {
 		return err
 	}

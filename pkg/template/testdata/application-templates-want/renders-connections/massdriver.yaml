@@ -1,0 +1,25 @@
+schema: draft-07
+name: renders-connections
+description: Renders selectected dependencies as Connections
+ref: github.com/YOUR_ORG/renders-connections
+access: private
+type: application
+
+params:
+  properties:
+    hostname:
+      type: string
+    app_env:
+      type: string
+
+connections:
+  required:
+    - draft_node
+  properties:
+    draft_node:
+      $ref: massdriver/draft-node
+
+ui:
+  ui:order:
+    - hostname
+    - app_env

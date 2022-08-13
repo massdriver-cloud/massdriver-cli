@@ -34,22 +34,22 @@ func CopyFolder(sourcePath string, destPath string, ignores []string) error {
 		}
 
 		if info.IsDir() {
-			log.Info().Msgf("mkdir: %s", relPath)
+			log.Debug().Msgf("mkdir: %s", relPath)
 			return os.Mkdir(filepath.Join(destPath, relPath), AllRX|UserRW)
 		}
 		var data, err1 = ioutil.ReadFile(filepath.Join(sourcePath, relPath))
 		if err1 != nil {
 			return err1
 		}
-		log.Info().Msgf("copying: %s", relPath)
+		log.Debug().Msgf("copying: %s", relPath)
 		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, AllRWX)
 	})
 	return err
 }
 
-func WriteFile(filePath string, data []byte, errMarshal error) error {
-	if errMarshal != nil {
-		return errMarshal
+func WriteFile(filePath string, data []byte, errToBytes error) error {
+	if errToBytes != nil {
+		return errToBytes
 	}
 	file, err := os.Create(filePath)
 	if err != nil {

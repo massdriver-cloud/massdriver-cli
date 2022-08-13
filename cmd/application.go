@@ -5,14 +5,12 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -68,6 +66,13 @@ func init() {
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
 }
 
+func checkIsApplication(app *application.Application) error {
+	if app.Type != "application" {
+		return fmt.Errorf("mass app build can only be used with application type massdriver.yaml")
+	}
+	return nil
+}
+
 func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
@@ -78,9 +83,12 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	// TODO: app/bundle build directories
 	output := "."
 
-	app, err := application.Parse("massdriver.yaml")
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
+	}
+	if errType := checkIsApplication(app); errType != nil {
+		return errType
 	}
 	return app.Build(c, output)
 }
@@ -115,35 +123,23 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if errClient != nil {
 		return errClient
 	}
-
-	// Create a temporary working directory
-	workingDir, err := os.MkdirTemp("", "application")
-	if err != nil {
-		return (err)
-	}
-	defer os.RemoveAll(workingDir)
-
-	var buf bytes.Buffer
-	b, err := application.Package(appPath, c, workingDir, &buf)
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
 	}
-
-	uploadURL, err := b.Publish(c)
-	if err != nil {
-		return err
+	if errType := checkIsApplication(app); errType != nil {
+		return errType
 	}
 
-	err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
-	if err != nil {
-		return err
+	if errPub := application.Publish(c, appPath); errPub != nil {
+		return errPub
 	}
-
-	fmt.Println("Application published successfully!")
+	log.Info().Msg("Application published successfully!")
 
 	return nil
 }
 
+// TODO: move to "mass repo"
 func runApplicationTemplates(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 

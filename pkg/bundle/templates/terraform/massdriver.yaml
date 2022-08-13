@@ -26,16 +26,23 @@ params:
 
 # schema-connections.json
 # Named list of input connections (artifacts) (map[name]artifact)
+<md if not .Connections md>
 connections:
   properties: {}
-  # required:
-  # - aws_authentication
-  # - network
-  # properties:
-  #   aws_authentication:
-  #     $ref: massdriver/aws-iam-role
-  #   network:
-  #     $ref: massdriver/aws-regional-cloud
+<md end -md>
+
+<md if .Connections md>
+connections:
+  required:
+  <md- range $key, $art:= .Connections md>
+    - <md $key md>
+  <md- end md>
+  properties:
+  <md- range $key, $art:= .Connections md>
+    <md $key md>:
+      $ref: <md $art md>
+  <md- end md>
+<md- end md>
 
 # schema-artifacts.json
 # Named list of output artifacts  (map[name]artifact)
