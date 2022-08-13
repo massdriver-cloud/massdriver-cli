@@ -15,107 +15,61 @@ func TestParse(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:    "simple",
-			appPath: "./testdata/appsimple/massdriver.yaml",
+			name:    "app-spec",
+			appPath: "./testdata/massdriver.yaml",
 			want: application.Application{
 				Schema:      "draft-07",
 				Name:        "my-app",
 				Description: "An application",
 				Ref:         "github.com/user/app",
+				Type:        "application",
 				Access:      "private",
 				Params: map[string]interface{}{
 					"properties": map[string]interface{}{
+						"log_level": map[string]interface{}{
+							"enum": []interface{}{"warn", "error", "info"},
+							"type": "string",
+						},
 						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
+							"type": "string",
+						},
+						"namespace": map[string]interface{}{
+							"default": "default",
+							"type":    "string",
+						},
+						"replication": map[string]interface{}{
+							"enum": []interface{}{"async", "sync"},
+							"type": "string",
 						},
 					},
-					"required": []interface{}{
-						"name",
-					},
 				},
-				Dependencies: map[string]application.Dependencies{
-					"gcp_authentication": {
-						Type:     "massdriver/gcp-service-account",
-						Required: true,
-					},
-				},
-			},
-		},
-		{
-			name:    "custom",
-			appPath: "./testdata/appcustom/massdriver.yaml",
-			want: application.Application{
-				Schema:      "draft-07",
-				Name:        "my-app",
-				Description: "An application",
-				Ref:         "github.com/user/app",
-				Access:      "private",
-				Params: map[string]interface{}{
+				Connections: map[string]interface{}{
 					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
+						"kubernetes_cluster": map[string]interface{}{
+							"$ref": "massdriver/k8s",
+						},
+						"mongo": map[string]interface{}{
+							"$ref": "massdriver/mongo-authentication",
+						},
+						"sqs": map[string]interface{}{
+							"$ref": "massdriver/aws-sqs-pubsub-subscription",
 						},
 					},
 					"required": []interface{}{
-						"name",
+						"kubernetes_cluster",
+						"mongo",
+						"sqs",
 					},
 				},
-				Dependencies: map[string]application.Dependencies{
-					"azure_service_principal": {
-						Type:     "massdriver/azure-service-principal",
-						Required: true,
+				App: application.AppBlock{
+					Envs: map[string]string{
+						"LOG_LEVEL":      "params.log_level",
+						"MONGO_USERNAME": "connections.mongo.authentication.username",
+						"STRIPE_KEY":     "secrets.ecomm_site_stripe_key",
 					},
-				},
-			},
-		},
-		{
-			name:    "deps",
-			appPath: "./testdata/appdeps.yaml",
-			want: application.Application{
-				Schema:      "draft-07",
-				Name:        "my-app",
-				Description: "An application",
-				Ref:         "github.com/user/app",
-				Access:      "private",
-				Params: map[string]interface{}{
-					"properties": map[string]interface{}{
-						"name": map[string]interface{}{
-							"type":  "string",
-							"title": "Name",
-						},
-						"age": map[string]interface{}{
-							"type":  "integer",
-							"title": "Age",
-						},
-					},
-					"required": []interface{}{
-						"name",
-					},
-				},
-				Dependencies: map[string]application.Dependencies{
-					"database": {
-						Type:     "massdriver/rdbms-authentication",
-						Required: true,
-						Envs: []application.DependenciesEnvs{
-							{
-								Name: "DATABASE_URL",
-								Path: ".data.authentication.connection_string",
-							},
-						},
-						Policies: []string{"read-bq", "read-gcs"},
-					},
-					"queue": {
-						Type:     "massdriver/aws-sqs-queue",
-						Required: false,
-						Envs: []application.DependenciesEnvs{
-							{
-								Name: "MY_QUEUE_ARN",
-								Path: ".data.infrastructure.arn",
-							},
-						},
-						Policies: []string{"read"},
+					Policies: []string{
+						"connections.sqs.security.policies.read",
+						"connections.s3.security.policies.write",
 					},
 				},
 			},
@@ -124,7 +78,7 @@ func TestParse(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := application.Parse(tc.appPath)
+			got, err := application.Parse(tc.appPath, nil)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

@@ -23,11 +23,6 @@ func TestPackage(t *testing.T) {
 			applicationPath: "testdata/appsimple/massdriver.yaml",
 			wantPath:        "testdata/simple",
 		},
-		{
-			name:            "custom",
-			applicationPath: "testdata/appcustom/massdriver.yaml",
-			wantPath:        "testdata/custom",
-		},
 	}
 
 	for _, tc := range tests {

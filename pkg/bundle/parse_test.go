@@ -15,10 +15,7 @@ func TestParseBundle(t *testing.T) {
 		Name:        "aws-vpc",
 		Description: "Something",
 		Access:      "public",
-		Steps: []bundle.Step{
-			{Path: "src", Provisioner: "terraform"},
-		},
-		Artifacts: map[string]interface{}{},
+		Artifacts:   map[string]interface{}{},
 		Params: map[string]interface{}{
 			"properties": map[string]interface{}{
 				"name": map[string]interface{}{
