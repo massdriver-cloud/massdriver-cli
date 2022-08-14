@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-func Parse(path string) (*Definition, error) {
-	def := new(Definition)
+func Parse(path string) (*DefinitionFile, error) {
+	def := new(DefinitionFile)
 
 	defFile, err := os.Open(path)
 	if err != nil {
@@ -16,7 +16,7 @@ func Parse(path string) (*Definition, error) {
 	defer defFile.Close()
 
 	byteValue, _ := ioutil.ReadAll(defFile)
-	if jsonErr := json.Unmarshal(byteValue, &def); err != nil {
+	if jsonErr := json.Unmarshal(byteValue, &def); jsonErr != nil {
 		return def, jsonErr
 	}
 

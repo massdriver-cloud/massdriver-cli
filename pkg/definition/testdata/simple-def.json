@@ -1,0 +1,10 @@
+{
+    "$md": {
+        "access": "public",
+        "name": "simple-def"
+    },
+    "properties": {
+        "data": {},
+        "specs": {}
+    }
+}

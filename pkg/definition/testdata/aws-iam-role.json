@@ -1,0 +1,15 @@
+{
+    "$md": {
+        "access": "public",
+        "name": "aws-iam-role"
+    },
+    "properties": {
+        "data": {
+            "title": "Artifact Data",
+            "type": "object",
+            "required": [
+                "infrastructure"
+            ]
+        }
+    }
+}

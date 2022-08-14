@@ -60,7 +60,7 @@ func runDefinitionBuild(cmd *cobra.Command, args []string) error {
 
 	defPath := args[0]
 
-	if errBuild := definition.Build(defPath); errBuild != nil {
+	if _, errBuild := definition.Build(defPath); errBuild != nil {
 		return errBuild
 	}
 	return nil
