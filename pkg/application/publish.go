@@ -10,7 +10,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
-func Publish(c *client.MassdriverClient, appPath string) error {
+func Publish(c *client.MassdriverClient) error {
 	workingDir, err := os.MkdirTemp("", "application")
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func Publish(c *client.MassdriverClient, appPath string) error {
 	defer os.RemoveAll(workingDir)
 
 	var buf bytes.Buffer
-	_, errPackage := Package(appPath, c, workingDir, &buf)
+	_, errPackage := Package(common.MassdriverYamlFilename, c, workingDir, &buf)
 	if errPackage != nil {
 		return errPackage
 	}
