@@ -49,11 +49,10 @@ func Package(massYamlPath string, c *client.MassdriverClient, destinationDir str
 		}
 	}
 
-	app, errParse := Parse(massYamlPath, nil)
+	app, errParse := Parse(destinationDir+"/"+common.MassdriverYamlFilename, nil)
 	if errParse != nil {
 		return nil, errParse
 	}
-	log.Info().Msgf("Packaging application connections %s", app.Connections)
 
 	if errBuild := app.Build(c, destinationDir); errBuild != nil {
 		return nil, errBuild
