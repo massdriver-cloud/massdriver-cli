@@ -1,6 +1,6 @@
 package template
 
 const (
-	OpenPattern  = "<md"
-	ClosePattern = "md>"
+	OpenPattern  = "{{mass"
+	ClosePattern = "mass}}"
 )

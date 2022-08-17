@@ -1,10 +1,10 @@
 # This file will be used to generate all of the schema-*.json files in a bundle
 schema: draft-07
-name: "<md .Name md>"
-description: "<md .Description md>"
-ref: github.com/YOUR_NAME_HERE/<md .Name md>
-access: "<md .Access md>"
-type: "<md .Type md>"
+name: "{{mass .Name mass}}"
+description: "{{mass .Description mass}}"
+ref: github.com/YOUR_NAME_HERE/{{mass .Name mass}}
+access: "{{mass .Access mass}}"
+type: "{{mass .Type mass}}"
 
 # schema-params.json
 # JSON Schema sans-fields above
@@ -18,7 +18,7 @@ params:
     foo:
       type: string
       title: Foo
-      description: Name of <md .Name md>
+      description: Name of {{mass .Name mass}}
       default: ""
       examples:
         - US-West 2 VPC
@@ -26,23 +26,23 @@ params:
 
 # schema-connections.json
 # Named list of input connections (artifacts) (map[name]artifact)
-<md if not .Connections md>
+{{mass if not .Connections mass}}
 connections:
   properties: {}
-<md end -md>
+{{mass end -mass}}
 
-<md if .Connections md>
+{{mass if .Connections mass}}
 connections:
   required:
-  <md- range $key, $art:= .Connections md>
-    - <md $key md>
-  <md- end md>
+  {{mass- range $key, $art:= .Connections mass}}
+    - {{mass $key mass}}
+  {{mass- end mass}}
   properties:
-  <md- range $key, $art:= .Connections md>
-    <md $key md>:
-      $ref: <md $art md>
-  <md- end md>
-<md- end md>
+  {{mass- range $key, $art:= .Connections mass}}
+    {{mass $key mass}}:
+      $ref: {{mass $art mass}}
+  {{mass- end mass}}
+{{mass- end mass}}
 
 # schema-artifacts.json
 # Named list of output artifacts  (map[name]artifact)

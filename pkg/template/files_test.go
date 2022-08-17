@@ -23,9 +23,9 @@ func TestWriteTemplateToFile(t *testing.T) {
 		{
 			name: "Test name",
 			template: `# Massdriver Application Template
-# Template: <md .TemplateName md>
-title: <md .Name md>
-description: <md .Description md>
+# Template: {{mass .TemplateName mass}}
+title: {{mass .Name mass}}
+description: {{mass .Description mass}}
 `,
 			data: template.Data{
 				Name:         "App Name",

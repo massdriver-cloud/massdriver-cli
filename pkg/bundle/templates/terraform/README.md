@@ -1,6 +1,6 @@
-# <md .Name md>
+# {{mass .Name mass}}
 
-<md .Description md>
+{{mass .Description mass}}
 
 ## Development
 

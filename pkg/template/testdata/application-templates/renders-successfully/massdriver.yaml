@@ -1,7 +1,7 @@
 schema: draft-07
-name: <md .Name md>
-description: <md .Description md>
-ref: github.com/YOUR_ORG/<md .Name md>
+name: {{mass .Name mass}}
+description: {{mass .Description mass}}
+ref: github.com/YOUR_ORG/{{mass .Name mass}}
 access: private
 type: application
 
@@ -11,20 +11,20 @@ params:
       type: string
     app_env:
       type: string
-<md if not .Connections md>
+{{mass if not .Connections mass}}
 connections:
   properties: {}
-<md end -md>
+{{mass end -mass}}
 
-<md if .Connections md>
+{{mass if .Connections mass}}
 connections:
   required: ["*"]
   properties:
-  <md- range $key, $art:= .Connections md>
-    <md $key md>:
-      $ref: <md $art md>
-  <md- end md>
-<md- end md>
+  {{mass- range $key, $art:= .Connections mass}}
+    {{mass $key mass}}:
+      $ref: {{mass $art mass}}
+  {{mass- end mass}}
+{{mass- end mass}}
 
 ui:
   ui:order:
