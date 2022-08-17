@@ -36,9 +36,8 @@ var applicationNewCmd = &cobra.Command{
 }
 
 var applicationPublishCmd = &cobra.Command{
-	Use:          "publish [Path to app.yaml]",
+	Use:          "publish",
 	Short:        "Publish an application to Massdriver",
-	Args:         cobra.ExactArgs(1),
 	RunE:         runApplicationPublish,
 	SilenceUsage: true,
 }
@@ -118,7 +117,6 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	appPath := args[0]
 	c, errClient := initClient(cmd)
 	if errClient != nil {
 		return errClient
@@ -131,7 +129,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return errType
 	}
 
-	if errPub := application.Publish(c, appPath); errPub != nil {
+	if errPub := application.Publish(c); errPub != nil {
 		return errPub
 	}
 	log.Info().Msg("Application published successfully!")
