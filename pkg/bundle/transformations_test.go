@@ -51,33 +51,6 @@ func TestTransformations(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:           "additionalProperties",
-			schemaPath:     "./testdata/transformation-additional_properties.yaml",
-			transformation: bundle.DisableAdditionalPropertiesInObjects,
-			expected: map[string]interface{}{
-				"params": map[string]interface{}{
-					"properties": map[string]interface{}{
-						"addPropFalse": map[string]interface{}{
-							"type":                 "object",
-							"additionalProperties": false,
-						},
-						"addPropTrue": map[string]interface{}{
-							"type": "object",
-							"anyOf": []interface{}{
-								"lol",
-								"rofl",
-							},
-							"additionalProperties": true,
-						},
-						"addPropExists": map[string]interface{}{
-							"type":                 "object",
-							"additionalProperties": true,
-						},
-					},
-				},
-			},
-		},
 	}
 
 	for _, tc := range tests {
