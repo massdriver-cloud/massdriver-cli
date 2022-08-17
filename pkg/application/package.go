@@ -59,7 +59,7 @@ func Package(massYamlPath string, c *client.MassdriverClient, destinationDir str
 		return nil, errBuild
 	}
 
-	errPackage := bundle.PackageBundle(destinationDir, buf)
+	errPackage := bundle.PackageBundle(destinationDir+"/"+common.MassdriverYamlFilename, buf)
 	if errPackage != nil {
 		return nil, errPackage
 	}
