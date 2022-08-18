@@ -16,69 +16,7 @@ func TestTransformations(t *testing.T) {
 		transformation func(map[string]interface{}) error
 		expected       map[string]interface{}
 	}
-	tests := []testData{
-		{
-			name:           "md_set_id",
-			schemaPath:     "./testdata/transformation-md_set_id.yaml",
-			transformation: bundle.AddSetIDToObjectArrays,
-			expected: map[string]interface{}{
-				"params": map[string]interface{}{
-					"properties": map[string]interface{}{
-						"set_id": map[string]interface{}{
-							"type": "array",
-							"items": map[string]interface{}{
-								"type":     "object",
-								"required": []string{"md_set_id"},
-								"properties": map[string]interface{}{
-									"foo": map[string]interface{}{
-										"type": "string",
-									},
-									"md_set_id": map[string]interface{}{
-										"type": "string",
-									},
-								},
-							},
-						},
-						"no_set_id": map[string]interface{}{
-							"type": "object",
-							"properties": map[string]interface{}{
-								"bar": map[string]interface{}{
-									"type": "string",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name:           "additionalProperties",
-			schemaPath:     "./testdata/transformation-additional_properties.yaml",
-			transformation: bundle.DisableAdditionalPropertiesInObjects,
-			expected: map[string]interface{}{
-				"params": map[string]interface{}{
-					"properties": map[string]interface{}{
-						"addPropFalse": map[string]interface{}{
-							"type":                 "object",
-							"additionalProperties": false,
-						},
-						"addPropTrue": map[string]interface{}{
-							"type": "object",
-							"anyOf": []interface{}{
-								"lol",
-								"rofl",
-							},
-							"additionalProperties": true,
-						},
-						"addPropExists": map[string]interface{}{
-							"type":                 "object",
-							"additionalProperties": true,
-						},
-					},
-				},
-			},
-		},
-	}
+	tests := []testData{}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
