@@ -56,4 +56,5 @@ var FileIgnores []string = []string{
 	"_md_variables.tf.json",
 	"_params_variables.tf.json",
 	".DS_Store",
+	".git",
 }
