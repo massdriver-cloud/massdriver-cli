@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"path"
 	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
@@ -144,7 +142,6 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-
 	b, err := bundle.Parse(common.MassdriverYamlFilename, overrides)
 	if err != nil {
 		return err
@@ -153,28 +150,11 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return errType
 	}
 
-	if errBuild := b.Build(c, path.Dir(common.MassdriverYamlFilename)); errBuild != nil {
-		return errBuild
-	}
-
-	var buf bytes.Buffer
-	err = bundle.PackageBundle(common.MassdriverYamlFilename, &buf)
-	if err != nil {
-		return err
-	}
-
-	uploadURL, err := b.Publish(c)
-	if err != nil {
-		return err
-	}
-
-	err = bundle.UploadToPresignedS3URL(uploadURL, &buf)
-	if err != nil {
-		return err
+	if errPublish := bundle.Publish(c, b); errPublish != nil {
+		return errPublish
 	}
 
 	fmt.Println("Bundle published successfully!")
-
 	return nil
 }
 

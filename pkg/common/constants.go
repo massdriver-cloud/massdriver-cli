@@ -55,4 +55,5 @@ var FileIgnores []string = []string{
 	"_connections_variables.tf.json",
 	"_md_variables.tf.json",
 	"_params_variables.tf.json",
+	".DS_Store",
 }

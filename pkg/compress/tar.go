@@ -8,6 +8,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
@@ -95,6 +97,12 @@ func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 }
 
 func ShouldIgnore(relativeFilePath string) bool {
+	// full filenames to ignore
+	if common.Contains(common.FileIgnores, relativeFilePath) {
+		return true
+	}
+
+	// partial filenames to ignore
 	// .terraform, .terraform.lock.hcl
 	return strings.Contains(relativeFilePath, ".terraform") ||
 		// terraform.tfstate, terraform.tfstate.backup, etc...

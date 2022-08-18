@@ -64,7 +64,7 @@ func TestPublish(t *testing.T) {
 
 			c := client.NewClient().WithBaseURL(testServer.URL)
 
-			gotResponse, err := tc.bundle.Publish(c)
+			gotResponse, err := tc.bundle.PublishToMassdriver(c)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
