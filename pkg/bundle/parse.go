@@ -32,7 +32,9 @@ func Parse(path string, overrides map[string]interface{}) (*Bundle, error) {
 	}
 
 	if bundle.Artifacts == nil {
-		bundle.Artifacts = make(map[string]interface{})
+		bundle.Artifacts = map[string]interface{}{
+			"properties": map[string]interface{}{},
+		}
 	}
 
 	return bundle, nil
