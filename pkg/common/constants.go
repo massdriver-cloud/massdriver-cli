@@ -47,6 +47,7 @@ const (
 
 var FileIgnores []string = []string{
 	".terraform",
+	".git",
 	"terraform.tfstate",
 	"auto.tfvars.json",
 	"connections.auto.tfvars.json",
