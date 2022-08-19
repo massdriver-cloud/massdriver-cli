@@ -14,6 +14,6 @@ To learn how to develop a bundle for Massdriver, check out our [bundle docs](htt
   
 ### Contribution guidelines
 
-So you're interested in contributing to Massdriver Bundles?  Please refer to Massdruver's overall
+So you're interested in contributing to Massdriver Bundles?  Please refer to Massdriver's overall
 [contribution guidelines](https://docs.massdriver.cloud/bundles/contributing) to find out how you
 can help with existing bundles or open source your own bundle.
