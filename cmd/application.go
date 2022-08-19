@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
@@ -129,7 +130,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return errType
 	}
 
-	if errPub := application.Publish(c); errPub != nil {
+	if errPub := bundle.Publish(c, app.AsBundle()); errPub != nil {
 		return errPub
 	}
 	log.Info().Msg("Application published successfully!")

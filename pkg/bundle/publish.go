@@ -10,11 +10,32 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"path"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
-func (b *Bundle) Publish(c *client.MassdriverClient) (string, error) {
+func Publish(c *client.MassdriverClient, b *Bundle) error {
+	if errBuild := b.Build(c, path.Dir(common.MassdriverYamlFilename)); errBuild != nil {
+		return errBuild
+	}
+
+	var buf bytes.Buffer
+	errPackage := PackageBundle(common.MassdriverYamlFilename, &buf)
+	if errPackage != nil {
+		return errPackage
+	}
+
+	uploadURL, err := b.PublishToMassdriver(c)
+	if err != nil {
+		return err
+	}
+
+	return UploadToPresignedS3URL(uploadURL, &buf)
+}
+
+func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error) {
 	body, err := b.generateBundlePublishBody()
 	if err != nil {
 		return "", err

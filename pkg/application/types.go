@@ -2,6 +2,7 @@ package application
 
 import "github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 
+// TODO: combine w/ bundle struct
 type Application struct {
 	Schema      string                 `json:"schema" yaml:"schema"`
 	Name        string                 `json:"name" yaml:"name"`
