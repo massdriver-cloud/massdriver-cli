@@ -22,17 +22,19 @@ func Publish(c *client.MassdriverClient, b *Bundle) error {
 	}
 
 	var buf bytes.Buffer
-	errPackage := PackageBundle(common.MassdriverYamlFilename, &buf)
+	errPackage := PackageBundle(b, common.MassdriverYamlFilename, &buf)
 	if errPackage != nil {
 		return errPackage
 	}
 
-	uploadURL, err := b.PublishToMassdriver(c)
-	if err != nil {
-		return err
-	}
+	return nil
 
-	return UploadToPresignedS3URL(uploadURL, &buf)
+	// uploadURL, err := b.PublishToMassdriver(c)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// return UploadToPresignedS3URL(uploadURL, &buf)
 }
 
 func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error) {

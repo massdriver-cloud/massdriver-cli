@@ -19,32 +19,30 @@ func Contains(s []string, str string) bool {
 	return false
 }
 
-func CopyFolder(sourcePath string, destPath string, ignores []string) error {
-	err := filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
+func CopyFolder(sourcePath string, destPath string) error {
+	return filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
 		var relPath = strings.TrimPrefix(path, sourcePath)
 		if relPath == "" {
 			return nil
 		}
-		// skip things we don't want to include
-		// TODO: improve file ignore logic
-		for _, ignore := range ignores {
-			if strings.Contains(relPath, ignore) {
-				return nil
-			}
+
+		if shouldNotInclude(info) {
+			return nil
 		}
 
 		if info.IsDir() {
-			log.Debug().Msgf("mkdir: %s", relPath)
+			log.Info().Msgf("mkdir: %s", relPath)
 			return os.Mkdir(filepath.Join(destPath, relPath), AllRX|UserRW)
 		}
+
+		log.Info().Msgf("copying: %s", relPath)
 		var data, err1 = ioutil.ReadFile(filepath.Join(sourcePath, relPath))
 		if err1 != nil {
 			return err1
 		}
-		log.Debug().Msgf("copying: %s", relPath)
+
 		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, AllRWX)
 	})
-	return err
 }
 
 func WriteFile(filePath string, data []byte, errToBytes error) error {
@@ -61,4 +59,23 @@ func WriteFile(filePath string, data []byte, errToBytes error) error {
 		return errWrite
 	}
 	return nil
+}
+
+func shouldNotInclude(info os.FileInfo) bool {
+	fileName := info.Name()
+	for _, ignore := range FileIgnores {
+		if strings.Contains(fileName, ignore) {
+			return true
+		}
+	}
+
+	bytes := info.Size()
+	kilobytes := (bytes / 1024)
+	var megabytes float64
+	megabytes = (float64)(kilobytes / 1024)
+	if megabytes > 10 {
+		return true
+	}
+
+	return false
 }

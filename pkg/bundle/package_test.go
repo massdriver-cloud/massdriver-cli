@@ -16,25 +16,43 @@ func TestPackageBundle(t *testing.T) {
 		name       string
 		bundlePath string
 		wantPath   string
+		bundle     *bundle.Bundle
 	}
 	tests := []test{
 		{
 			name:       "simple",
 			bundlePath: "testdata/zipdir/massdriver.yaml",
 			wantPath:   "testdata/bundle",
+			bundle:     &bundle.Bundle{},
 		},
+		// {
+		// 	name:       "simple",
+		// 	bundlePath: "testdata/zipdir/massdriver.yaml",
+		// 	wantPath:   "testdata/bundle",
+		// 	bundle: &bundle.Bundle{
+		// 		Steps: []bundle.Step{
+		// 			{
+		// 				Path: "src",
+		// 			},
+		// 			{
+		// 				Path: "core-services",
+		// 			},
+		// 		},
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.PackageBundle(tc.bundlePath, &got)
+			err := bundle.PackageBundle(tc.bundle, tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
 
 			// Create a temp dir, write out the archive, then shell out to untar
-			testDir := t.TempDir()
+			// testDir := t.TempDir()
+			testDir := "_build"
 			zipOut := path.Join(testDir, "out.tar.gz")
 			gotBytes := got.Bytes()
 			err = os.WriteFile(zipOut, gotBytes, 0644)
