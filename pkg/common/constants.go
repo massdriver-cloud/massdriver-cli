@@ -47,15 +47,23 @@ const (
 
 var FileIgnores []string = []string{
 	".terraform",
+	".tfstate",
+	".tfvars",
+	".md",
 	".git",
-	"terraform.tfstate",
-	"auto.tfvars.json",
-	"connections.auto.tfvars.json",
-	"dev.connections.tfvars",
-	"dev.params.tfvars",
 	"_connections_variables.tf.json",
 	"_md_variables.tf.json",
 	"_params_variables.tf.json",
 	".DS_Store",
-	".git",
+}
+
+var FileAllows []string = []string{
+	"massdriver.yaml",
+	"schema-params.json",
+	"schema-connections.json",
+	"schema-artifacts.json",
+	"schema-ui.json",
+	"src",
+	// do we want this inside a step aka "src" or top-level
+	"chart",
 }

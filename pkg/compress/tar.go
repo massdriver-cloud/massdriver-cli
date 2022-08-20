@@ -8,8 +8,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-
-	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
 func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
@@ -28,9 +26,6 @@ func TarDirectory(dirPath string, prefix string, tarWriter *tar.Writer) error {
 		header, err := tar.FileInfoHeader(fi, file)
 		if err != nil {
 			return err
-		}
-		if ShouldIgnore(relativeDestinationFilePath) {
-			return nil
 		}
 
 		// must provide real name
@@ -94,20 +89,4 @@ func TarFile(filePath string, prefix string, tarWriter *tar.Writer) error {
 	}
 
 	return nil
-}
-
-func ShouldIgnore(relativeFilePath string) bool {
-	// full filenames to ignore
-	if common.Contains(common.FileIgnores, relativeFilePath) {
-		return true
-	}
-
-	// partial filenames to ignore
-	// .terraform, .terraform.lock.hcl
-	return strings.Contains(relativeFilePath, ".terraform") ||
-		// terraform.tfstate, terraform.tfstate.backup, etc...
-		strings.Contains(relativeFilePath, ".tfstate") ||
-		// Massdriver gives the vars
-		strings.Contains(relativeFilePath, ".tfvars") ||
-		strings.Contains(relativeFilePath, ".md")
 }

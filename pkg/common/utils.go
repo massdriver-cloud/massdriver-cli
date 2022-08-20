@@ -1,6 +1,7 @@
 package common
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -19,30 +20,52 @@ func Contains(s []string, str string) bool {
 	return false
 }
 
-func CopyFolder(sourcePath string, destPath string) error {
-	return filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
-		var relPath = strings.TrimPrefix(path, sourcePath)
-		if relPath == "" {
-			return nil
+func CopyFolder(sourcePath string, destPath string, allowList []string) error {
+	// if it's a folder
+	// make the folder in dest
+	//   pass the files in that folder to this function
+	// if file, write file
+	file, _ := os.Stat(sourcePath)
+
+	if shouldIgnore(file) {
+		return nil
+	}
+
+	if file.IsDir() {
+		errMkdir := os.Mkdir(destPath, AllRX|UserRW)
+		if errMkdir != nil {
+			return errMkdir
 		}
 
-		if shouldNotInclude(info) {
-			return nil
+		files, errReadDir := ioutil.ReadDir(sourcePath)
+		if errReadDir != nil {
+			return errReadDir
 		}
+		for _, fileInfo := range files {
+			fileOrDirName := fileInfo.Name()
 
-		if info.IsDir() {
-			log.Info().Msgf("mkdir: %s", relPath)
-			return os.Mkdir(filepath.Join(destPath, relPath), AllRX|UserRW)
+			log.Info().Msgf("fileOrDirName: %s", fileOrDirName)
+			if shouldIgnore(fileInfo) {
+				continue
+			}
+
+			errCopy := CopyFolder(filepath.Join(sourcePath, fileOrDirName), filepath.Join(destPath, fileOrDirName), allowList)
+			if errCopy != nil {
+				return errCopy
+			}
 		}
-
-		log.Info().Msgf("copying: %s", relPath)
-		var data, err1 = ioutil.ReadFile(filepath.Join(sourcePath, relPath))
+	} else {
+		fileOrDirName := file.Name()
+		log.Info().Msgf("writing: %s", fileOrDirName)
+		var data, err1 = ioutil.ReadFile(sourcePath)
 		if err1 != nil {
 			return err1
 		}
 
-		return ioutil.WriteFile(filepath.Join(destPath, relPath), data, AllRWX)
-	})
+		return ioutil.WriteFile(destPath, data, AllRWX)
+	}
+
+	return nil
 }
 
 func WriteFile(filePath string, data []byte, errToBytes error) error {
@@ -61,10 +84,13 @@ func WriteFile(filePath string, data []byte, errToBytes error) error {
 	return nil
 }
 
-func shouldNotInclude(info os.FileInfo) bool {
-	fileName := info.Name()
+func shouldIgnore(info fs.FileInfo) bool {
+	filePath := info.Name()
+	log.Info().Msgf("shouldIgnore: %s", filePath)
+
 	for _, ignore := range FileIgnores {
-		if strings.Contains(fileName, ignore) {
+		if strings.Contains(filePath, ignore) {
+			log.Info().Msgf("ignoring	: %s", filePath)
 			return true
 		}
 	}
@@ -73,7 +99,9 @@ func shouldNotInclude(info os.FileInfo) bool {
 	kilobytes := (bytes / 1024)
 	var megabytes float64
 	megabytes = (float64)(kilobytes / 1024)
+
 	if megabytes > 10 {
+		log.Info().Msgf("megabytes: %v", megabytes)
 		return true
 	}
 

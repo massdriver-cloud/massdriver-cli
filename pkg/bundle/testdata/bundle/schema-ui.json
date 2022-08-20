@@ -1,0 +1,6 @@
+{
+  "$id": "https://schemas.massdriver.cloud/schemas/bundles/gcp-gke-cluster/schema-ui.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "properties": {},
+  "title": "gcp-gke-cluster"
+}

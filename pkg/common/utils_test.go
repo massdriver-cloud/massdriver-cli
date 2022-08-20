@@ -27,25 +27,25 @@ func TestCopyFolder(t *testing.T) {
 				"src",
 			},
 		},
-		{
-			name:       "allowlist-steps",
-			bundlePath: "testdata/bundle-steps",
-			wantPath:   "testdata/bundle-steps-allowlist",
-			ignores:    []string{},
-			allows: []string{
-				"massdriver.yaml",
-				"src",
-				"core-services",
-			},
-		},
+		// {
+		// 	name:       "allowlist-steps",
+		// 	bundlePath: "testdata/bundle-steps",
+		// 	wantPath:   "testdata/bundle-steps-allowlist",
+		// 	ignores:    []string{},
+		// 	allows: []string{
+		// 		"massdriver.yaml",
+		// 		"src",
+		// 		"core-services",
+		// 	},
+		// },
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			testDir := t.TempDir()
-			// testDir := "_build"
+			// testDir := t.TempDir()
+			testDir := "_build"
 
-			err := common.CopyFolder(tc.bundlePath, testDir)
+			err := common.CopyFolder(tc.bundlePath, testDir, tc.allows)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
