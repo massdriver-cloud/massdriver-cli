@@ -4,60 +4,37 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"io"
-	"io/ioutil"
-	"path"
+	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/compress"
-	"github.com/rs/zerolog/log"
 )
 
 func PackageBundle(b *Bundle, filePath string, buf io.Writer) error {
-	// buildDir, err := os.MkdirTemp("", "bundle-build")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer os.RemoveAll(buildDir)
-	buildDir := "_build"
-
-	allowList := []string{}
-	allowList = addAllowed(b)
-
-	sourceDir := path.Dir(filePath)
-	files, errReadDir := ioutil.ReadDir(sourceDir)
-	if errReadDir != nil {
-		return errReadDir
+	buildDir, err := os.MkdirTemp("", "bundle-build")
+	if err != nil {
+		return err
 	}
+	defer os.RemoveAll(buildDir)
+	// buildDir := "_build"
 
-	for _, fileInfo := range files {
-		fileOrDirName := fileInfo.Name()
+	allowList := getAllowList(b)
+	copyConfig := common.CopyConfig{
+		Allows:  allowList,
+		Ignores: common.FileIgnores,
+	}
+	srcDir := filepath.Dir(filePath)
 
-		shouldInclude := false
-		for _, allow := range allowList {
-			if strings.Contains(fileOrDirName, allow) {
-				log.Info().Msgf("including: %s", fileOrDirName)
-				shouldInclude = true
-			}
-		}
-		if !shouldInclude {
-			continue
-		}
-
-		log.Debug().Msgf("Copying to build dir: %s", fileOrDirName)
-		pathCopyFrom := path.Join(sourceDir, fileOrDirName)
-		pathCopyTo := path.Join(buildDir, fileOrDirName)
-		errCopy := common.CopyFolder(pathCopyFrom, pathCopyTo, allowList)
-		if errCopy != nil {
-			return errCopy
-		}
+	errCopy := common.CopyFolder(srcDir, buildDir, &copyConfig)
+	if errCopy != nil {
+		return errCopy
 	}
 
 	return tarFolder(buildDir+"/"+common.MassdriverYamlFilename, buf)
 }
 
-func addAllowed(b *Bundle) []string {
+func getAllowList(b *Bundle) []string {
 	allAllows := []string{}
 	allAllows = append(allAllows, common.FileAllows...)
 
@@ -67,7 +44,7 @@ func addAllowed(b *Bundle) []string {
 		}
 	}
 
-	return allAllows
+	return common.RemoveDuplicateValues(allAllows)
 }
 
 func tarFolder(filePath string, buf io.Writer) error {

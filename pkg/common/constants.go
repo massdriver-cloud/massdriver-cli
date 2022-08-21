@@ -51,9 +51,13 @@ var FileIgnores []string = []string{
 	".tfvars",
 	".md",
 	".git",
+	// Auto generated terraform variable files
 	"_connections_variables.tf.json",
-	"_md_variables.tf.json",
 	"_params_variables.tf.json",
+	"_md_variables.tf.json",
+	// For setting variable input values during local development
+	"_connections.auto.tfvars.json",
+	"_params.auto.tfvars.json",
 	".DS_Store",
 }
 
@@ -64,6 +68,4 @@ var FileAllows []string = []string{
 	"schema-artifacts.json",
 	"schema-ui.json",
 	"src",
-	// do we want this inside a step aka "src" or top-level
-	"chart",
 }

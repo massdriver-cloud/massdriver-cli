@@ -8,44 +8,49 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
+// allows
+// ignores
+
 func TestCopyFolder(t *testing.T) {
 	type test struct {
 		name       string
 		bundlePath string
 		wantPath   string
-		ignores    []string
-		allows     []string
+		config     *common.CopyConfig
 	}
 	tests := []test{
 		{
 			name:       "allowlist",
 			bundlePath: "testdata/bundle",
 			wantPath:   "testdata/bundle-allowlist",
-			ignores:    []string{},
-			allows: []string{
-				"massdriver.yaml",
-				"src",
+			config: &common.CopyConfig{
+				Allows: []string{
+					"massdriver.yaml",
+					"src",
+				},
+				Ignores: []string{},
 			},
 		},
-		// {
-		// 	name:       "allowlist-steps",
-		// 	bundlePath: "testdata/bundle-steps",
-		// 	wantPath:   "testdata/bundle-steps-allowlist",
-		// 	ignores:    []string{},
-		// 	allows: []string{
-		// 		"massdriver.yaml",
-		// 		"src",
-		// 		"core-services",
-		// 	},
-		// },
+		{
+			name:       "allowlist-steps",
+			bundlePath: "testdata/bundle-steps",
+			wantPath:   "testdata/bundle-steps-allowlist",
+			config: &common.CopyConfig{
+				Allows: []string{
+					"massdriver.yaml",
+					"src",
+					"core-services",
+				},
+				Ignores: []string{},
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			// testDir := t.TempDir()
-			testDir := "_build"
+			testDir := t.TempDir()
 
-			err := common.CopyFolder(tc.bundlePath, testDir, tc.allows)
+			err := common.CopyFolder(tc.bundlePath, testDir, tc.config)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

@@ -25,21 +25,21 @@ func TestPackageBundle(t *testing.T) {
 			wantPath:   "testdata/bundle",
 			bundle:     &bundle.Bundle{},
 		},
-		// {
-		// 	name:       "simple",
-		// 	bundlePath: "testdata/zipdir/massdriver.yaml",
-		// 	wantPath:   "testdata/bundle",
-		// 	bundle: &bundle.Bundle{
-		// 		Steps: []bundle.Step{
-		// 			{
-		// 				Path: "src",
-		// 			},
-		// 			{
-		// 				Path: "core-services",
-		// 			},
-		// 		},
-		// 	},
-		// },
+		{
+			name:       "simple",
+			bundlePath: "testdata/zipdir/massdriver.yaml",
+			wantPath:   "testdata/bundle",
+			bundle: &bundle.Bundle{
+				Steps: []bundle.Step{
+					{
+						Path: "src",
+					},
+					{
+						Path: "core-services",
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -51,8 +51,8 @@ func TestPackageBundle(t *testing.T) {
 			}
 
 			// Create a temp dir, write out the archive, then shell out to untar
-			// testDir := t.TempDir()
-			testDir := "_build"
+			testDir := t.TempDir()
+			// testDir := "_build"
 			zipOut := path.Join(testDir, "out.tar.gz")
 			gotBytes := got.Bytes()
 			err = os.WriteFile(zipOut, gotBytes, 0644)

@@ -5,6 +5,10 @@ ref: github.com/user/app
 access: private
 type: application
 
+steps:
+  - path: src
+  - path: core-services
+
 params:
   properties:
     name:
