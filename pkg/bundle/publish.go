@@ -22,7 +22,7 @@ func Publish(c *client.MassdriverClient, b *Bundle) error {
 	}
 
 	var buf bytes.Buffer
-	errPackage := PackageBundle(b, common.MassdriverYamlFilename, &buf)
+	errPackage := Package(b, common.MassdriverYamlFilename, &buf)
 	if errPackage != nil {
 		return errPackage
 	}

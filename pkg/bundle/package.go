@@ -11,13 +11,12 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/compress"
 )
 
-func PackageBundle(b *Bundle, filePath string, buf io.Writer) error {
+func Package(b *Bundle, filePath string, buf io.Writer) error {
 	buildDir, err := os.MkdirTemp("", "bundle-build")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(buildDir)
-	// buildDir := "_build"
 
 	allowList := getAllowList(b)
 	copyConfig := common.CopyConfig{

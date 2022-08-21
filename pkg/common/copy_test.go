@@ -8,9 +8,6 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
-// allows
-// ignores
-
 func TestCopyFolder(t *testing.T) {
 	type test struct {
 		name       string

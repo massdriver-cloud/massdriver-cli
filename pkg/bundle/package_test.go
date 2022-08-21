@@ -45,7 +45,7 @@ func TestPackageBundle(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.PackageBundle(tc.bundle, tc.bundlePath, &got)
+			err := bundle.Package(tc.bundle, tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
