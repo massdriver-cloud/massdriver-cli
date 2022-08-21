@@ -7,6 +7,8 @@ const (
 	ConnectionsSchemaFilename = "schema-connections.json"
 	ParamsSchemaFilename      = "schema-params.json"
 	UISchemaFilename          = "schema-ui.json"
+	MaxBundleSizeMB           = 10
+	MaxFileSizeMB             = 1
 )
 
 // named constants for common unix file permissions logic

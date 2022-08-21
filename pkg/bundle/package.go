@@ -3,6 +3,7 @@ package bundle
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -25,9 +26,14 @@ func Package(b *Bundle, filePath string, buf io.Writer) error {
 	}
 	srcDir := filepath.Dir(filePath)
 
-	errCopy := common.CopyFolder(srcDir, buildDir, &copyConfig)
+	stats, errCopy := common.CopyFolder(srcDir, buildDir, &copyConfig)
 	if errCopy != nil {
 		return errCopy
+	}
+
+	mbs := common.FileSizeMB(stats.FolderSize)
+	if mbs > common.MaxBundleSizeMB {
+		return fmt.Errorf("Bundle size exceeds maximum allowed size of %vMB", common.MaxBundleSizeMB)
 	}
 
 	return tarFolder(buildDir+"/"+common.MassdriverYamlFilename, buf)

@@ -49,7 +49,7 @@ func TestCopyFolder(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			testDir := t.TempDir()
 
-			err := common.CopyFolder(tc.bundlePath, testDir, tc.config)
+			_, err := common.CopyFolder(tc.bundlePath, testDir, tc.config)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}

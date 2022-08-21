@@ -16,10 +16,17 @@ type CopyConfig struct {
 	Ignores []string
 }
 
-func CopyFolder(src, dst string, config *CopyConfig) error {
+type CopyStats struct {
+	FolderSize int64
+}
+
+func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
+	stats := CopyStats{
+		FolderSize: 0,
+	}
 	files, errReadDir := ioutil.ReadDir(src)
 	if errReadDir != nil {
-		return errReadDir
+		return stats, errReadDir
 	}
 
 	for _, fileInfo := range files {
@@ -29,13 +36,13 @@ func CopyFolder(src, dst string, config *CopyConfig) error {
 		}
 
 		// recursively copy the allowed files / folders
-		errCopy := copyFolder(path.Join(src, name), path.Join(dst, name), config)
+		errCopy := copyFolder(path.Join(src, name), path.Join(dst, name), config, &stats)
 		if errCopy != nil {
-			return errCopy
+			return stats, errCopy
 		}
 	}
 
-	return nil
+	return stats, nil
 }
 
 // Written because path.Walk traverses the entire directory tree.
@@ -44,7 +51,7 @@ func CopyFolder(src, dst string, config *CopyConfig) error {
 // base case: a file or folder we should ignore, skip
 // base case: a file we should include, write file
 // resurce when: it's a folder we should include
-func copyFolder(src, dest string, config *CopyConfig) error {
+func copyFolder(src, dest string, config *CopyConfig, stats *CopyStats) error {
 	info, _ := os.Stat(src)
 	// a file or folder we should ignore, skip
 	if shouldIgnore(info, config) {
@@ -53,6 +60,7 @@ func copyFolder(src, dest string, config *CopyConfig) error {
 
 	// a file we should include, write file
 	if !info.IsDir() {
+		stats.FolderSize += info.Size()
 		data, err1 := ioutil.ReadFile(src)
 		if err1 != nil {
 			return err1
@@ -76,7 +84,7 @@ func copyFolder(src, dest string, config *CopyConfig) error {
 	for _, subDirFileInfo := range files {
 		// recurse
 		name := subDirFileInfo.Name()
-		errCopy := copyFolder(filepath.Join(src, name), filepath.Join(dest, name), config)
+		errCopy := copyFolder(filepath.Join(src, name), filepath.Join(dest, name), config, stats)
 		if errCopy != nil {
 			return errCopy
 		}
@@ -94,9 +102,6 @@ func shouldInclude(fileOrDirName string, conf *CopyConfig) bool {
 	return false
 }
 
-const MaxFileSizeMB = 10
-const tenTwentyFour = 1024
-
 func shouldIgnore(info fs.FileInfo, config *CopyConfig) bool {
 	fileName := info.Name()
 
@@ -106,11 +111,8 @@ func shouldIgnore(info fs.FileInfo, config *CopyConfig) bool {
 		}
 	}
 
-	bytes := info.Size()
-	kilobytes := (bytes / tenTwentyFour)
-	megabytes := (float64)(kilobytes / tenTwentyFour)
-
-	if megabytes > MaxFileSizeMB {
+	mbs := FileSizeMB(info.Size())
+	if mbs > MaxFileSizeMB {
 		log.Debug().Msgf("File: %s is larger than limit of %vMB.", fileName, MaxFileSizeMB)
 		return true
 	}

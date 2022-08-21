@@ -45,3 +45,10 @@ func RemoveDuplicateValues(stringSlice []string) []string {
 
 	return list
 }
+
+const tenTwentyFour = 1024
+
+func FileSizeMB(bytes int64) float64 {
+	kilobytes := (bytes / tenTwentyFour)
+	return (float64)(kilobytes / tenTwentyFour)
+}
