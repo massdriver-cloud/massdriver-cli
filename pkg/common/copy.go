@@ -16,7 +16,6 @@ type CopyConfig struct {
 	Ignores []string
 }
 
-// public private pair dog
 func CopyFolder(src, dst string, config *CopyConfig) error {
 	files, errReadDir := ioutil.ReadDir(src)
 	if errReadDir != nil {
@@ -24,15 +23,13 @@ func CopyFolder(src, dst string, config *CopyConfig) error {
 	}
 
 	for _, fileInfo := range files {
-		fileOrDirName := fileInfo.Name()
-		log.Info().Msgf("fileOrDirName	: %s", fileOrDirName)
-
-		if !shouldInclude(fileOrDirName, config) {
+		name := fileInfo.Name()
+		if !shouldInclude(name, config) {
 			continue
 		}
 
-		// recurse
-		errCopy := copyFolder(path.Join(src, fileOrDirName), path.Join(dst, fileOrDirName), config)
+		// recursively copy the allowed files / folders
+		errCopy := copyFolder(path.Join(src, name), path.Join(dst, name), config)
 		if errCopy != nil {
 			return errCopy
 		}
@@ -41,45 +38,45 @@ func CopyFolder(src, dst string, config *CopyConfig) error {
 	return nil
 }
 
-// if it's a file
-//   base case
-// make the folder in dest
-//   pass the files in that folder to this function
-// if file, write file
-func copyFolder(sourcePath string, destPath string, config *CopyConfig) error {
-	fileInfo, _ := os.Stat(sourcePath)
-	if shouldIgnore(fileInfo, config) {
+// Written because path.Walk traverses the entire directory tree.
+// If a step has a folder like .terraform, path.Walk will still traverse it
+//
+// base case: a file or folder we should ignore, skip
+// base case: a file we should include, write file
+// resurce when: it's a folder we should include
+func copyFolder(src, dest string, config *CopyConfig) error {
+	info, _ := os.Stat(src)
+	// a file or folder we should ignore, skip
+	if shouldIgnore(info, config) {
 		return nil
 	}
 
-	if !fileInfo.IsDir() {
-		// base case, write the file
-		data, err1 := ioutil.ReadFile(sourcePath)
+	// a file we should include, write file
+	if !info.IsDir() {
+		data, err1 := ioutil.ReadFile(src)
 		if err1 != nil {
 			return err1
 		}
 
-		return ioutil.WriteFile(destPath, data, AllRWX)
+		return ioutil.WriteFile(dest, data, AllRWX)
 	}
 
-	errMkdir := os.Mkdir(destPath, AllRX|UserRW)
+	// a folder we should include
+	// so we create the folder, then iterate through
+	// the files in that folder.
+	errMkdir := os.Mkdir(dest, AllRX|UserRW)
 	if errMkdir != nil {
 		return errMkdir
 	}
 
-	files, errReadDir := ioutil.ReadDir(sourcePath)
+	files, errReadDir := ioutil.ReadDir(src)
 	if errReadDir != nil {
 		return errReadDir
 	}
 	for _, subDirFileInfo := range files {
-		fileOrDirName := subDirFileInfo.Name()
-
-		if shouldIgnore(subDirFileInfo, config) {
-			continue
-		}
-
 		// recurse
-		errCopy := copyFolder(filepath.Join(sourcePath, fileOrDirName), filepath.Join(destPath, fileOrDirName), config)
+		name := subDirFileInfo.Name()
+		errCopy := copyFolder(filepath.Join(src, name), filepath.Join(dest, name), config)
 		if errCopy != nil {
 			return errCopy
 		}
@@ -91,7 +88,6 @@ func copyFolder(sourcePath string, destPath string, config *CopyConfig) error {
 func shouldInclude(fileOrDirName string, conf *CopyConfig) bool {
 	for _, allow := range conf.Allows {
 		if strings.Contains(fileOrDirName, allow) {
-			log.Info().Msgf("including: %s", fileOrDirName)
 			return true
 		}
 	}
@@ -102,11 +98,10 @@ const MaxFileSizeMB = 10
 const tenTwentyFour = 1024
 
 func shouldIgnore(info fs.FileInfo, config *CopyConfig) bool {
-	filePath := info.Name()
+	fileName := info.Name()
 
 	for _, ignore := range config.Ignores {
-		if strings.Contains(filePath, ignore) {
-			log.Info().Msgf("ignoring	: %s", filePath)
+		if strings.Contains(fileName, ignore) {
 			return true
 		}
 	}
@@ -116,7 +111,7 @@ func shouldIgnore(info fs.FileInfo, config *CopyConfig) bool {
 	megabytes := (float64)(kilobytes / tenTwentyFour)
 
 	if megabytes > MaxFileSizeMB {
-		log.Info().Msgf("megabytes: %v", megabytes)
+		log.Debug().Msgf("File: %s is larger than limit of %vMB.", fileName, MaxFileSizeMB)
 		return true
 	}
 

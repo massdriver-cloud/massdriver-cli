@@ -17,21 +17,23 @@ func TestCopyFolder(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name:       "allowlist",
+			name:       "CopyOnlyAllowed",
 			bundlePath: "testdata/bundle",
-			wantPath:   "testdata/bundle-allowlist",
+			wantPath:   "testdata/bundle-tar",
 			config: &common.CopyConfig{
 				Allows: []string{
 					"massdriver.yaml",
 					"src",
 				},
-				Ignores: []string{},
+				Ignores: []string{
+					".terraform",
+				},
 			},
 		},
 		{
-			name:       "allowlist-steps",
-			bundlePath: "testdata/bundle-steps",
-			wantPath:   "testdata/bundle-steps-allowlist",
+			name:       "CopyMultiStep",
+			bundlePath: "testdata/bundle-multi-step",
+			wantPath:   "testdata/bundle-multi-step-tar",
 			config: &common.CopyConfig{
 				Allows: []string{
 					"massdriver.yaml",
