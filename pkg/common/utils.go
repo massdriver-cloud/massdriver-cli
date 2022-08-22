@@ -37,7 +37,7 @@ func RemoveDuplicateValues(stringSlice []string) []string {
 	list := []string{}
 
 	for _, entry := range stringSlice {
-		if keysSeen[entry] {
+		if !keysSeen[entry] {
 			list = append(list, entry)
 			keysSeen[entry] = true
 		}
@@ -49,6 +49,5 @@ func RemoveDuplicateValues(stringSlice []string) []string {
 const bytesInMB = 1024 * 1024
 
 func FileSizeMB(bytes int64) float64 {
-	kilobytes := (bytes / tenTwentyFour)
-	return (float64)(kilobytes / tenTwentyFour)
+	return (float64)(bytes / bytesInMB)
 }
