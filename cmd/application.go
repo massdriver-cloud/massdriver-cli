@@ -170,18 +170,3 @@ func runTemplatesRefresh(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
-
-func runTemplatesList(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
-	templates, err := cache.ApplicationTemplates()
-
-	if err != nil {
-		return err
-	}
-
-	for _, tmpl := range templates {
-		log.Info().Msg(tmpl)
-	}
-
-	return nil
-}
