@@ -4,7 +4,6 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -24,73 +23,66 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 	stats := CopyStats{
 		FolderSize: 0,
 	}
-	files, errReadDir := ioutil.ReadDir(src)
-	if errReadDir != nil {
-		return stats, errReadDir
-	}
 
-	for _, fileInfo := range files {
-		name := fileInfo.Name()
-		if !shouldInclude(name, config) {
-			continue
+	err := filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		relPath := strings.Replace(path, src, "", 1)
+		depth := strings.Count(relPath, string(os.PathSeparator))
+
+		skip, errSkip := shouldSkip(info, depth, config)
+		if errSkip != nil {
+			return errSkip
+		}
+		if skip {
+			return nil
 		}
 
-		// recursively copy the allowed files / folders
-		errCopy := copyFolder(path.Join(src, name), path.Join(dst, name), config, &stats)
-		if errCopy != nil {
-			return stats, errCopy
-		}
-	}
+		if info.IsDir() {
+			errMkdir := os.Mkdir(dst+relPath, AllRX|UserRW)
+			if errMkdir != nil {
+				return errMkdir
+			}
+		} else {
+			stats.FolderSize += info.Size()
+			data, err1 := ioutil.ReadFile(path)
+			if err1 != nil {
+				return err1
+			}
 
-	return stats, nil
+			return ioutil.WriteFile(dst+relPath, data, AllRWX)
+		}
+
+		return nil
+	})
+
+	return stats, err
 }
 
-// Written because path.Walk traverses the entire directory tree.
-// If a step has a folder like .terraform, path.Walk will still traverse it
-//
-// base case: a file or folder we should ignore, skip
-// base case: a file we should include, write file
-// resurce when: it's a folder we should include
-func copyFolder(src, dest string, config *CopyConfig, stats *CopyStats) error {
-	info, _ := os.Stat(src)
-	// a file or folder we should ignore, skip
+func shouldSkip(info fs.FileInfo, depth int, config *CopyConfig) (bool, error) {
+	name := info.Name()
+	if depth == 0 {
+		return true, nil
+	}
+	// if we're at the root of the bundle
+	// we only want to honor the include list
+	if depth == 1 && !shouldInclude(name, config) {
+		if info.IsDir() {
+			return true, filepath.SkipDir
+		}
+		return true, nil
+	}
+	// inside bundle directories like src, core-services, etc
+	// we want to only copy files that don't match the ignore criteria
+	// the criteria can be file name, file size, etc...
 	if shouldIgnore(info, config) {
-		return nil
-	}
-
-	// a file we should include, write file
-	if !info.IsDir() {
-		stats.FolderSize += info.Size()
-		data, err1 := ioutil.ReadFile(src)
-		if err1 != nil {
-			return err1
+		if info.IsDir() {
+			return true, filepath.SkipDir
 		}
-
-		return ioutil.WriteFile(dest, data, AllRWX)
+		return true, nil
 	}
-
-	// a folder we should include
-	// so we create the folder, then iterate through
-	// the files in that folder.
-	errMkdir := os.Mkdir(dest, AllRX|UserRW)
-	if errMkdir != nil {
-		return errMkdir
-	}
-
-	files, errReadDir := ioutil.ReadDir(src)
-	if errReadDir != nil {
-		return errReadDir
-	}
-	for _, subDirFileInfo := range files {
-		// recurse
-		name := subDirFileInfo.Name()
-		errCopy := copyFolder(filepath.Join(src, name), filepath.Join(dest, name), config, stats)
-		if errCopy != nil {
-			return errCopy
-		}
-	}
-
-	return nil
+	return false, nil
 }
 
 func shouldInclude(fileOrDirName string, conf *CopyConfig) bool {

@@ -25,7 +25,6 @@ func Package(b *Bundle, filePath string, buf io.Writer) error {
 		Ignores: common.FileIgnores,
 	}
 	srcDir := filepath.Dir(filePath)
-
 	stats, errCopy := common.CopyFolder(srcDir, buildDir, &copyConfig)
 	if errCopy != nil {
 		return errCopy
