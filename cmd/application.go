@@ -26,8 +26,9 @@ var applicationCmd = &cobra.Command{
 }
 
 var applicationBuildCmd = &cobra.Command{
-	Use:  "build",
-	RunE: runApplicationBuild,
+	Use:   "build",
+	Short: "Builds the app for local development",
+	RunE:  runApplicationBuild,
 }
 
 var applicationNewCmd = &cobra.Command{
@@ -44,22 +45,22 @@ var applicationPublishCmd = &cobra.Command{
 }
 
 var applicationTemplatesCmd = &cobra.Command{
-	Use:     "templates",
+	Use:     "template",
 	Aliases: []string{"tmpl"},
-	Short:   "Lists available application templates",
-	RunE:    runApplicationTemplates,
+	Short:   "Application template development tools",
+	Long:    ``,
+}
+
+var applicationTemplatesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Lists available application templates",
+	RunE:  runApplicationTemplatesList,
 }
 
 var templatesRefreshCmd = &cobra.Command{
 	Use:   "refresh",
 	Short: "Refreshes local copy of application templates",
 	RunE:  runTemplatesRefresh,
-}
-
-var templatesListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List templates in local copy of application templates",
-	RunE:  runTemplatesList,
 }
 
 func init() {
@@ -69,8 +70,9 @@ func init() {
 	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
+
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
-	applicationTemplatesCmd.AddCommand(templatesListCmd)
+	applicationTemplatesCmd.AddCommand(applicationTemplatesListCmd)
 }
 
 func checkIsApplication(app *application.Application) error {
@@ -146,7 +148,7 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 }
 
 // TODO: move to "mass repo"
-func runApplicationTemplates(cmd *cobra.Command, args []string) error {
+func runApplicationTemplatesList(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	templates, err := cache.ApplicationTemplates()
