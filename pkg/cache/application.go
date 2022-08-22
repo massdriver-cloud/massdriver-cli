@@ -12,9 +12,20 @@ import (
 // TODO: pull from massrc
 const MassdriverApplicationTemplatesRepository = "https://github.com/massdriver-cloud/application-templates"
 
+// AppTemplateCacheDir is a reader function to access the local cache of templates.
+// When developing templates, the cache source can be overwritten for reads by setting `MD_DEV_TEMPLATES_PATH`
 func AppTemplateCacheDir() string {
-	dir, _ := appTemplateCacheDir()
-	return dir
+	var templatesPath string
+	localDevTemplatesPath := os.Getenv("MD_DEV_TEMPLATES_PATH")
+	if localDevTemplatesPath == "" {
+		dir, _ := appTemplateCacheDir()
+		templatesPath = dir
+	} else {
+		log.Info().Msgf("Reading templates for local development path: %s", localDevTemplatesPath)
+		templatesPath = localDevTemplatesPath
+	}
+
+	return templatesPath
 }
 
 func ApplicationTemplates() ([]string, error) {
@@ -40,6 +51,8 @@ func RefreshAppTemplates() error {
 	return downloadAppTemplates()
 }
 
+// appTemplateCacheDir is the actual cache directory. This should be used internally when managing
+// files so that development template directories aren't overwritten on accident.
 func appTemplateCacheDir() (string, error) {
 	cacheDir, err := cacheDir()
 	if err != nil {
@@ -58,14 +71,15 @@ func appTemplateCacheDir() (string, error) {
 }
 
 func clearAppTemplateCache() error {
-	if err := os.RemoveAll(AppTemplateCacheDir()); err != nil {
+	templateCacheDir, _ := appTemplateCacheDir()
+	if err := os.RemoveAll(templateCacheDir); err != nil {
 		return err
 	}
 	return nil
 }
 
 func downloadAppTemplates() error {
-	templateCacheDir := AppTemplateCacheDir()
+	templateCacheDir, _ := appTemplateCacheDir()
 	log.Debug().Msgf("Downloading templates to %s", templateCacheDir)
 	// log.Debug().Msgf("Cloning templates from %s", common.Config().Application.Templates.Repository)
 	_, cloneErr := git.PlainClone(templateCacheDir, false, &git.CloneOptions{

@@ -56,6 +56,12 @@ var templatesRefreshCmd = &cobra.Command{
 	RunE:  runTemplatesRefresh,
 }
 
+var templatesListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List templates in local copy of application templates",
+	RunE:  runTemplatesList,
+}
+
 func init() {
 	rootCmd.AddCommand(applicationCmd)
 
@@ -64,6 +70,7 @@ func init() {
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
+	applicationTemplatesCmd.AddCommand(templatesListCmd)
 }
 
 func checkIsApplication(app *application.Application) error {
@@ -158,6 +165,21 @@ func runTemplatesRefresh(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	log.Info().Msg("Application templates refreshed successfully.")
+
+	return nil
+}
+
+func runTemplatesList(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+	templates, err := cache.ApplicationTemplates()
+
+	if err != nil {
+		return err
+	}
+
+	for _, tmpl := range templates {
+		log.Info().Msg(tmpl)
+	}
 
 	return nil
 }
