@@ -54,10 +54,12 @@ var FileIgnores []string = []string{
 	".md",
 	".git",
 	// Auto generated terraform variable files
-	"_connections_variables.tf.json",
-	"_params_variables.tf.json",
-	"_md_variables.tf.json",
-	// For setting variable input values during local development
+	// We need to include these. Comment left
+	// so we don't try to ignore them in the future
+	// "_connections_variables.tf.json",
+	// "_params_variables.tf.json",
+	// "_md_variables.tf.json",
+	// For setting variable input values during _local_ development
 	"_connections.auto.tfvars.json",
 	"_params.auto.tfvars.json",
 	".DS_Store",
