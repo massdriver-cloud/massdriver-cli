@@ -66,10 +66,10 @@ var FileIgnores []string = []string{
 }
 
 var FileAllows []string = []string{
-	"massdriver.yaml",
-	"schema-params.json",
-	"schema-connections.json",
-	"schema-artifacts.json",
-	"schema-ui.json",
+	MassdriverYamlFilename,
+	ArtifactsSchemaFilename,
+	ConnectionsSchemaFilename,
+	ParamsSchemaFilename,
+	UISchemaFilename,
 	"src",
 }
