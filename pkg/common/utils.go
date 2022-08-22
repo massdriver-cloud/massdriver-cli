@@ -33,13 +33,13 @@ func WriteFile(filePath string, data []byte, errToBytes error) error {
 
 // TODO: use generics
 func RemoveDuplicateValues(stringSlice []string) []string {
-	keys := make(map[string]bool)
+	keysSeen := make(map[string]bool)
 	list := []string{}
 
 	for _, entry := range stringSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
+		if keysSeen[entry] {
 			list = append(list, entry)
+			keysSeen[entry] = true
 		}
 	}
 

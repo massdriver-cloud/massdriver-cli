@@ -13,7 +13,7 @@ import (
 )
 
 func Package(b *Bundle, filePath string, buf io.Writer) error {
-	buildDir, err := os.MkdirTemp("", "bundle-build")
+	buildDir, err := os.MkdirTemp("", "bundle-build-*")
 	if err != nil {
 		return err
 	}

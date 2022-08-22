@@ -52,7 +52,6 @@ func TestPackageBundle(t *testing.T) {
 
 			// Create a temp dir, write out the archive, then shell out to untar
 			testDir := t.TempDir()
-			// testDir := "_build"
 			zipOut := path.Join(testDir, "out.tar.gz")
 			gotBytes := got.Bytes()
 			err = os.WriteFile(zipOut, gotBytes, 0644)
