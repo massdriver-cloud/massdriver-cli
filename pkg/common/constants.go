@@ -53,9 +53,6 @@ var FileIgnores []string = []string{
 	".tfvars",
 	".md",
 	".git",
-	// For setting variable input values during _local_ development
-	"_connections.auto.tfvars.json",
-	"_params.auto.tfvars.json",
 	".DS_Store",
 }
 

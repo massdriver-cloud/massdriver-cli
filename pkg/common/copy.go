@@ -40,7 +40,7 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 		}
 
 		if info.IsDir() {
-			errMkdir := os.Mkdir(dst+relPath, AllRX|UserRW)
+			errMkdir := os.Mkdir(dst+relPath, info.Mode())
 			if errMkdir != nil {
 				return errMkdir
 			}
@@ -51,7 +51,7 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 				return err1
 			}
 
-			return ioutil.WriteFile(dst+relPath, data, AllRWX)
+			return ioutil.WriteFile(dst+relPath, data, info.Mode())
 		}
 
 		return nil
@@ -105,7 +105,7 @@ func shouldIgnore(info fs.FileInfo, config *CopyConfig) bool {
 
 	mbs := FileSizeMB(info.Size())
 	if mbs > MaxFileSizeMB {
-		log.Debug().Msgf("File: %s is larger than limit of %vMB.", fileName, MaxFileSizeMB)
+		log.Error().Msgf("File: %s is larger than limit of %vMB.", fileName, MaxFileSizeMB)
 		return true
 	}
 

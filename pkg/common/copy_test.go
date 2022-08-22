@@ -1,10 +1,17 @@
 package common_test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
@@ -66,7 +73,59 @@ func TestCopyFolder(t *testing.T) {
 
 			if gotMD5 != wantMD5 {
 				t.Errorf("got %v, want %v", gotMD5, wantMD5)
+				walkAndCompare(tc.wantPath, tc.bundlePath)
 			}
 		})
 	}
+}
+
+func walkAndCompare(wantDir string, gotDir string) {
+	_ = gotDir
+	err := filepath.Walk(wantDir,
+		func(path string, info os.FileInfo, err error) error {
+			isDir, _ := isDirectory(path)
+
+			if isDir {
+				return nil
+			}
+
+			relativeFilePath := strings.TrimPrefix(path, wantDir)
+			gotFilePath := filepath.Join(gotDir, relativeFilePath)
+
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
+
+			dmp := diffmatchpatch.New()
+			gotText, _ := readFile(gotFilePath)
+			wantText, _ := readFile(path)
+			diffs := dmp.DiffMain(wantText, gotText, false)
+
+			fmt.Println(dmp.DiffToDelta(diffs))
+
+			return nil
+		})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func isDirectory(path string) (bool, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false, err
+	}
+
+	return fileInfo.IsDir(), err
+}
+
+func readFile(path string) (string, error) {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
 }

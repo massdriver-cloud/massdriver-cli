@@ -35,7 +35,7 @@ func Package(b *Bundle, filePath string, buf io.Writer) error {
 		return fmt.Errorf("Bundle size exceeds maximum allowed size of %vMB", common.MaxBundleSizeMB)
 	}
 
-	return tarFolder(buildDir+"/"+common.MassdriverYamlFilename, buf)
+	return tarFolder(buildDir, buf)
 }
 
 func getAllowList(b *Bundle) []string {
@@ -51,12 +51,12 @@ func getAllowList(b *Bundle) []string {
 	return common.RemoveDuplicateValues(allAllows)
 }
 
-func tarFolder(filePath string, buf io.Writer) error {
+func tarFolder(dir string, buf io.Writer) error {
 	// tar > gzip > buf
 	gzipWriter := gzip.NewWriter(buf)
 	tarWriter := tar.NewWriter(gzipWriter)
 
-	if err := compress.TarDirectory(filepath.Dir(filePath), "bundle", tarWriter); err != nil {
+	if err := compress.TarDirectory(dir, "bundle", tarWriter); err != nil {
 		return err
 	}
 
