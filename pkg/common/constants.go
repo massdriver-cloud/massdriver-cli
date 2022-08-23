@@ -7,6 +7,8 @@ const (
 	ConnectionsSchemaFilename = "schema-connections.json"
 	ParamsSchemaFilename      = "schema-params.json"
 	UISchemaFilename          = "schema-ui.json"
+	MaxBundleSizeMB           = 10
+	MaxFileSizeMB             = 1
 )
 
 // named constants for common unix file permissions logic
@@ -47,15 +49,18 @@ const (
 
 var FileIgnores []string = []string{
 	".terraform",
+	".tfstate",
+	".tfvars",
+	".md",
 	".git",
-	"terraform.tfstate",
-	"auto.tfvars.json",
-	"connections.auto.tfvars.json",
-	"dev.connections.tfvars",
-	"dev.params.tfvars",
-	"_connections_variables.tf.json",
-	"_md_variables.tf.json",
-	"_params_variables.tf.json",
 	".DS_Store",
-	".git",
+}
+
+var FileAllows []string = []string{
+	MassdriverYamlFilename,
+	ArtifactsSchemaFilename,
+	ConnectionsSchemaFilename,
+	ParamsSchemaFilename,
+	UISchemaFilename,
+	"src",
 }

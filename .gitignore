@@ -21,3 +21,5 @@ mass
 .vscode
 bin
 massdriver-cli
+
+.DS_Store

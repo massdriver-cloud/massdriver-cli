@@ -16,19 +16,36 @@ func TestPackageBundle(t *testing.T) {
 		name       string
 		bundlePath string
 		wantPath   string
+		bundle     *bundle.Bundle
 	}
 	tests := []test{
 		{
-			name:       "simple",
+			name:       "SimpleBundle",
 			bundlePath: "testdata/zipdir/massdriver.yaml",
 			wantPath:   "testdata/bundle",
+			bundle:     &bundle.Bundle{},
+		},
+		{
+			name:       "MultiStepBundle",
+			bundlePath: "testdata/zipdir/massdriver.yaml",
+			wantPath:   "testdata/bundle",
+			bundle: &bundle.Bundle{
+				Steps: []bundle.Step{
+					{
+						Path: "src",
+					},
+					{
+						Path: "core-services",
+					},
+				},
+			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			var got bytes.Buffer
-			err := bundle.PackageBundle(tc.bundlePath, &got)
+			err := bundle.Package(tc.bundle, tc.bundlePath, &got)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
