@@ -46,7 +46,7 @@ func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 			return nil
 		}
 
-		writePath := dstDir + relPath
+		writePath := filepath.Abs(filepath.Join(dstDir, relPath))
 		if info.IsDir() {
 			errMkdir := os.Mkdir(writePath, info.Mode())
 			if errMkdir != nil {
