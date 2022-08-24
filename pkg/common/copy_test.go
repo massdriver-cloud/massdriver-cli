@@ -50,6 +50,17 @@ func TestCopyFolder(t *testing.T) {
 				Ignores: []string{},
 			},
 		},
+		{
+			name:       "CopyFromRoot",
+			bundlePath: ".",
+			wantPath:   "testdata/copy-from-root",
+			config: &common.CopyConfig{
+				Allows: []string{
+					"utils.go",
+				},
+				Ignores: []string{},
+			},
+		},
 	}
 
 	for _, tc := range tests {
