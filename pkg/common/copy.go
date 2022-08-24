@@ -19,13 +19,6 @@ type CopyStats struct {
 	FolderSize int64
 }
 
-// src : testdata/bundle-multi-step
-// path: testdata/bundle-multi-step
-
-// src : testdata/bundle-multi-step
-// path: testdata/bundle-multi-step/.git
-// relPath: /.git
-
 func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 	stats := CopyStats{
 		FolderSize: 0,
