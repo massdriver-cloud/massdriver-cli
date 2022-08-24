@@ -50,17 +50,6 @@ func TestCopyFolder(t *testing.T) {
 				Ignores: []string{},
 			},
 		},
-		{
-			name:       "CopyFromRoot",
-			bundlePath: ".",
-			wantPath:   "testdata/copy-from-root",
-			config: &common.CopyConfig{
-				Allows: []string{
-					"utils.go",
-				},
-				Ignores: []string{},
-			},
-		},
 	}
 
 	for _, tc := range tests {
@@ -87,6 +76,52 @@ func TestCopyFolder(t *testing.T) {
 				walkAndCompare(tc.wantPath, tc.bundlePath)
 			}
 		})
+	}
+}
+
+func TestCopyFolderFromLocal(t *testing.T) {
+	copyFrom := "testdata/copy-from"
+	copyTo := t.TempDir()
+	wantPath := "testdata/copy-to"
+
+	originalDir, err0 := os.Getwd()
+	if err0 != nil {
+		t.Fatalf("%d, unexpected error", err0)
+	}
+	err1 := os.Chdir(copyFrom)
+	if err1 != nil {
+		t.Fatalf("%d, unexpected error", err1)
+	}
+
+	config := &common.CopyConfig{
+		Allows: []string{
+			"main.tf",
+		},
+		Ignores: []string{},
+	}
+
+	_, err2 := common.CopyFolder(".", copyTo, config)
+	if err2 != nil {
+		t.Fatalf("%d, unexpected error", err2)
+	}
+	// change back to the original dir so want paths and got paths make sense
+	if err := os.Chdir(originalDir); err != nil {
+		panic(err)
+	}
+
+	wantMD5, err := dirhash.HashDir(wantPath, "", dirhash.DefaultHash)
+	if err != nil {
+		t.Fatalf("%d, unexpected erroraaaaaaa", err)
+	}
+
+	gotMD5, err := dirhash.HashDir(path.Join(copyTo), "", dirhash.DefaultHash)
+	if err != nil {
+		t.Fatalf("%d, unexpected errorbbbb", err)
+	}
+
+	if gotMD5 != wantMD5 {
+		t.Errorf("got %v, want %v", gotMD5, wantMD5)
+		walkAndCompare(wantPath, ".")
 	}
 }
 

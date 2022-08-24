@@ -28,13 +28,12 @@ func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 		if err != nil {
 			return err
 		}
-		if path == "." {
-			return nil
+		relPath, errRel := filepath.Rel(src, path)
+		if errRel != nil {
+			return errRel
 		}
-
-		relPath := strings.Replace(path, src, "", 1)
-		if src == "." {
-			relPath = "/" + path
+		if relPath == "." {
+			return nil
 		}
 
 		depth := strings.Count(relPath, string(os.PathSeparator))
@@ -46,7 +45,10 @@ func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 			return nil
 		}
 
-		writePath := filepath.Abs(filepath.Join(dstDir, relPath))
+		writePath, errAbs := filepath.Abs(filepath.Join(dstDir, relPath))
+		if errAbs != nil {
+			return errAbs
+		}
 		if info.IsDir() {
 			errMkdir := os.Mkdir(writePath, info.Mode())
 			if errMkdir != nil {
@@ -58,7 +60,6 @@ func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 			if err1 != nil {
 				return err1
 			}
-
 			return ioutil.WriteFile(writePath, data, info.Mode())
 		}
 
@@ -70,17 +71,9 @@ func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 
 func shouldSkip(info fs.FileInfo, depth int, config *CopyConfig) (bool, error) {
 	name := info.Name()
-
-	// the parent folder, aka k8s-bundle
-	// we only want what's inside
-	if depth == 0 {
-		return true, nil
-	}
-
-	// subfolders, aka src, core-services, etc
 	// if we're at the root of the bundle
 	// we only want to honor the include list
-	if depth == 1 && !shouldInclude(name, config) {
+	if depth == 0 && !shouldInclude(name, config) {
 		if info.IsDir() {
 			return true, filepath.SkipDir
 		}
