@@ -19,7 +19,7 @@ type CopyStats struct {
 	FolderSize int64
 }
 
-func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
+func CopyFolder(src, dstDir string, config *CopyConfig) (CopyStats, error) {
 	stats := CopyStats{
 		FolderSize: 0,
 	}
@@ -28,9 +28,15 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 		if err != nil {
 			return err
 		}
-		relPath := strings.Replace(path, src, "", 1)
-		depth := strings.Count(relPath, string(os.PathSeparator))
+		relPath, errRel := filepath.Rel(src, path)
+		if errRel != nil {
+			return errRel
+		}
+		if relPath == "." {
+			return nil
+		}
 
+		depth := strings.Count(relPath, string(os.PathSeparator))
 		skip, errSkip := shouldSkip(info, depth, config)
 		if errSkip != nil {
 			return errSkip
@@ -39,8 +45,12 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 			return nil
 		}
 
+		writePath, errAbs := filepath.Abs(filepath.Join(dstDir, relPath))
+		if errAbs != nil {
+			return errAbs
+		}
 		if info.IsDir() {
-			errMkdir := os.Mkdir(dst+relPath, info.Mode())
+			errMkdir := os.Mkdir(writePath, info.Mode())
 			if errMkdir != nil {
 				return errMkdir
 			}
@@ -50,8 +60,7 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 			if err1 != nil {
 				return err1
 			}
-
-			return ioutil.WriteFile(dst+relPath, data, info.Mode())
+			return ioutil.WriteFile(writePath, data, info.Mode())
 		}
 
 		return nil
@@ -62,20 +71,18 @@ func CopyFolder(src, dst string, config *CopyConfig) (CopyStats, error) {
 
 func shouldSkip(info fs.FileInfo, depth int, config *CopyConfig) (bool, error) {
 	name := info.Name()
-	if depth == 0 {
-		return true, nil
-	}
 	// if we're at the root of the bundle
 	// we only want to honor the include list
-	if depth == 1 && !shouldInclude(name, config) {
+	if depth == 0 && !shouldInclude(name, config) {
 		if info.IsDir() {
 			return true, filepath.SkipDir
 		}
 		return true, nil
 	}
+
 	// inside bundle directories like src, core-services, etc
-	// we want to only copy files that don't match the ignore criteria
-	// the criteria can be file name, file size, etc...
+	// we want to include every file _except_ the ones
+	// that match the ignore _criteria_. File names, sizes, etc...
 	if shouldIgnore(info, config) {
 		if info.IsDir() {
 			return true, filepath.SkipDir
