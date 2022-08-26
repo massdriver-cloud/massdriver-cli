@@ -116,9 +116,15 @@ schema-artifacts.json
 schema-connections.json
 schema-params.json
 schema-ui.json
-*/_connections_variables.tf.json
-*/_md_variables.tf.json
-*/_params_variables.tf.json
+
+# Auto generated terraform variable files
+**/_connections_variables.tf.json
+**/_md_variables.tf.json
+**/_params_variables.tf.json
+
+# For setting variable input values during local development
+**/*.tfvars.json
+**/*.tfvars
 
 
 ### VS Code###
