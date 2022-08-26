@@ -24,12 +24,12 @@ repos:
         pass_filenames: false
       - id: dev-params-validation
         name: Validate development input params
-        entry: mass schema validate -s ./schema-params.json -d ./src/dev.params.tfvars.json
+        entry: mass schema validate -s ./schema-params.json -d ./src/_params.auto.tfvars.json
         language: system
         pass_filenames: false
       - id: conn-params-validation
         name: Validate development connection params
-        entry: mass schema validate -s ./schema-connections.json -d ./src/dev.connections.tfvars.json
+        entry: mass schema validate -s ./schema-connections.json -d ./src/_connections.auto.tfvars.json
         language: system
         pass_filenames: false
   - repo: https://github.com/antonbabenko/pre-commit-terraform
