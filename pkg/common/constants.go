@@ -47,7 +47,7 @@ const (
 	AllRWX     = AllRW | AllExecute
 )
 
-var FileIgnores []string = []string{
+var FileIgnores = []string{
 	".terraform",
 	".tfstate",
 	".tfvars",
@@ -56,7 +56,7 @@ var FileIgnores []string = []string{
 	".DS_Store",
 }
 
-var FileAllows []string = []string{
+var FileAllows = []string{
 	MassdriverYamlFilename,
 	ArtifactsSchemaFilename,
 	ConnectionsSchemaFilename,
