@@ -44,25 +44,29 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringP("api-key", "k", "", "Massdriver API key (can also be set via MASSDRIVER_API_KEY environment variable)")
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
+	rootCmd.PersistentFlags().Bool("json", false, "Enable JSON output")
 }
 
 func setupLogging(cmd *cobra.Command) {
 	verbose, _ := cmd.Flags().GetBool("verbose")
+	json, _ := cmd.Flags().GetBool("json")
 
 	if verbose {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	log.Logger = log.Output(zerolog.ConsoleWriter{
-		Out: os.Stdout,
-		PartsExclude: []string{
-			"time",
-			"level",
-		},
-	})
+	if !json {
+		log.Logger = log.Output(zerolog.ConsoleWriter{
+			Out: os.Stdout,
+			PartsExclude: []string{
+				"time",
+			},
+		})
+	}
 }
 
 func initClient(cmd *cobra.Command) (*client.MassdriverClient, error) {
