@@ -18,8 +18,8 @@ var promptsNew = []func(t *template.Data) error{
 	getDescription,
 	getAccessLevel,
 	getTemplate,
-	getOutputDir,
 	bundle.GetConnections,
+	getOutputDir,
 }
 
 func RunPromptNew(t *template.Data) error {
