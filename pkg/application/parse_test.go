@@ -21,7 +21,7 @@ func TestParse(t *testing.T) {
 				Schema:      "draft-07",
 				Name:        "my-app",
 				Description: "An application",
-				Ref:         "github.com/user/app",
+				SourceURL:   "github.com/user/app",
 				Type:        "application",
 				Access:      "private",
 				Params: map[string]interface{}{
