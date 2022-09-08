@@ -95,11 +95,11 @@ func getDescription(t *template.Data) error {
 	return nil
 }
 
-var IgnoredTemplateDirs = []string{"alpha"}
+var ignoredTemplateDirs = map[string]bool{"alpha": true}
 
 func getTemplate(t *template.Data) error {
 	templates, err := cache.ApplicationTemplates()
-	templates = removeIgnoredTemplateDirectories(templates, IgnoredTemplateDirs)
+	templates = removeIgnoredTemplateDirectories(templates)
 
 	if err != nil {
 		return err
@@ -119,15 +119,10 @@ func getTemplate(t *template.Data) error {
 	return nil
 }
 
-func removeIgnoredTemplateDirectories(templates []string, remove []string) []string {
-	for i := 0; i < len(templates); i++ {
-		template := templates[i]
-		for _, rem := range remove {
-			if template == rem {
-				templates = append(templates[:i], templates[i+1:]...)
-				i--
-				break
-			}
+func removeIgnoredTemplateDirectories(templates []string) []string {
+	for i, v := range templates {
+		if ignoredTemplateDirs[v] {
+			templates = remove(templates, i)
 		}
 	}
 
@@ -148,4 +143,9 @@ func getOutputDir(t *template.Data) error {
 
 	t.OutputDir = result
 	return nil
+}
+
+func remove(s []string, i int) []string {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
