@@ -15,6 +15,11 @@ func NewClient() *graphql.Client {
 	return client
 }
 
+func NewSubscriptionClient() *graphql.SubscriptionClient {
+	client := graphql.NewSubscriptionClient("https://api.massdriver.cloud/api/")
+	return client
+}
+
 type transport struct {
 	underlyingTransport http.RoundTripper
 }

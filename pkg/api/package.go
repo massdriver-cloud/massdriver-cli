@@ -4,7 +4,7 @@ package api
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -22,9 +22,9 @@ type Package struct {
 }
 
 const deploymentTimeout time.Duration = time.Duration(5) * time.Minute
-const deploymentStatusSleep time.Duration = time.Duration(10) * time.Second
+// const deploymentStatusSleep time.Duration = time.Duration(10) * time.Second
 
-func DeployPackage(client *graphql.Client, orgID string, name string) (*Deployment, error) {
+func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient, orgID string, name string) (*Deployment, error) {
 	log.Debug().Str("packageName", name).Msg("Deploying package")
 	pkg, err := GetPackage(client, orgID, name)
 	if err != nil {
@@ -53,7 +53,24 @@ func DeployPackage(client *graphql.Client, orgID string, name string) (*Deployme
 
 	did := fmt.Sprintf("%s", m.DeployPackage.Result.ID)
 	log.Info().Str("packageName", name).Str("deploymentId", did).Msg("Deployment enqueued")
-	deployment, err := checkDeploymentStatus(client, orgID, did, deploymentTimeout)
+	var s struct {
+		DeploymentLifecycleEvent struct {
+
+		} `graphql:"subscription deploymentProgress($packageId: ID!, $organizationId: ID!)"`
+	}
+	subVariables := map[string]interface{}{
+		"organizationId":  graphql.ID(orgID),
+		"packageId":      pkg.ID,
+	}
+	subClient.Subscribe(s, subVariables, rawMessageHandler)
+	// deployment, err := checkDeploymentStatus(client, orgID, did, deploymentTimeout)
+	subClient.WithTimeout(deploymentTimeout)
+
+	if err != nil {
+		return nil, err
+	}
+
+	deployment, err := GetDeployment(client, orgID, did)
 
 	if err != nil {
 		return nil, err
@@ -61,6 +78,22 @@ func DeployPackage(client *graphql.Client, orgID string, name string) (*Deployme
 
 	return deployment, nil
 }
+
+func rawMessageHandler(message []byte, err error) error {
+	if err != nil {
+		return fmt.Errorf("error from server in subscription: %w", err)
+	}
+	rawMessage := make(map[string]interface{})
+	err = json.Unmarshal(message, &rawMessage)
+	// TODO handle various types of messages in the pheonix protocol
+	// TODO log something prettier / more structured.  This is just for debugging
+	fmt.Println(string(message))
+	if err != nil {
+		return fmt.Errorf("error unmarshalling json message: %w", err)
+	}
+	return nil
+}
+
 
 func GetPackage(client *graphql.Client, orgID string, name string) (*Package, error) {
 	log.Debug().Str("packageName", name).Msg("Getting package")
@@ -113,24 +146,24 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 	return &pkg, nil
 }
 
-func checkDeploymentStatus(client *graphql.Client, orgID string, id string, timeout time.Duration) (*Deployment, error) {
-	deployment, err := GetDeployment(client, orgID, id)
+// func checkDeploymentStatus(client *graphql.Client, orgID string, id string, timeout time.Duration) (*Deployment, error) {
+// 	deployment, err := GetDeployment(client, orgID, id)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	timeout -= deploymentStatusSleep
+// 	timeout -= deploymentStatusSleep
 
-	switch deployment.Status {
-	case "COMPLETED":
-		log.Debug().Str("deploymentId", id).Msg("Deployment completed")
-		return deployment, nil
-	case "FAILED":
-		log.Debug().Str("deploymentId", id).Msg("Deployment failed")
-		return nil, errors.New("Deployment failed")
-	default:
-		time.Sleep(deploymentStatusSleep)
-		return checkDeploymentStatus(client, orgID, id, timeout)
-	}
-}
+// 	switch deployment.Status {
+// 	case "COMPLETED":
+// 		log.Debug().Str("deploymentId", id).Msg("Deployment completed")
+// 		return deployment, nil
+// 	case "FAILED":
+// 		log.Debug().Str("deploymentId", id).Msg("Deployment failed")
+// 		return nil, errors.New("Deployment failed")
+// 	default:
+// 		time.Sleep(deploymentStatusSleep)
+// 		return checkDeploymentStatus(client, orgID, id, timeout)
+// 	}
+// }
