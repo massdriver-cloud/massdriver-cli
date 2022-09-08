@@ -23,7 +23,7 @@ func TestPublish(t *testing.T) {
 			bundle: bundle.Bundle{
 				Name:        "the-bundle",
 				Description: "something",
-				Ref:         "github.com/some-repo",
+				SourceURL:   "github.com/some-repo",
 				Type:        "bundle",
 				Access:      "public",
 				Artifacts: map[string]interface{}{
@@ -41,7 +41,7 @@ func TestPublish(t *testing.T) {
 					"ui": "baz",
 				},
 			},
-			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","ref":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
 		},
 	}
 

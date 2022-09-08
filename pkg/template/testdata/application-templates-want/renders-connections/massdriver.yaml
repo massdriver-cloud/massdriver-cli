@@ -1,7 +1,7 @@
 schema: draft-07
 name: renders-connections
 description: Renders selectected dependencies as Connections
-ref: github.com/YOUR_ORG/renders-connections
+source_url: github.com/YOUR_ORG/renders-connections
 access: private
 type: application
 

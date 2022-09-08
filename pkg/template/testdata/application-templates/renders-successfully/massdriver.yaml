@@ -1,7 +1,7 @@
 schema: draft-07
 name: <md .Name md>
 description: <md .Description md>
-ref: github.com/YOUR_ORG/<md .Name md>
+source_url: github.com/YOUR_ORG/<md .Name md>
 access: private
 type: application
 
@@ -11,20 +11,9 @@ params:
       type: string
     app_env:
       type: string
-<md if not .Connections md>
+
 connections:
   properties: {}
-<md end -md>
-
-<md if .Connections md>
-connections:
-  required: ["*"]
-  properties:
-  <md- range $key, $art:= .Connections md>
-    <md $key md>:
-      $ref: <md $art md>
-  <md- end md>
-<md- end md>
 
 ui:
   ui:order:

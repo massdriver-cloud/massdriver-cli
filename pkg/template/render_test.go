@@ -97,14 +97,15 @@ func walkAndCompare(wantDir string, gotDir string) {
 				return err
 			}
 
-			fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
-
-			dmp := diffmatchpatch.New()
 			gotText, _ := readFile(gotFilePath)
 			wantText, _ := readFile(path)
-			diffs := dmp.DiffMain(wantText, gotText, false)
-
-			fmt.Println(dmp.DiffToDelta(diffs))
+			if gotText != wantText {
+				fmt.Printf("File did not render correctly: %s\n", path)
+				fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
+				dmp := diffmatchpatch.New()
+				diffs := dmp.DiffMain(wantText, gotText, false)
+				fmt.Println(dmp.DiffToDelta(diffs))
+			}
 
 			return nil
 		})
