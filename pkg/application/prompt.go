@@ -95,8 +95,12 @@ func getDescription(t *template.Data) error {
 	return nil
 }
 
+var ignoredTemplateDirs = map[string]bool{"alpha": true}
+
 func getTemplate(t *template.Data) error {
 	templates, err := cache.ApplicationTemplates()
+	templates = removeIgnoredTemplateDirectories(templates)
+
 	if err != nil {
 		return err
 	}
@@ -115,6 +119,16 @@ func getTemplate(t *template.Data) error {
 	return nil
 }
 
+func removeIgnoredTemplateDirectories(templates []string) []string {
+	for i, v := range templates {
+		if ignoredTemplateDirs[v] {
+			templates = remove(templates, i)
+		}
+	}
+
+	return templates
+}
+
 func getOutputDir(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label:   `Output directory`,
@@ -129,4 +143,10 @@ func getOutputDir(t *template.Data) error {
 
 	t.OutputDir = result
 	return nil
+}
+
+// note, does not preserve ordering
+func remove(s []string, i int) []string {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
 }
