@@ -5,12 +5,15 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"time"
 
 	"github.com/hasura/go-graphql-client"
 	"github.com/rs/zerolog/log"
 )
+
+var ErrDeploymentFailed = errors.New("deployment failed")
+var ErrDeploymentComplete = errors.New("deployment succeeded")
 
 type Package struct {
 	ID               string
@@ -21,7 +24,8 @@ type Package struct {
 	ActiveDeployment Deployment
 }
 
-const deploymentTimeout time.Duration = time.Duration(5) * time.Minute
+// const deploymentTimeout time.Duration = time.Duration(5) * time.Minute
+
 // const deploymentStatusSleep time.Duration = time.Duration(10) * time.Second
 
 func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient, orgID string, name string) (*Deployment, error) {
@@ -55,25 +59,36 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 	log.Info().Str("packageName", name).Str("deploymentId", did).Msg("Deployment enqueued")
 	var s struct {
 		DeploymentLifecycleEvent struct {
-
 		} `graphql:"subscription deploymentProgress($packageId: ID!, $organizationId: ID!)"`
 	}
 	subVariables := map[string]interface{}{
-		"organizationId":  graphql.ID(orgID),
+		"organizationId": graphql.ID(orgID),
 		"packageId":      pkg.ID,
 	}
-	subClient.Subscribe(s, subVariables, rawMessageHandler)
-	// deployment, err := checkDeploymentStatus(client, orgID, did, deploymentTimeout)
-	subClient.WithTimeout(deploymentTimeout)
 
+	// TODO use deploymentTimeout
+	// subClient = subClient.WithTimeout(deploymentTimeout)
+	subID, err := subClient.Subscribe(s, subVariables, rawMessageHandler)
+	if err != nil {
+		return nil, err
+	}
+	defer subClient.Unsubscribe(subID) // nolint:errcheck
+	defer subClient.Close()
+	log.Debug().Str("subscription", subID).Str("deploymentId", did).Msg("subscribed to deployment progress")
+	// deployment, err := checkDeploymentStatus(client, orgID, did, deploymentTimeout)
+	deployment, err := GetDeployment(client, orgID, did)
 	if err != nil {
 		return nil, err
 	}
 
-	deployment, err := GetDeployment(client, orgID, did)
-
-	if err != nil {
-		return nil, err
+	subErr := subClient.Run()
+	if errors.Is(subErr, ErrDeploymentComplete) {
+		log.Info().Str("deploymentId", did).Msg("Deployment succeeded")
+		return deployment, nil
+	}
+	if errors.Is(subErr, ErrDeploymentFailed) {
+		log.Error().Str("deploymentId", did).Msg("Deployment failed")
+		return deployment, ErrDeploymentFailed
 	}
 
 	return deployment, nil
@@ -85,15 +100,17 @@ func rawMessageHandler(message []byte, err error) error {
 	}
 	rawMessage := make(map[string]interface{})
 	err = json.Unmarshal(message, &rawMessage)
-	// TODO handle various types of messages in the pheonix protocol
+	// TODO handle various types of messages in the pheonix protocol: join / leave room / message / server error
 	// TODO log something prettier / more structured.  This is just for debugging
-	fmt.Println(string(message))
+	log.Info().Msg(string(message))
 	if err != nil {
 		return fmt.Errorf("error unmarshalling json message: %w", err)
 	}
+	// TODO should throw ErrDeploymentFailed if the deployment failed
+	// TODO should throw ErrDeploymentComplete if the deployment succeeded
+	// TODO should be ablet to indicate to subscriber to stop listening when we get throwing one of above.
 	return nil
 }
-
 
 func GetPackage(client *graphql.Client, orgID string, name string) (*Package, error) {
 	log.Debug().Str("packageName", name).Msg("Getting package")
