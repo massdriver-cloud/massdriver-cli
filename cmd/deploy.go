@@ -47,7 +47,6 @@ func runDeploy(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-
 	log.Info().Str("deploymentId", deployment.ID).Msgf("Deployment %s", strings.ToLower(deployment.Status))
 	return nil
 }
