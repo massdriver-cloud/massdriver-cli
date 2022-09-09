@@ -40,7 +40,11 @@ func runDeploy(cmd *cobra.Command, args []string) error {
 	deployment, err := api.DeployPackage(client, subClient, orgID, name)
 
 	if err != nil {
-		log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("Deployment failed")
+		if deployment != nil {
+			log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("Deployment failed")
+		} else {
+			log.Fatal().Err(err).Msg("Deployment failed")
+		}
 		return err
 	}
 
