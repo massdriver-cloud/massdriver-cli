@@ -5,15 +5,12 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/hasura/go-graphql-client"
 	"github.com/rs/zerolog/log"
+	// "errors"
 )
-
-var ErrDeploymentFailed = errors.New("deployment failed")
-var ErrDeploymentComplete = errors.New("deployment succeeded")
 
 type Package struct {
 	ID               string
@@ -58,9 +55,31 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 	did := fmt.Sprintf("%s", m.DeployPackage.Result.ID)
 	log.Info().Str("packageName", name).Str("deploymentId", did).Msg("Deployment enqueued")
 	var s struct {
-		DeploymentLifecycleEvent struct {
-		} `graphql:"subscription deploymentProgress($packageId: ID!, $organizationId: ID!)"`
+		ProvisioningLifecycleEvents struct {
+			DeploymentLifecycleEvent struct {
+				ID         string `json:"id"`
+				Status     string `json:"status"`
+				Deployment struct {
+					ID        string `json:"id"`
+					Status    string `json:"status"`
+					Action    string `json:"action"`
+					Artifacts []struct {
+						Name string `json:"name"`
+						Type string `json:"type"`
+						ID   string `json:"id"`
+					} `json:"artifacts"`
+				} `json:"deployment"`
+			}
+			ResourceLifecycleEvent struct {
+				Status string `json:"status"`
+				Action string `json:"action"`
+				Name   string `json:"name"`
+				Type   string `json:"type"`
+				Key    string `json:"key"`
+			}
+		} `graphql:"deploymentProgress(packageId: $packageId, organizationId: $organizationId) {__typename ... on DeploymentLifecycleEvent {id status deployment {id status action artifacts {name type id specs}}} ... on ResourceLifecycleEvent {status action name type key}}"`
 	}
+
 	subVariables := map[string]interface{}{
 		"organizationId": graphql.ID(orgID),
 		"packageId":      pkg.ID,
@@ -68,8 +87,9 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 
 	// TODO use deploymentTimeout
 	// subClient = subClient.WithTimeout(deploymentTimeout)
-	subID, err := subClient.Subscribe(s, subVariables, rawMessageHandler)
+	subID, err := subClient.Subscribe(&s, subVariables, rawMessageHandler)
 	if err != nil {
+		log.Debug().Err(err).Msg("Error subscribing to deployment progress")
 		return nil, err
 	}
 	defer subClient.Unsubscribe(subID) // nolint:errcheck
@@ -82,17 +102,22 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 	}
 
 	subErr := subClient.Run()
-	if errors.Is(subErr, ErrDeploymentComplete) {
-		log.Info().Str("deploymentId", did).Msg("Deployment succeeded")
-		return deployment, nil
-	}
-	if errors.Is(subErr, ErrDeploymentFailed) {
-		log.Error().Str("deploymentId", did).Msg("Deployment failed")
-		return deployment, ErrDeploymentFailed
-	}
+	// if errors.Is(subErr, ErrDeploymentComplete) {
+	// 	log.Info().Str("deploymentId", did).Msg("Deployment succeeded")
+	// 	return deployment, nil
+	// }
+	// if errors.Is(subErr, ErrDeploymentFailed) {
+	// 	log.Error().Str("deploymentId", did).Msg("Deployment failed")
+	// 	return deployment, ErrDeploymentFailed
+	// }
 
-	return deployment, nil
+	return deployment, subErr
 }
+
+// errors to that can be returned from the subscription handler to stop the subscription
+// they wrap graphql.ErrSubscriptionStopped so that the subscription client will stop the subscription
+// var ErrDeploymentFailed = fmt.Errorf("deployment failed %w", graphql.ErrSubscriptionStopped)
+// var ErrDeploymentComplete = fmt.Errorf("deployment succeeded %w", graphql.ErrSubscriptionStopped)
 
 func rawMessageHandler(message []byte, err error) error {
 	if err != nil {
