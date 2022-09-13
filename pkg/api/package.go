@@ -54,31 +54,31 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 
 	did := fmt.Sprintf("%s", m.DeployPackage.Result.ID)
 	log.Info().Str("packageName", name).Str("deploymentId", did).Msg("Deployment enqueued")
-	var s struct {
-		ProvisioningLifecycleEvents struct {
-			DeploymentLifecycleEvent struct {
-				ID         string `json:"id"`
-				Status     string `json:"status"`
-				Deployment struct {
-					ID        string `json:"id"`
-					Status    string `json:"status"`
-					Action    string `json:"action"`
-					Artifacts []struct {
-						Name string `json:"name"`
-						Type string `json:"type"`
-						ID   string `json:"id"`
-					} `json:"artifacts"`
-				} `json:"deployment"`
-			}
-			ResourceLifecycleEvent struct {
-				Status string `json:"status"`
-				Action string `json:"action"`
-				Name   string `json:"name"`
-				Type   string `json:"type"`
-				Key    string `json:"key"`
-			}
-		} `graphql:"deploymentProgress(packageId: $packageId, organizationId: $organizationId) {__typename ... on DeploymentLifecycleEvent {id status deployment {id status action artifacts {name type id specs}}} ... on ResourceLifecycleEvent {status action name type key}}"`
-	}
+	// var s struct {
+	// 	ProvisioningLifecycleEvents struct {
+	// 		DeploymentLifecycleEvent struct {
+	// 			ID         string `json:"id"`
+	// 			Status     string `json:"status"`
+	// 			Deployment struct {
+	// 				ID        string `json:"id"`
+	// 				Status    string `json:"status"`
+	// 				Action    string `json:"action"`
+	// 				Artifacts []struct {
+	// 					Name string `json:"name"`
+	// 					Type string `json:"type"`
+	// 					ID   string `json:"id"`
+	// 				} `json:"artifacts"`
+	// 			} `json:"deployment"`
+	// 		}
+	// 		ResourceLifecycleEvent struct {
+	// 			Status string `json:"status"`
+	// 			Action string `json:"action"`
+	// 			Name   string `json:"name"`
+	// 			Type   string `json:"type"`
+	// 			Key    string `json:"key"`
+	// 		}
+	// 	} `graphql:"deploymentProgress(packageId: $packageId, organizationId: $organizationId) {__typename ... on DeploymentLifecycleEvent {id status deployment {id status action artifacts {name type id specs}}} ... on ResourceLifecycleEvent {status action name type key}}"`
+	// }
 
 	subVariables := map[string]interface{}{
 		"organizationId": graphql.ID(orgID),
@@ -87,7 +87,8 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 
 	// TODO use deploymentTimeout
 	// subClient = subClient.WithTimeout(deploymentTimeout)
-	subID, err := subClient.Subscribe(&s, subVariables, rawMessageHandler)
+	query := "deploymentProgress(packageId: $packageId, organizationId: $organizationId) {__typename ... on DeploymentLifecycleEvent {id status deployment {id status action artifacts {name type id specs}}} ... on ResourceLifecycleEvent {status action name type key}}"
+	subID, err := subClient.SubscribeRaw(query, subVariables, rawMessageHandler)
 	if err != nil {
 		log.Debug().Err(err).Msg("Error subscribing to deployment progress")
 		return nil, err
