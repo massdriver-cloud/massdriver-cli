@@ -21,7 +21,7 @@ func NewClient() *graphql.Client {
 
 func NewSubscriptionClient() *graphql.SubscriptionClient {
 	c := http.Client{Transport: &wstransport{underlyingTransport: http.DefaultTransport}}
-	client := graphql.NewSubscriptionClient("wss://api.massdriver.cloud/socket/websocket/?vsn=2.0.0")
+	client := graphql.NewSubscriptionClient("wss://api.massdriver.cloud/socket/websocket?vsn=2.0.0")
 	client.WithWebSocketOptions(graphql.WebsocketOptions{HTTPClient: &c})
 	// TODO not sure if this is necessary for GQL_CONNECTION_INIT
 	// client.WithConnectionParams(map[string]interface{}{
@@ -70,5 +70,13 @@ func (t *wstransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	q := req.URL.Query()
 	q.Add("token", removeMeToken)
 	req.URL.RawQuery = q.Encode()
+	// TODO these did not seem to help but were missing when compared to what is set when inspecting what the UI is doing in chrome
+	req.Header.Add("Cache-Control", "no-cache")
+	req.Header.Add("Pragma", "no-cache")
+	req.Header.Add("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Add("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Add("Host", req.Host)
+	req.Header.Add("Origin", "https://app.massdriver.cloud")
+	log.Debug().Msgf("wstransport req: %#v", req)
 	return t.underlyingTransport.RoundTrip(req)
 }
