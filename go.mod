@@ -11,6 +11,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	gopkg.in/yaml.v3 v3.0.0
+	nhooyr.io/websocket v1.8.7
 )
 
 require (
@@ -19,7 +20,6 @@ require (
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	golang.org/x/text v0.3.7 // indirect
-	nhooyr.io/websocket v1.8.7 // indirect
 )
 
 require (
