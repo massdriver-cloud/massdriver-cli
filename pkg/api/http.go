@@ -69,6 +69,7 @@ func (p PhoenixWebsocket) ReadJSON(v interface{}) error {
 	if err != nil {
 		return err
 	}
+	log.Debug().Msgf("received raw message from phoenix socket: %s", string(b))
 
 	phxMsg, alreadyPhoenixMsg := v.(PhoenixMessage)
 	if alreadyPhoenixMsg {
@@ -98,12 +99,15 @@ func (p PhoenixWebsocket) WriteJSON(v interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	ref := nextMsgRef()
-	phxMsg := PhoenixMessage{
-		JoinRef: joinRef,
-		Ref:     &ref,
-		Topic:   "__absinthe__:control",
-		Event:   "doc",
-		Payload: v,
+	phxMsg, alreadyPhxMsg := v.(PhoenixMessage)
+	if !alreadyPhxMsg {
+		phxMsg = PhoenixMessage{
+			JoinRef: joinRef,
+			Ref:     &ref,
+			Topic:   "__absinthe__:control",
+			Event:   "doc",
+			Payload: v,
+		}
 	}
 	// hack to transform the connection_init into a phx_join event,
 	// wrap the value in the phoenix implementation details
@@ -122,6 +126,14 @@ func (p PhoenixWebsocket) WriteJSON(v interface{}) error {
 			}
 			phxMsg.Payload = p
 		}
+		if msg.Type == "stop" {
+			phxMsg.Event = "phx_leave"
+			phxMsg.Payload = map[string]interface{}{}
+		}
+		if msg.Type == "connection_terminate" {
+			phxMsg.Event = "phx_leave"
+			phxMsg.Payload = map[string]interface{}{}
+		}
 	}
 
 	w, err := p.Conn.Writer(ctx, websocket.MessageText)
@@ -132,7 +144,11 @@ func (p PhoenixWebsocket) WriteJSON(v interface{}) error {
 
 	// json.Marshal cannot reuse buffers between calls as it has to return
 	// a copy of the byte slice but Encoder does as it directly writes to w.
-	log.Debug().Msgf("writing %v", phxMsg)
+	b, err := json.Marshal(phxMsg)
+	if err != nil {
+		return err
+	}
+	log.Debug().Msgf("writing message to phoenix socket: %v", string(b))
 	return json.NewEncoder(w).Encode(phxMsg)
 }
 
@@ -169,8 +185,27 @@ func newPhoenixWebsocketConn(sc *graphql.SubscriptionClient) (graphql.WebsocketC
 	if err != nil {
 		return nil, err
 	}
+	phxSocket := PhoenixWebsocket{Conn: c}
 
-	return &PhoenixWebsocket{Conn: c}, nil
+	// lazy heartbeater probably a better way to do this
+	go func(phxSocket PhoenixWebsocket) {
+		for {
+			ref := nextMsgRef()
+			hbErr := phxSocket.WriteJSON(PhoenixMessage{
+				JoinRef: nil,
+				Ref:     &ref,
+				Topic:   "phoenix",
+				Event:   "heartbeat",
+				Payload: map[string]interface{}{},
+			})
+			if hbErr != nil {
+				log.Err(hbErr).Msg("failed to send heartbeat")
+			}
+			time.Sleep(time.Second)
+		}
+	}(phxSocket)
+
+	return &phxSocket, nil
 }
 
 func NewSubscriptionClient() *graphql.SubscriptionClient {
@@ -178,6 +213,12 @@ func NewSubscriptionClient() *graphql.SubscriptionClient {
 	client := graphql.NewSubscriptionClient("wss://api.massdriver.cloud/socket/websocket?vsn=2.0.0")
 	client.WithWebSocketOptions(graphql.WebsocketOptions{HTTPClient: &c})
 	client.WithWebSocket(newPhoenixWebsocketConn)
+	client.OnConnected(func() {
+		log.Debug().Msg("connected to massdriver websocket")
+	})
+	client.OnDisconnected(func() {
+		log.Debug().Msg("disconnected to massdriver websocket")
+	})
 	// TODO the UI does _not_ do this
 	// client.WithConnectionParams(map[string]interface{}{
 	// 		"token": removeMeToken,
@@ -189,7 +230,6 @@ func NewSubscriptionClient() *graphql.SubscriptionClient {
 	client.WithLog(func(args ...interface{}) {
 		log.Debug().Msgf("%#v", args)
 	})
-	log.Debug().Msgf("sub client created: %#v", client)
 	return client
 }
 
