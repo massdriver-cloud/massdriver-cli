@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"sync/atomic"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 
 // TODO remove this once SA token working
 // for now this can be populated with gql`query me { me { token } }`
-var removeMeToken = "SFMyNTY.g2gDdAAAAA5kAAhfX21ldGFfX3QAAAAGZAAKX19zdHJ1Y3RfX2QAG0VsaXhpci5FY3RvLlNjaGVtYS5NZXRhZGF0YWQAB2NvbnRleHRkAANuaWxkAAZwcmVmaXhkAANuaWxkAAZzY2hlbWFkACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQABnNvdXJjZW0AAAAIYWNjb3VudHNkAAVzdGF0ZWQABWJ1aWx0ZAAKX19zdHJ1Y3RfX2QAI0VsaXhpci5NYXNzZHJpdmVyLk1lYXRzcGFjZS5BY2NvdW50ZAALYXR0cmlidXRpb25kAANuaWxkABNiZXRhX2FjY2Vzc19lbmFibGVkZAADbmlsZAAKY3JlYXRlZF9hdGQAA25pbGQABWVtYWlsZAADbmlsZAAKZmlyc3RfbmFtZWQAA25pbGQAEWdyb3VwX21lbWJlcnNoaXBzdAAAAARkAA9fX2NhcmRpbmFsaXR5X19kAARtYW55ZAAJX19maWVsZF9fZAARZ3JvdXBfbWVtYmVyc2hpcHNkAAlfX293bmVyX19kACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQACl9fc3RydWN0X19kACFFbGl4aXIuRWN0by5Bc3NvY2lhdGlvbi5Ob3RMb2FkZWRkAAZncm91cHN0AAAABGQAD19fY2FyZGluYWxpdHlfX2QABG1hbnlkAAlfX2ZpZWxkX19kAAZncm91cHNkAAlfX293bmVyX19kACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQACl9fc3RydWN0X19kACFFbGl4aXIuRWN0by5Bc3NvY2lhdGlvbi5Ob3RMb2FkZWRkAAJpZG0AAAAkNmI0ZjRjMjktMDFkMi00YjYyLWIzNzEtMjg3NTM2Y2Y2MDhlZAATaWRlbnRpdHlfc2VydmljZV9pZGQAA25pbGQACWxhc3RfbmFtZWQAA25pbGQADW9yZ2FuaXphdGlvbnN0AAAABGQAD19fY2FyZGluYWxpdHlfX2QABG1hbnlkAAlfX2ZpZWxkX19kAA1vcmdhbml6YXRpb25zZAAJX19vd25lcl9fZAAjRWxpeGlyLk1hc3Nkcml2ZXIuTWVhdHNwYWNlLkFjY291bnRkAApfX3N0cnVjdF9fZAAhRWxpeGlyLkVjdG8uQXNzb2NpYXRpb24uTm90TG9hZGVkZAAKdXBkYXRlZF9hdGQAA25pbG4GAC_YdkODAWIAAVGA.pGkR7cSwt_DynMHc_nT8SIhM9oAbhFPGv9BXsSvlfz8" //nolint: gosec
+var removeMeToken = "SFMyNTY.g2gDdAAAAA5kAAhfX21ldGFfX3QAAAAGZAAKX19zdHJ1Y3RfX2QAG0VsaXhpci5FY3RvLlNjaGVtYS5NZXRhZGF0YWQAB2NvbnRleHRkAANuaWxkAAZwcmVmaXhkAANuaWxkAAZzY2hlbWFkACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQABnNvdXJjZW0AAAAIYWNjb3VudHNkAAVzdGF0ZWQABWJ1aWx0ZAAKX19zdHJ1Y3RfX2QAI0VsaXhpci5NYXNzZHJpdmVyLk1lYXRzcGFjZS5BY2NvdW50ZAALYXR0cmlidXRpb25kAANuaWxkABNiZXRhX2FjY2Vzc19lbmFibGVkZAADbmlsZAAKY3JlYXRlZF9hdGQAA25pbGQABWVtYWlsZAADbmlsZAAKZmlyc3RfbmFtZWQAA25pbGQAEWdyb3VwX21lbWJlcnNoaXBzdAAAAARkAA9fX2NhcmRpbmFsaXR5X19kAARtYW55ZAAJX19maWVsZF9fZAARZ3JvdXBfbWVtYmVyc2hpcHNkAAlfX293bmVyX19kACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQACl9fc3RydWN0X19kACFFbGl4aXIuRWN0by5Bc3NvY2lhdGlvbi5Ob3RMb2FkZWRkAAZncm91cHN0AAAABGQAD19fY2FyZGluYWxpdHlfX2QABG1hbnlkAAlfX2ZpZWxkX19kAAZncm91cHNkAAlfX293bmVyX19kACNFbGl4aXIuTWFzc2RyaXZlci5NZWF0c3BhY2UuQWNjb3VudGQACl9fc3RydWN0X19kACFFbGl4aXIuRWN0by5Bc3NvY2lhdGlvbi5Ob3RMb2FkZWRkAAJpZG0AAAAkNmI0ZjRjMjktMDFkMi00YjYyLWIzNzEtMjg3NTM2Y2Y2MDhlZAATaWRlbnRpdHlfc2VydmljZV9pZGQAA25pbGQACWxhc3RfbmFtZWQAA25pbGQADW9yZ2FuaXphdGlvbnN0AAAABGQAD19fY2FyZGluYWxpdHlfX2QABG1hbnlkAAlfX2ZpZWxkX19kAA1vcmdhbml6YXRpb25zZAAJX19vd25lcl9fZAAjRWxpeGlyLk1hc3Nkcml2ZXIuTWVhdHNwYWNlLkFjY291bnRkAApfX3N0cnVjdF9fZAAhRWxpeGlyLkVjdG8uQXNzb2NpYXRpb24uTm90TG9hZGVkZAAKdXBkYXRlZF9hdGQAA25pbG4GAAShM0eDAWIAAVGA.qdmtujqw9gw9wyM7TPMG27GMI8WU5nSIlbq6OC8pX_c" //nolint: gosec
 func NewClient() *graphql.Client {
 	c := http.Client{Transport: &transport{underlyingTransport: http.DefaultTransport}}
 	client := graphql.NewClient("https://api.massdriver.cloud/api/", &c)
@@ -33,9 +34,32 @@ type PhoenixWebsocket struct {
 type PhoenixMessage struct {
 	JoinRef *int64      `json:"join_ref,omitempty"`
 	Ref     *int64      `json:"ref,omitempty"`
-	Topic   *string     `json:"topic,omitempty"`
-	Event   *string     `json:"event,omitempty"`
+	Topic   string      `json:"topic,omitempty"`
+	Event   string      `json:"event,omitempty"`
 	Payload interface{} `json:"payload"`
+}
+
+func (p PhoenixMessage) String() string {
+	return fmt.Sprintf("{joinRef: %d, ref: %d, topic: \"%v\", event: \"%v\", payload: %+v}", p.JoinRef, p.Ref, p.Topic, p.Event, p.Payload)
+}
+
+// replace the value if i, with that of v if types are compatible
+func replace(i, v interface{}) error {
+	val := reflect.ValueOf(i)
+	if val.Kind() != reflect.Ptr {
+		return fmt.Errorf("expected pointer, got %T", i)
+	}
+
+	val = val.Elem()
+
+	newVal := reflect.Indirect(reflect.ValueOf(v))
+
+	if !val.Type().AssignableTo(newVal.Type()) {
+		return fmt.Errorf("cannot assign %T to %T", v, i)
+	}
+
+	val.Set(newVal)
+	return nil
 }
 
 func (p PhoenixWebsocket) ReadJSON(v interface{}) error {
@@ -48,17 +72,15 @@ func (p PhoenixWebsocket) ReadJSON(v interface{}) error {
 
 	phxMsg, alreadyPhoenixMsg := v.(PhoenixMessage)
 	if alreadyPhoenixMsg {
-		return json.Unmarshal(b, &phxMsg)
+		return json.Unmarshal(b, v)
 	}
 
 	// if we reached here, unwrap the phoenix implementation details just grabbing the payload the user cares about
-	if err := json.Unmarshal(b, phxMsg); err != nil {
+	if marshalErr := json.Unmarshal(b, &phxMsg); marshalErr != nil {
 		p.Conn.Close(websocket.StatusInvalidFramePayloadData, "failed to unmarshal JSON")
-		return fmt.Errorf("failed to unmarshal JSON: %w", err)
+		return fmt.Errorf("failed to unmarshal JSON: %w", marshalErr)
 	}
-	v = phxMsg.Payload
-
-	return nil
+	return replace(v, phxMsg.Payload)
 }
 
 var msgRef = new(int64)
@@ -72,30 +94,45 @@ func nextJoinRef() int64 {
 	return atomic.AddInt64(joinRef, 1)
 }
 
-func getStr(s string) *string {
-	return &s
-}
-
 func (p PhoenixWebsocket) WriteJSON(v interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	ref := nextMsgRef()
-	// TODO hack to transform the connection init into a phx_join event,
-	// wrap the value in the phoenix implementation details
 	phxMsg := PhoenixMessage{
-		JoinRef: nil,
+		JoinRef: joinRef,
 		Ref:     &ref,
-		Topic:   getStr("__absinthe__:control"),
-		Event:   getStr("doc"),
+		Topic:   "__absinthe__:control",
+		Event:   "doc",
 		Payload: v,
 	}
+	// hack to transform the connection_init into a phx_join event,
+	// wrap the value in the phoenix implementation details
+	msg, isGQLMsg := v.(graphql.OperationMessage)
+	if isGQLMsg {
+		if msg.Type == "connection_init" {
+			jr := nextJoinRef()
+			phxMsg.JoinRef = &jr
+			phxMsg.Event = "phx_join"
+			phxMsg.Payload = map[string]interface{}{}
+		}
+		if msg.Type == "start" {
+			var p map[string]interface{}
+			if err := json.Unmarshal(msg.Payload, &p); err != nil {
+				return err
+			}
+			phxMsg.Payload = p
+		}
+	}
+
 	w, err := p.Conn.Writer(ctx, websocket.MessageText)
 	if err != nil {
 		return err
 	}
+	defer w.Close()
 
 	// json.Marshal cannot reuse buffers between calls as it has to return
 	// a copy of the byte slice but Encoder does as it directly writes to w.
+	log.Debug().Msgf("writing %v", phxMsg)
 	return json.NewEncoder(w).Encode(phxMsg)
 }
 
@@ -125,7 +162,10 @@ func newPhoenixWebsocketConn(sc *graphql.SubscriptionClient) (graphql.WebsocketC
 	}
 	authURL(url)
 
-	c, _, err := websocket.Dial(sc.GetContext(), url.String(), options)
+	c, resp, err := websocket.Dial(sc.GetContext(), url.String(), options)
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return nil, err
 	}
