@@ -36,11 +36,7 @@ func Publish(c *client.MassdriverClient, b *Bundle) error {
 }
 
 func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error) {
-	body, err := b.generateBundlePublishBody()
-	if err != nil {
-		return "", err
-	}
-
+	body := b.generateBundlePublishBody()
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return "", err
@@ -73,7 +69,7 @@ func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error)
 	return respBody.UploadLocation, nil
 }
 
-func (b *Bundle) generateBundlePublishBody() (PublishPost, error) {
+func (b *Bundle) generateBundlePublishBody() PublishPost {
 	var body PublishPost
 
 	body.Name = b.Name
@@ -81,32 +77,12 @@ func (b *Bundle) generateBundlePublishBody() (PublishPost, error) {
 	body.Type = b.Type
 	body.SourceURL = b.SourceURL
 	body.Access = b.Access
+	body.ArtifactsSchema = b.Artifacts
+	body.ConnectionsSchema = b.Connections
+	body.ParamsSchema = b.Params
+	body.UISchema = b.UI
 
-	artifactsSchema, err := json.Marshal(b.Artifacts)
-	if err != nil {
-		return body, err
-	}
-	body.ArtifactsSchema = string(artifactsSchema)
-
-	connectionsSchema, err := json.Marshal(b.Connections)
-	if err != nil {
-		return body, err
-	}
-	body.ConnectionsSchema = string(connectionsSchema)
-
-	paramsSchema, err := json.Marshal(b.Params)
-	if err != nil {
-		return body, err
-	}
-	body.ParamsSchema = string(paramsSchema)
-
-	uiSchema, err := json.Marshal(b.UI)
-	if err != nil {
-		return body, err
-	}
-	body.UISchema = string(uiSchema)
-
-	return body, nil
+	return body
 }
 
 func UploadToPresignedS3URL(url string, object io.Reader) error {

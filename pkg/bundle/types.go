@@ -22,15 +22,15 @@ type Bundle struct {
 }
 
 type PublishPost struct {
-	Name              string `json:"name"`
-	Description       string `json:"description"`
-	Type              string `json:"type"`
-	SourceURL         string `json:"source_url"`
-	Access            string `json:"access"`
-	ArtifactsSchema   string `json:"artifacts_schema"`
-	ConnectionsSchema string `json:"connections_schema"`
-	ParamsSchema      string `json:"params_schema"`
-	UISchema          string `json:"ui_schema"`
+	Name              string                 `json:"name"`
+	Description       string                 `json:"description"`
+	Type              string                 `json:"type"`
+	SourceURL         string                 `json:"source_url"`
+	Access            string                 `json:"access"`
+	ArtifactsSchema   map[string]interface{} `json:"artifacts_schema"`
+	ConnectionsSchema map[string]interface{} `json:"connections_schema"`
+	ParamsSchema      map[string]interface{} `json:"params_schema"`
+	UISchema          map[string]interface{} `json:"ui_schema"`
 }
 
 type PublishResponse struct {

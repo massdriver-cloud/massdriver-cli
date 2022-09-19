@@ -41,7 +41,7 @@ func TestPublish(t *testing.T) {
 					"ui": "baz",
 				},
 			},
-			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":"{\"artifacts\":\"foo\"}","connections_schema":"{\"connections\":\"bar\"}","params_schema":"{\"params\":{\"hello\":\"world\"}}","ui_schema":"{\"ui\":\"baz\"}"}`,
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"}}`,
 		},
 	}
 
