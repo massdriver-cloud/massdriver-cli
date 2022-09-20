@@ -2,7 +2,7 @@
 schema: draft-07
 name: "<md .Name md>"
 description: "<md .Description md>"
-ref: github.com/YOUR_NAME_HERE/<md .Name md>
+source_url: github.com/YOUR_NAME_HERE/<md .Name md>
 access: "<md .Access md>"
 type: "<md .Type md>"
 

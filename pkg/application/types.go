@@ -7,7 +7,7 @@ type Application struct {
 	Schema      string                 `json:"schema" yaml:"schema"`
 	Name        string                 `json:"name" yaml:"name"`
 	Description string                 `json:"description" yaml:"description"`
-	Ref         string                 `json:"ref" yaml:"ref"`
+	SourceURL   string                 `json:"source_url" yaml:"source_url"`
 	Type        string                 `json:"type" yaml:"type"`
 	Access      string                 `json:"access" yaml:"access"`
 	Steps       []bundle.Step          `json:"steps" yaml:"steps"`
@@ -28,7 +28,7 @@ func (app *Application) AsBundle() *bundle.Bundle {
 		Schema:      app.Schema,
 		Name:        app.Name,
 		Description: app.Description,
-		Ref:         app.Ref,
+		SourceURL:   app.SourceURL,
 		Type:        app.Type,
 		Access:      app.Access,
 		Steps:       app.Steps,

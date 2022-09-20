@@ -1,7 +1,7 @@
 schema: draft-07
 name: renders-successfully
 description: Renders an application config & subdirectories
-ref: github.com/YOUR_ORG/renders-successfully
+source_url: github.com/YOUR_ORG/renders-successfully
 access: private
 type: application
 
@@ -14,7 +14,6 @@ params:
 
 connections:
   properties: {}
-
 
 ui:
   ui:order:

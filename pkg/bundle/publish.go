@@ -79,7 +79,7 @@ func (b *Bundle) generateBundlePublishBody() (PublishPost, error) {
 	body.Name = b.Name
 	body.Description = b.Description
 	body.Type = b.Type
-	body.Ref = b.Ref
+	body.SourceURL = b.SourceURL
 	body.Access = b.Access
 
 	artifactsSchema, err := json.Marshal(b.Artifacts)

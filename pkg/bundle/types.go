@@ -11,7 +11,7 @@ type Bundle struct {
 	Schema      string                 `json:"schema" yaml:"schema"`
 	Name        string                 `json:"name" yaml:"name"`
 	Description string                 `json:"description" yaml:"description"`
-	Ref         string                 `json:"ref" yaml:"ref"`
+	SourceURL   string                 `json:"source_url" yaml:"source_url"`
 	Type        string                 `json:"type" yaml:"type"`
 	Access      string                 `json:"access" yaml:"access"`
 	Steps       []Step                 `json:"steps" yaml:"steps"`
@@ -25,7 +25,7 @@ type PublishPost struct {
 	Name              string `json:"name"`
 	Description       string `json:"description"`
 	Type              string `json:"type"`
-	Ref               string `json:"ref"`
+	SourceURL         string `json:"source_url"`
 	Access            string `json:"access"`
 	ArtifactsSchema   string `json:"artifacts_schema"`
 	ConnectionsSchema string `json:"connections_schema"`
