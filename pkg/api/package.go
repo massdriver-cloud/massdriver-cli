@@ -88,7 +88,7 @@ func DeployPackage(client *graphql.Client, subClient *graphql.SubscriptionClient
 	// TODO use deploymentTimeout
 	// subClient = subClient.WithTimeout(deploymentTimeout)
 	query := "deploymentProgress(packageId: $packageId, organizationId: $organizationId) {__typename ... on DeploymentLifecycleEvent {id status deployment {id status action artifacts {name type id specs}}} ... on ResourceLifecycleEvent {status action name type key}}"
-	subID, err := subClient.SubscribeRaw(query, subVariables, rawMessageHandler)
+	subID, err := subClient.Exec(query, subVariables, rawMessageHandler)
 	if err != nil {
 		log.Debug().Err(err).Msg("Error subscribing to deployment progress")
 		return nil, err
@@ -160,7 +160,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 
 	variables := map[string]interface{}{
 		"name":           graphql.String(name),
-		"organizationId": graphql.String(orgID),
+		"organizationId": graphql.ID(orgID),
 	}
 
 	err := client.Query(context.Background(), &q, variables)
