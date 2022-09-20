@@ -84,7 +84,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 
 	variables := map[string]interface{}{
 		"name":           graphql.String(name),
-		"organizationId": graphql.String(orgID),
+		"organizationId": graphql.ID(orgID),
 	}
 
 	err := client.Query(context.Background(), &q, variables)
