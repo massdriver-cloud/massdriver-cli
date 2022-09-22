@@ -6,6 +6,10 @@
         },
         "name": {
             "type": "string"
+        },
+        "status": {
+            "type": "any",
+            "default": null
         }
     }
 }

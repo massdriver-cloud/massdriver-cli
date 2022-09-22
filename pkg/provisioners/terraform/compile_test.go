@@ -52,7 +52,21 @@ func TestGenerateFiles(t *testing.T) {
         },
         "name": {
             "type": "string"
+        },
+        "status": {
+            "type": "any",
+            "default": null
         }
+    }
+}
+`,
+				"_params.auto.tfvars.json": `{
+    "age": 25,
+    "name": "John Doe",
+    "status": {
+        "alive": "TODO: REPLACE ME",
+        "knownConvictions": [],
+        "relationship": "single"
     }
 }
 `,

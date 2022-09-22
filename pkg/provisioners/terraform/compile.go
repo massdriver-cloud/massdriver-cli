@@ -27,6 +27,14 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
+	devParamsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, "_params.auto.tfvars.json"))
+	if err != nil {
+		return err
+	}
+	err = CompileDevParams(path.Join(bundlePath, common.ParamsSchemaFilename), devParamsVariablesFile)
+	if err != nil {
+		return err
+	}
 
 	connectionsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, "_connections_variables.tf.json"))
 	if err != nil {
@@ -55,7 +63,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 
 // Compile a JSON Schema to Terraform Variable Definition JSON
 func Compile(path string, out io.Writer) error {
-	vars, varErr := getVars(path)
+	vars, varErr := getParams(path)
 	if varErr != nil {
 		return varErr
 	}
@@ -80,7 +88,32 @@ func Compile(path string, out io.Writer) error {
 	return err
 }
 
-func getVars(path string) (map[string]TFVariable, error) {
+// Compile a JSON Schema to JSON Values based on
+func CompileDevParams(path string, out io.Writer) error {
+	params, paramsErr := getDevParams(path)
+	if paramsErr != nil {
+		return paramsErr
+	}
+
+	// You can't have an empty variable block, so if there are no vars return an empty json block
+	if len(params) == 0 {
+		if _, err := out.Write([]byte("{}")); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	bytes, err := json.MarshalIndent(params, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	_, err = out.Write(append(bytes, []byte("\n")...))
+
+	return err
+}
+
+func getParams(path string) (map[string]TFVariable, error) {
 	variables := map[string]TFVariable{}
 	schema, err := jsonschema.GetJSONSchema(path)
 	if err != nil {
@@ -93,6 +126,65 @@ func getVars(path string) (map[string]TFVariable, error) {
 		variables[name] = NewTFVariable(prop, isRequired(name, required))
 	}
 	return variables, nil
+}
+
+func getDevParams(path string) (map[string]interface{}, error) {
+	params := map[string]interface{}{}
+	schema, err := jsonschema.GetJSONSchema(path)
+	if err != nil {
+		return params, err
+	}
+	var devExample jsonschema.Example
+	for _, example := range schema.Examples {
+		if example.Name == "Development" {
+			devExample = example
+		}
+	}
+
+	// loop over top level properties
+	for name, prop := range schema.Properties {
+		params[name] = FillDevParam(prop, devExample.Values[name])
+	}
+	return params, nil
+}
+
+var placeholderValue = "TODO: REPLACE ME"
+
+// FillDevParam fills a parameter with a development value
+func FillDevParam(prop jsonschema.Property, value interface{}) interface{} {
+	// the base case is we fall back to a placeholder to indicate to the developer they should replace this value.
+	var ret interface{} = placeholderValue
+
+	// handle nested objects recursively
+	if prop.Type == jsonschema.Object {
+		obj := make(map[string]interface{})
+		for name, nestedProp := range prop.Properties {
+			valuesMap, ok := value.(map[string]interface{})
+			nestedValues := valuesMap[name]
+			if !ok {
+				if nestedProp.Type == jsonschema.Object {
+					obj[name] = make(map[string]interface{})
+				}
+			}
+			obj[name] = FillDevParam(nestedProp, nestedValues)
+		}
+		return obj
+	}
+
+	if value != nil {
+		return value
+	}
+
+	if prop.Default != nil {
+		return prop.Default
+	}
+
+	// fall bactk to an empty array
+	if prop.Type == "array" {
+		return []interface{}{}
+	}
+
+	return ret
 }
 
 func isRequired(name string, required []string) bool {
