@@ -6,8 +6,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
@@ -44,6 +46,14 @@ var applicationPublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var applicationDeployCmd = &cobra.Command{
+	Use:   `deploy <project>-<target>-<manifest>`,
+	Short: "Deploy an application on Massdriver",
+	Long:  `Deploy an application package on Massdriver. This application must be published to Massdriver first and a package configured in a particular target. This command requires setting MASSDRIVER_ORG_ID environment variable. For more info see https://docs.massdriver.cloud/applications/deploying`,
+	Args:  cobra.ExactArgs(1),
+	RunE:  RunApplicationDeploy,
+}
+
 var applicationTemplatesCmd = &cobra.Command{
 	Use:     "template",
 	Aliases: []string{"tmpl"},
@@ -69,6 +79,7 @@ func init() {
 	applicationCmd.AddCommand(applicationBuildCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
+	applicationCmd.AddCommand(applicationDeployCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 
 	applicationTemplatesCmd.AddCommand(templatesRefreshCmd)
@@ -144,6 +155,37 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	}
 	log.Info().Msg("Application published successfully!")
 
+	return nil
+}
+
+// RunApplicationDeploy deploys an application to Massdriver (exported to avoid code duplication for deprecated `mass deploy` command)
+func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
+	if err != nil {
+		return err
+	}
+	if errType := checkIsApplication(app); errType != nil {
+		return errType
+	}
+	// original
+	name := args[0]
+
+	orgID := os.Getenv("MASSDRIVER_ORG_ID")
+	if orgID == "" {
+		log.Fatal().Msg("MASSDRIVER_ORG_ID must be set")
+	}
+
+	client := api.NewClient()
+	deployment, err := api.DeployPackage(client, orgID, name)
+
+	if err != nil {
+		log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("Deployment failed")
+		return err
+	}
+
+	log.Info().Str("deploymentId", deployment.ID).Msgf("Deployment %s", strings.ToLower(deployment.Status))
 	return nil
 }
 
