@@ -1,7 +1,6 @@
 # resource "massdriver_artifact" "<name>" {
 #   field                = "the field in the artifacts schema"
 #   provider_resource_id = "AWS ARN or K8S SelfLink"
-#   type                 = "file-name-from-artifacts"
 #   name                 = "a contextual name for the artifact"
 #   artifact = jsonencode(
 #     {
