@@ -209,7 +209,7 @@ func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{})
 		return prop.Default
 	}
 
-	// fall bactk to an empty array
+	// fall back to an empty array
 	if prop.Type == "array" {
 		return []interface{}{}
 	}
