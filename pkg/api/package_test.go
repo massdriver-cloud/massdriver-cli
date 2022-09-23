@@ -15,7 +15,7 @@ func TestGetPackage(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc(APIURL, func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		data := fmt.Sprintf(`{"data":{"getPackageByNamingConvention":{"manifest": {"id": "manifest-id"}, "target": {"id": "target-id"}, "namePrefix":"%s-8m8q"}}}`, pkgName)
+		data := fmt.Sprintf(`{"data":{"getPackageByNamingConvention":{"manifest": {"id": "manifest-id"}, "target": {"id": "target-id"}, "namePrefix":"%s-8m8q","paramsSchema":{"examples": [{"__name": "Development","name": "John Doe","age": 25},{"__name": "Production","name": "Jane Doe","age": 24}],"required": ["name"],"properties": {"name": {"type": "string"},"age": {"type": "integer","default": 0}}}}}}`, pkgName)
 		mustWrite(w, data)
 	})
 	client := graphql.NewClient(APIURL, &http.Client{Transport: localRoundTripper{handler: mux}})

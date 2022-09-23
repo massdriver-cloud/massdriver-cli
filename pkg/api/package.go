@@ -4,11 +4,16 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/hasura/go-graphql-client"
+	"github.com/jackdelahunt/survey-json-schema/pkg/surveyjson"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,6 +24,7 @@ type Package struct {
 	ManifestID       string
 	TargetID         string
 	ActiveDeployment Deployment
+	ParamsSchema     jsonschema.Schema
 }
 
 const deploymentTimeout time.Duration = time.Duration(5) * time.Minute
@@ -79,6 +85,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 			Target struct {
 				ID graphql.String
 			}
+			ParamsSchema map[string]interface{} `scalar:"true"`
 		} `graphql:"getPackageByNamingConvention(name: $name, organizationId: $organizationId)"`
 	}
 
@@ -104,6 +111,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 			ID:     string(q.GetPackageByNamingConvention.ActiveDeployment.ID),
 			Status: string(q.GetPackageByNamingConvention.ActiveDeployment.Status),
 		},
+		ParamsSchema: *deserializeSchema(q.GetPackageByNamingConvention.ParamsSchema),
 	}
 
 	log.Debug().
@@ -111,6 +119,20 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 		Msg("Got package")
 
 	return &pkg, nil
+}
+
+func deserializeSchema(schema map[string]interface{}) *jsonschema.Schema {
+	var s jsonschema.Schema
+	byteData, err := json.Marshal(schema)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to marshal schema")
+	}
+
+	// do a little json dance to get the schema into our structured go type
+	if marshalErr := json.Unmarshal(byteData, &s); marshalErr != nil {
+		log.Fatal().Err(marshalErr).Msg("Failed to unmarshal schema from API")
+	}
+	return &s
 }
 
 func checkDeploymentStatus(client *graphql.Client, orgID string, id string, timeout time.Duration) (*Deployment, error) {
@@ -133,4 +155,121 @@ func checkDeploymentStatus(client *graphql.Client, orgID string, id string, time
 		time.Sleep(deploymentStatusSleep)
 		return checkDeploymentStatus(client, orgID, id, timeout)
 	}
+}
+
+func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error) {
+	// start by prompting for which set of presets to use
+	exampleNames := make([]string, len(pkg.ParamsSchema.Examples))
+	exampleMap := make(map[string]jsonschema.Example)
+	for i, example := range pkg.ParamsSchema.Examples {
+		exampleMap[example.Name] = example
+		exampleNames[i] = example.Name
+	}
+	var qs = []*survey.Question{
+		{
+			Name: "Presets",
+			Prompt: &survey.Select{
+				Message: "Choose a guided configuration for this package:",
+				Options: exampleNames,
+				Description: func(value string, index int) string {
+					bytes, err := json.MarshalIndent(exampleMap[value].Values, "", "  ")
+					if err != nil {
+						log.Debug().Err(err).Msg("Failed to get example description")
+						return ""
+					}
+					return string(bytes)
+				},
+			},
+			Validate: survey.Required,
+		},
+	}
+
+	var answers struct {
+		Presets string
+	}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to prompt for presets")
+		return nil, err
+	}
+
+	options := surveyjson.JSONSchemaOptions{
+		Out:                 os.Stdout,
+		In:                  os.Stdin,
+		OutErr:              os.Stderr,
+		AskExisting:         true,
+		AutoAcceptDefaults:  true,
+		NoAsk:               false,
+		IgnoreMissingValues: false,
+	}
+
+	schemaBytes, err := json.Marshal(pkg.ParamsSchema)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to marshal params schema")
+		return nil, err
+	}
+
+	result, err := options.GenerateValues(schemaBytes, exampleMap[answers.Presets].Values)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to collect param values")
+		return nil, err
+	}
+	res := make(map[string]interface{})
+	unmarshalErr := json.Unmarshal(result, &res)
+	return res, unmarshalErr
+}
+
+func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Package, error) {
+	log.Debug().Str("packageName", name).Msg("Configuring package")
+	pkg, err := GetPackage(client, orgID, name)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to get package")
+		return nil, err
+	}
+	params, err := promptForConfigurableVariables(pkg)
+	if err != nil {
+		return nil, err
+	}
+	var m struct {
+		PackagePayload struct {
+			Successful graphql.Boolean `json:"successful"`
+			Result     struct {
+				ID graphql.ID `json:"id"`
+			} `json:"result"`
+			Messagess []struct {
+				Code    graphql.String `json:"code"`
+				Field   graphql.String `json:"field"`
+				Message graphql.String `json:"message"`
+				Options []struct {
+					Key   graphql.String `json:"key"`
+					Value graphql.String `json:"value"`
+				} `json:"options"`
+			}
+		} `graphql:"configurePackage(manifestID: $manifestID, organizationId: $organizationId, params: $params, targetID: $targetID)"`
+	}
+
+	// TODO not sure if graphql library expects a JSON type field as a string or a map
+	paramString, err := json.Marshal(params)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to marshal params")
+		return nil, err
+	}
+	variables := map[string]interface{}{
+		"manifestID":     graphql.ID(pkg.ManifestID),
+		"targetID":       graphql.ID(pkg.TargetID),
+		"organizationId": graphql.ID(orgID),
+		"params":         paramString,
+	}
+
+	err = client.Mutate(context.Background(), &m, variables)
+
+	if err != nil {
+		return nil, err
+	}
+
+	pid := fmt.Sprintf("%s", m.PackagePayload.Result.ID)
+	log.Info().Str("packageName", name).Str("packageID", pid).Msg("Package configured")
+
+	return pkg, nil
 }
