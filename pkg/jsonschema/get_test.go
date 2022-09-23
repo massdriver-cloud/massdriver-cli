@@ -1,7 +1,7 @@
 package jsonschema_test
 
 import (
-	"fmt"
+	"encoding/json"
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
@@ -26,7 +26,8 @@ func TestGet(t *testing.T) {
 						Type: "string",
 					},
 					"age": jsonschema.Property{
-						Type: "integer",
+						Type:    "integer",
+						Minimum: getFloat(0),
 					},
 				},
 			},
@@ -39,10 +40,16 @@ func TestGet(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
+			gotJSONBytes, _ := json.Marshal(got)
+			wantJSONBytes, _ := json.Marshal(tc.want)
 
-			if fmt.Sprint(got) != fmt.Sprint(tc.want) {
-				t.Errorf("got %v, want %v", got, tc.want)
+			if string(gotJSONBytes) != string(wantJSONBytes) {
+				t.Errorf("got %s, want %s", gotJSONBytes, wantJSONBytes)
 			}
 		})
 	}
+}
+
+func getFloat(x float64) *float64 {
+	return &x
 }

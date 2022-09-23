@@ -3,8 +3,10 @@ package terraform
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
@@ -27,11 +29,11 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	devParamsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, "_params.auto.tfvars.json"))
+	devParamsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, common.DevParamsFilename))
 	if err != nil {
 		return err
 	}
-	err = CompileDevParams(path.Join(bundlePath, common.ParamsSchemaFilename), devParamsVariablesFile)
+	err = CompileDevParams(path.Join(bundlePath, common.DevParamsFilename), devParamsVariablesFile)
 	if err != nil {
 		return err
 	}
@@ -128,9 +130,26 @@ func getParams(path string) (map[string]TFVariable, error) {
 	return variables, nil
 }
 
+func getExistingParams(path string) (map[string]interface{}, error) {
+	params := make(map[string]interface{})
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// no existing params return empty map
+		return params, nil
+	}
+	byteData, err := ioutil.ReadFile(path)
+	if err != nil {
+		return params, err
+	}
+	marhsalErr := json.Unmarshal(byteData, &params)
+	return params, marhsalErr
+}
+
 func getDevParams(path string) (map[string]interface{}, error) {
-	params := map[string]interface{}{}
-	schema, err := jsonschema.GetJSONSchema(path)
+	params, err := getExistingParams(path)
+	if err != nil {
+		return params, err
+	}
+	schema, err := jsonschema.GetJSONSchema(strings.Replace(path, common.DevParamsFilename, common.ParamsSchemaFilename, 1))
 	if err != nil {
 		return params, err
 	}
@@ -143,7 +162,7 @@ func getDevParams(path string) (map[string]interface{}, error) {
 
 	// loop over top level properties
 	for name, prop := range schema.Properties {
-		params[name] = FillDevParam(prop, devExample.Values[name])
+		params[name] = FillDevParam(prop, params[name], devExample.Values[name])
 	}
 	return params, nil
 }
@@ -151,7 +170,14 @@ func getDevParams(path string) (map[string]interface{}, error) {
 var placeholderValue = "TODO: REPLACE ME"
 
 // FillDevParam fills a parameter with a development value
-func FillDevParam(prop jsonschema.Property, value interface{}) interface{} {
+// this function folows the following priority for filling in values:
+// 1. If the parameter is already set, use that value
+// 2. If there is a 'Development' example value, use that value
+// 3. If the param defines a default use that value.
+// 4. If the param is an array fallback to empty array.
+// 5. If the param is a number and defines a minimum use that value.
+// 4. Use a TODO string placeholder value
+func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{}) interface{} { // nolint:gocognit
 	// the base case is we fall back to a placeholder to indicate to the developer they should replace this value.
 	var ret interface{} = placeholderValue
 
@@ -159,20 +185,24 @@ func FillDevParam(prop jsonschema.Property, value interface{}) interface{} {
 	if prop.Type == jsonschema.Object {
 		obj := make(map[string]interface{})
 		for name, nestedProp := range prop.Properties {
-			valuesMap, ok := value.(map[string]interface{})
-			nestedValues := valuesMap[name]
+			valuesMap, ok := exampleVal.(map[string]interface{})
+			nestedExampleValues := valuesMap[name]
 			if !ok {
 				if nestedProp.Type == jsonschema.Object {
 					obj[name] = make(map[string]interface{})
 				}
 			}
-			obj[name] = FillDevParam(nestedProp, nestedValues)
+			obj[name] = FillDevParam(nestedProp, nil, nestedExampleValues)
 		}
 		return obj
 	}
 
-	if value != nil {
-		return value
+	if existingVal != nil {
+		return existingVal
+	}
+
+	if exampleVal != nil {
+		return exampleVal
 	}
 
 	if prop.Default != nil {
@@ -182,6 +212,10 @@ func FillDevParam(prop jsonschema.Property, value interface{}) interface{} {
 	// fall bactk to an empty array
 	if prop.Type == "array" {
 		return []interface{}{}
+	}
+
+	if (prop.Type == "number" || prop.Type == "integer") && prop.Minimum != nil {
+		return prop.Minimum
 	}
 
 	return ret

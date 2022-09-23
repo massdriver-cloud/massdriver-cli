@@ -23,6 +23,7 @@ type Property struct {
 	Properties           PropertiesMap     `json:"properties,omitempty"`
 	Default              interface{}       `json:"default,omitempty"`
 	GenerateAuthFile     *GenerateAuthFile `json:"md.generateAuthFile,omitempty"`
+	Minimum              *float64          `json:"minimum,omitempty"`
 }
 
 // Schema is a flimsy representation of a JSON Schema.

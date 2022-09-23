@@ -65,6 +65,7 @@ func TestGenerateFiles(t *testing.T) {
     "name": "John Doe",
     "status": {
         "alive": "TODO: REPLACE ME",
+        "daysSinceLastCrime": 0,
         "knownConvictions": [],
         "relationship": "single"
     }

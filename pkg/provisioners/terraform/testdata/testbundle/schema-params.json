@@ -40,6 +40,11 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "daysSinceLastCrime": {
+                    "type": "integer",
+                    "description": "tests that missing default and example value generates the minimum",
+                    "minimum": 0
                 }
             }
         }
