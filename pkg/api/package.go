@@ -85,7 +85,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 			Target struct {
 				ID graphql.String
 			}
-			ParamsSchema map[string]interface{} `scalar:"true"`
+			ParamsSchema graphql.String `scalar:"true"`
 		} `graphql:"getPackageByNamingConvention(name: $name, organizationId: $organizationId)"`
 	}
 
@@ -121,12 +121,13 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 	return &pkg, nil
 }
 
-func deserializeSchema(schema map[string]interface{}) *jsonschema.Schema {
+func deserializeSchema(schema graphql.String) *jsonschema.Schema {
 	var s jsonschema.Schema
-	byteData, err := json.Marshal(schema)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to marshal schema")
-	}
+	// byteData, err := json.Marshal(schema)
+	// if err != nil {
+	// 	log.Fatal().Err(err).Msg("Failed to marshal schema")
+	// }
+	byteData := []byte(schema)
 
 	// do a little json dance to get the schema into our structured go type
 	if marshalErr := json.Unmarshal(byteData, &s); marshalErr != nil {

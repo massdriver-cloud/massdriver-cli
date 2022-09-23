@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"os"
+
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -22,10 +26,19 @@ var packageConfigureCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(applicationCmd)
+	rootCmd.AddCommand(packageCmd)
 	packageCmd.AddCommand(packageConfigureCmd)
 }
 
 func runPackageConfigure(cmd *cobra.Command, args []string) error {
-	return nil
+	setupLogging(cmd)
+
+	orgID := os.Getenv("MASSDRIVER_ORG_ID")
+	if orgID == "" {
+		log.Fatal().Msg("MASSDRIVER_ORG_ID must be set")
+	}
+
+	client := api.NewClient()
+	_, err := api.ConfigurePackage(client, orgID, args[0])
+	return err
 }
