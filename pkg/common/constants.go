@@ -7,6 +7,7 @@ const (
 	ConnectionsSchemaFilename = "schema-connections.json"
 	ParamsSchemaFilename      = "schema-params.json"
 	UISchemaFilename          = "schema-ui.json"
+	DevParamsFilename         = "_params.auto.tfvars.json"
 	MaxBundleSizeMB           = 10
 	MaxFileSizeMB             = 1
 )

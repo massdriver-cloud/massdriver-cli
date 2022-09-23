@@ -1,13 +1,52 @@
 {
+    "examples": [
+        {
+            "__name": "Development",
+            "name": "John Doe",
+            "age": 25
+        },
+        {
+            "__name": "Production",
+            "name": "Jane Doe",
+            "age": 24
+        }
+    ],
+    "required": [
+        "name"
+    ],
     "properties": {
         "name": {
             "type": "string"
         },
         "age": {
-            "type": "integer"
+            "type": "integer",
+            "default": 0
+        },
+        "status": {
+            "type": "object",
+            "description": "tests nested object filled in for dev params properly",
+            "properties": {
+                "relationship": {
+                    "type": "string",
+                    "default": "single"
+                },
+                "alive": {
+                    "description": "tests that missing default and example value generates TODO: REPLACE ME",
+                    "type": "boolean"
+                },
+                "knownConvictions": {
+                    "type": "array",
+                    "description": "tests that missing default and example value generates empty array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "daysSinceLastCrime": {
+                    "type": "integer",
+                    "description": "tests that missing default and example value generates the minimum",
+                    "minimum": 0
+                }
+            }
         }
-    },
-    "required": [
-        "name"
-    ]
+    }
 }
