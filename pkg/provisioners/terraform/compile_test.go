@@ -60,8 +60,9 @@ func TestGenerateFiles(t *testing.T) {
     }
 }
 `,
+				// Note the age 27 checks that existing values are not overwritten
 				"_params.auto.tfvars.json": `{
-    "age": 25,
+    "age": 27,
     "name": "John Doe",
     "status": {
         "alive": "TODO: REPLACE ME",

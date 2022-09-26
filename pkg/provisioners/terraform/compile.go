@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
@@ -29,11 +29,15 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	devParamsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, common.DevParamsFilename))
-	if err != nil {
-		return err
+	devParamPath := path.Join(bundlePath, srcDir, common.DevParamsFilename)
+	devParamsVariablesFile, err := os.OpenFile(devParamPath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil { // fall back to create missing file
+		devParamsVariablesFile, err = os.Create(devParamPath)
+		if err != nil {
+			return err
+		}
 	}
-	err = CompileDevParams(path.Join(bundlePath, common.DevParamsFilename), devParamsVariablesFile)
+	err = CompileDevParams(devParamPath, devParamsVariablesFile)
 	if err != nil {
 		return err
 	}
@@ -132,9 +136,15 @@ func getParams(path string) (map[string]TFVariable, error) {
 
 func getExistingParams(path string) (map[string]interface{}, error) {
 	params := make(map[string]interface{})
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return params, err
+	}
+	if _, statErr := os.Stat(abs); os.IsNotExist(statErr) {
 		// no existing params return empty map
 		return params, nil
+	} else if statErr != nil {
+		return params, statErr
 	}
 	byteData, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -149,7 +159,9 @@ func getDevParams(path string) (map[string]interface{}, error) {
 	if err != nil {
 		return params, err
 	}
-	schema, err := jsonschema.GetJSONSchema(strings.Replace(path, common.DevParamsFilename, common.ParamsSchemaFilename, 1))
+	// look in parent dir of schema (path for devParams will be in src/ or some bundle step dir)
+	schemaPath := filepath.Join(filepath.Dir(filepath.Dir(path)), common.ParamsSchemaFilename)
+	schema, err := jsonschema.GetJSONSchema(schemaPath)
 	if err != nil {
 		return params, err
 	}
