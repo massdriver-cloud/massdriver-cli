@@ -158,7 +158,14 @@ func checkDeploymentStatus(client *graphql.Client, orgID string, id string, time
 	}
 }
 
-func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error) {
+type Params string
+
+func (p Params) GetGraphQLType() string {
+	return "JSON"
+}
+
+func promptForConfigurableVariables(pkg *Package) (Params, error) {
+	ret := Params("{}")
 	// start by prompting for which set of presets to use
 	exampleNames := make([]string, len(pkg.ParamsSchema.Examples))
 	exampleMap := make(map[string]jsonschema.Example)
@@ -194,7 +201,7 @@ func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error
 		err := survey.Ask(qs, &answers)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to prompt for presets")
-			return nil, err
+			return ret, err
 		}
 		initialValues = exampleMap[answers.Presets].Values
 	}
@@ -212,17 +219,16 @@ func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error
 	schemaBytes, err := json.Marshal(pkg.ParamsSchema)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to marshal params schema")
-		return nil, err
+		return ret, err
 	}
 
 	result, err := options.GenerateValues(schemaBytes, initialValues)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to collect param values")
-		return nil, err
+		return ret, err
 	}
-	res := make(map[string]interface{})
-	unmarshalErr := json.Unmarshal(result, &res)
-	return res, unmarshalErr
+	unmarshalErr := json.Unmarshal(result, &ret)
+	return ret, unmarshalErr
 }
 
 func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Package, error) {
@@ -242,7 +248,7 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 			Result     struct {
 				ID graphql.ID `json:"id"`
 			} `json:"result"`
-			Messagess []struct {
+			Messages []struct {
 				Code    graphql.String `json:"code"`
 				Field   graphql.String `json:"field"`
 				Message graphql.String `json:"message"`
@@ -260,11 +266,13 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 		log.Fatal().Err(err).Msg("Failed to marshal params")
 		return nil, err
 	}
+	log.Debug().Str("params", fmt.Sprintf("%v", params)).Msg("Params")
+	log.Debug().Str("paramString", string(paramString)).Msg("Params Marshaled")
 	variables := map[string]interface{}{
 		"manifestID":     graphql.ID(pkg.ManifestID),
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
-		"params":         paramString,
+		"params":         Params(paramString),
 	}
 
 	err = client.Mutate(context.Background(), &m, variables)
@@ -273,8 +281,13 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 		return nil, err
 	}
 
-	pid := fmt.Sprintf("%s", m.PackagePayload.Result.ID)
-	log.Info().Str("packageName", name).Str("packageID", pid).Msg("Package configured")
-
-	return pkg, nil
+	log.Info().Str("packageName", name).Interface("packageID", m).Msg("Package configured")
+	if m.PackagePayload.Successful {
+		return pkg, nil
+	}
+	msgs, err := json.Marshal(m.PackagePayload.Messages)
+	if err != nil {
+		return pkg, errors.New(fmt.Sprintf("failed to configure package and couldn't marshal error messages: %v", err)) //nolint: revive,gosimple
+	}
+	return pkg, errors.New(fmt.Sprintf("failed to configure package: %v", string(msgs))) //nolint: revive,gosimple
 }
