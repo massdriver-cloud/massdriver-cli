@@ -166,33 +166,37 @@ func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error
 		exampleMap[example.Name] = example
 		exampleNames[i] = example.Name
 	}
-	var qs = []*survey.Question{
-		{
-			Name: "Presets",
-			Prompt: &survey.Select{
-				Message: "Choose a guided configuration for this package:",
-				Options: exampleNames,
-				Description: func(value string, index int) string {
-					bytes, err := json.MarshalIndent(exampleMap[value].Values, "", "  ")
-					if err != nil {
-						log.Debug().Err(err).Msg("Failed to get example description")
-						return ""
-					}
-					return string(bytes)
+	initialValues := make(map[string]interface{})
+	if len(exampleNames) > 0 {
+		var qs = []*survey.Question{
+			{
+				Name: "Presets",
+				Prompt: &survey.Select{
+					Message: "Choose a guided configuration for this package:",
+					Options: exampleNames,
+					Description: func(value string, index int) string {
+						bytes, err := json.MarshalIndent(exampleMap[value].Values, "", "  ")
+						if err != nil {
+							log.Debug().Err(err).Msg("Failed to get example description")
+							return ""
+						}
+						return string(bytes)
+					},
 				},
+				Validate: survey.Required,
 			},
-			Validate: survey.Required,
-		},
-	}
+		}
 
-	var answers struct {
-		Presets string
-	}
+		var answers struct {
+			Presets string
+		}
 
-	err := survey.Ask(qs, &answers)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to prompt for presets")
-		return nil, err
+		err := survey.Ask(qs, &answers)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to prompt for presets")
+			return nil, err
+		}
+		initialValues = exampleMap[answers.Presets].Values
 	}
 
 	options := surveyjson.JSONSchemaOptions{
@@ -200,7 +204,7 @@ func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error
 		In:                  os.Stdin,
 		OutErr:              os.Stderr,
 		AskExisting:         true,
-		AutoAcceptDefaults:  true,
+		AutoAcceptDefaults:  false,
 		NoAsk:               false,
 		IgnoreMissingValues: false,
 	}
@@ -211,7 +215,7 @@ func promptForConfigurableVariables(pkg *Package) (map[string]interface{}, error
 		return nil, err
 	}
 
-	result, err := options.GenerateValues(schemaBytes, exampleMap[answers.Presets].Values)
+	result, err := options.GenerateValues(schemaBytes, initialValues)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to collect param values")
 		return nil, err
