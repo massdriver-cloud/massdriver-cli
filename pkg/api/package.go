@@ -281,10 +281,11 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 		return nil, err
 	}
 
-	log.Info().Str("packageName", name).Interface("packageID", m).Msg("Package configured")
 	if m.PackagePayload.Successful {
+		log.Info().Str("packageName", name).Interface("packageID", m).Msg("Package configured successfully")
 		return pkg, nil
 	}
+	log.Error().Str("packageName", name).Interface("packageID", m).Msg("Package configure failed")
 	msgs, err := json.Marshal(m.PackagePayload.Messages)
 	if err != nil {
 		return pkg, errors.New(fmt.Sprintf("failed to configure package and couldn't marshal error messages: %v", err)) //nolint: revive,gosimple
