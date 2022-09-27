@@ -163,6 +163,23 @@ func getDevParams(path string) (map[string]interface{}, error) {
 	if err != nil {
 		return params, fmt.Errorf("error getting existing params: %w", err)
 	}
+
+	// if md_metadata is not set, initialize it to a reasonable starting point
+	if _, ok := params["md_metadata"]; !ok {
+		bundleName := filepath.Base(path)
+		namePrefix := fmt.Sprintf("local-dev-%s-000", bundleName)
+		// TODO name this something better than foo (e.g. the bundle name)
+		params["md_metadata"] = map[string]interface{}{
+			"name_prefix": namePrefix,
+			"default_tags": map[string]interface{}{
+				"md-project":  "local",
+				"md-target":   "dev",
+				"md-manifest": bundleName,
+				"md-package":  namePrefix,
+			},
+		}
+	}
+
 	// look in parent dir of schema (path for devParams will be in src/ or some bundle step dir)
 	schemaPath := filepath.Join(filepath.Dir(filepath.Dir(path)), common.ParamsSchemaFilename)
 	schema, err := jsonschema.GetJSONSchema(schemaPath)
