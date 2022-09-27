@@ -23,6 +23,3 @@ bin
 massdriver-cli
 
 .DS_Store
-
-# generated tf variables files
-*.auto.tfvars.json

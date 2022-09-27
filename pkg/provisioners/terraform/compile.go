@@ -2,14 +2,16 @@ package terraform
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
+	"github.com/rs/zerolog/log"
 )
 
 func GenerateFiles(bundlePath string, srcDir string) error {
@@ -26,14 +28,6 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 		return err
 	}
 	err = Compile(path.Join(bundlePath, common.ParamsSchemaFilename), paramsVariablesFile)
-	if err != nil {
-		return err
-	}
-	devParamsVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, common.DevParamsFilename))
-	if err != nil {
-		return err
-	}
-	err = CompileDevParams(path.Join(bundlePath, common.DevParamsFilename), devParamsVariablesFile)
 	if err != nil {
 		return err
 	}
@@ -58,6 +52,18 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	_, err = massdriverVariablesFile.Write(append(bytes, []byte("\n")...))
 	if err != nil {
 		return err
+	}
+	devParamPath := path.Join(bundlePath, "src", common.DevParamsFilename)
+	devParamsVariablesFile, err := os.OpenFile(devParamPath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil { // fall back to create missing file
+		devParamsVariablesFile, err = os.Create(devParamPath)
+		if err != nil {
+			return err
+		}
+	}
+	err = CompileDevParams(devParamPath, devParamsVariablesFile)
+	if err != nil {
+		return fmt.Errorf("error compiling dev params: %w", err)
 	}
 
 	return nil
@@ -94,7 +100,7 @@ func Compile(path string, out io.Writer) error {
 func CompileDevParams(path string, out io.Writer) error {
 	params, paramsErr := getDevParams(path)
 	if paramsErr != nil {
-		return paramsErr
+		return fmt.Errorf("error getting dev params: %w", paramsErr)
 	}
 
 	// You can't have an empty variable block, so if there are no vars return an empty json block
@@ -132,14 +138,22 @@ func getParams(path string) (map[string]TFVariable, error) {
 
 func getExistingParams(path string) (map[string]interface{}, error) {
 	params := make(map[string]interface{})
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return params, err
+	}
+	if _, statErr := os.Stat(abs); os.IsNotExist(statErr) {
 		// no existing params return empty map
 		return params, nil
+	} else if statErr != nil {
+		return params, statErr
 	}
+	log.Debug().Str("path", abs).Msg("reading existing params")
 	byteData, err := ioutil.ReadFile(path)
 	if err != nil {
 		return params, err
 	}
+	log.Debug().Msgf("byteData: %s", string(byteData))
 	marhsalErr := json.Unmarshal(byteData, &params)
 	return params, marhsalErr
 }
@@ -147,11 +161,30 @@ func getExistingParams(path string) (map[string]interface{}, error) {
 func getDevParams(path string) (map[string]interface{}, error) {
 	params, err := getExistingParams(path)
 	if err != nil {
-		return params, err
+		return params, fmt.Errorf("error getting existing params: %w", err)
 	}
-	schema, err := jsonschema.GetJSONSchema(strings.Replace(path, common.DevParamsFilename, common.ParamsSchemaFilename, 1))
+
+	// if md_metadata is not set, initialize it to a reasonable starting point
+	if _, ok := params["md_metadata"]; !ok {
+		bundleName := filepath.Base(path)
+		namePrefix := fmt.Sprintf("local-dev-%s-000", bundleName)
+		// TODO name this something better than foo (e.g. the bundle name)
+		params["md_metadata"] = map[string]interface{}{
+			"name_prefix": namePrefix,
+			"default_tags": map[string]interface{}{
+				"md-project":  "local",
+				"md-target":   "dev",
+				"md-manifest": bundleName,
+				"md-package":  namePrefix,
+			},
+		}
+	}
+
+	// look in parent dir of schema (path for devParams will be in src/ or some bundle step dir)
+	schemaPath := filepath.Join(filepath.Dir(filepath.Dir(path)), common.ParamsSchemaFilename)
+	schema, err := jsonschema.GetJSONSchema(schemaPath)
 	if err != nil {
-		return params, err
+		return params, fmt.Errorf("error getting schema: %w", err)
 	}
 	var devExample jsonschema.Example
 	for _, example := range schema.Examples {
@@ -192,7 +225,13 @@ func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{})
 					obj[name] = make(map[string]interface{})
 				}
 			}
-			obj[name] = FillDevParam(nestedProp, nil, nestedExampleValues)
+			existingMap, ok := existingVal.(map[string]interface{})
+			if ok {
+				nestedExistingVal := existingMap[name]
+				obj[name] = FillDevParam(nestedProp, nestedExistingVal, nestedExampleValues)
+			} else {
+				obj[name] = FillDevParam(nestedProp, nil, nestedExampleValues)
+			}
 		}
 		return obj
 	}

@@ -1,0 +1,11 @@
+{
+    "age": 27,
+    "name": "John Doe",
+    "status": {
+        "alive": "TODO: REPLACE ME",
+        "daysSinceLastCrime": 0,
+        "knownConvictions": [],
+        "relationship": "single",
+        "someOtherExistingNestedValue": "foo"
+    }
+}

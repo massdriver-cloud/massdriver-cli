@@ -60,14 +60,25 @@ func TestGenerateFiles(t *testing.T) {
     }
 }
 `,
+				// Note the age 27 checks that existing values are not overwritten
 				"_params.auto.tfvars.json": `{
-    "age": 25,
+    "age": 27,
+    "md_metadata": {
+        "default_tags": {
+            "md-manifest": "_params.auto.tfvars.json",
+            "md-package": "local-dev-_params.auto.tfvars.json-000",
+            "md-project": "local",
+            "md-target": "dev"
+        },
+        "name_prefix": "local-dev-_params.auto.tfvars.json-000"
+    },
     "name": "John Doe",
     "status": {
         "alive": "TODO: REPLACE ME",
         "daysSinceLastCrime": 0,
         "knownConvictions": [],
-        "relationship": "single"
+        "relationship": "single",
+        "someOtherExistingNestedValue": "foo"
     }
 }
 `,
