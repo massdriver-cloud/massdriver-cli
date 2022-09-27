@@ -166,7 +166,7 @@ func getDevParams(path string) (map[string]interface{}, error) {
 
 	// if md_metadata is not set, initialize it to a reasonable starting point
 	if _, ok := params["md_metadata"]; !ok {
-		bundleName := filepath.Base(path)
+		bundleName := filepath.Base(filepath.Dir(filepath.Dir(path)))
 		namePrefix := fmt.Sprintf("local-dev-%s-000", bundleName)
 		// TODO name this something better than foo (e.g. the bundle name)
 		params["md_metadata"] = map[string]interface{}{
