@@ -45,6 +45,10 @@
                     "type": "integer",
                     "description": "tests that missing default and example value generates the minimum",
                     "minimum": 0
+                },
+                "someOtherExistingNestedValue": {
+                    "type": "string",
+                    "description": "tests that existing values are not overwritten"
                 }
             }
         }

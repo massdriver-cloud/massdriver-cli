@@ -204,7 +204,13 @@ func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{})
 					obj[name] = make(map[string]interface{})
 				}
 			}
-			obj[name] = FillDevParam(nestedProp, nil, nestedExampleValues)
+			existingMap, ok := existingVal.(map[string]interface{})
+			if ok {
+				nestedExistingVal := existingMap[name]
+				obj[name] = FillDevParam(nestedProp, nestedExistingVal, nestedExampleValues)
+			} else {
+				obj[name] = FillDevParam(nestedProp, nil, nestedExampleValues)
+			}
 		}
 		return obj
 	}

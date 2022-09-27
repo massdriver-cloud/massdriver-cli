@@ -68,7 +68,8 @@ func TestGenerateFiles(t *testing.T) {
         "alive": "TODO: REPLACE ME",
         "daysSinceLastCrime": 0,
         "knownConvictions": [],
-        "relationship": "single"
+        "relationship": "single",
+        "someOtherExistingNestedValue": "foo"
     }
 }
 `,
