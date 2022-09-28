@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/jackdelahunt/survey-json-schema/pkg/surveyjson"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"github.com/rs/zerolog/log"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Package struct {
@@ -158,14 +160,14 @@ func checkDeploymentStatus(client *graphql.Client, orgID string, id string, time
 	}
 }
 
-type Params string
+type Params map[string]interface{}
 
 func (p Params) GetGraphQLType() string {
 	return "JSON"
 }
 
 func promptForConfigurableVariables(pkg *Package) (Params, error) {
-	ret := Params("{}")
+	ret := Params(map[string]interface{}{})
 	// start by prompting for which set of presets to use
 	exampleNames := make([]string, len(pkg.ParamsSchema.Examples))
 	exampleMap := make(map[string]jsonschema.Example)
@@ -198,6 +200,7 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 			Presets string
 		}
 
+		log.Debug().Msg("Prompting for presets")
 		err := survey.Ask(qs, &answers)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to prompt for presets")
@@ -216,6 +219,8 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 		IgnoreMissingValues: false,
 	}
 
+	// this is a hack, the surveyjson library expects a top level type (which is always object for us)
+	pkg.ParamsSchema.Type = "object"
 	schemaBytes, err := json.Marshal(pkg.ParamsSchema)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to marshal params schema")
@@ -231,31 +236,59 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 	return ret, unmarshalErr
 }
 
-func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Package, error) {
+func readParamsFromFile(path string) (Params, error) {
+	ret := Params(map[string]interface{}{})
+	file, err := os.Open(path)
+	if err != nil {
+		return ret, err
+	}
+	defer file.Close()
+
+	byteValue, _ := ioutil.ReadAll(file)
+
+	// note, all json is valid yaml so we use yaml to unmarshal to support both encodings
+	err = yaml.Unmarshal(byteValue, &ret)
+	return ret, err
+}
+
+func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Package, error) {
 	log.Debug().Str("packageName", name).Msg("Configuring package")
 	pkg, err := GetPackage(client, orgID, name)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to get package")
 		return nil, err
 	}
-	params, err := promptForConfigurableVariables(pkg)
-	if err != nil {
-		return nil, err
+	// TODO can we fill in md_metadata intelligently here? or should we let XO do this?
+	var params Params
+	if len(jsonPath) > 0 {
+		log.Debug().Str("jsonPath", jsonPath).Msg("Reading params from file")
+		params, err = readParamsFromFile(jsonPath)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to read params from file")
+			return nil, err
+		}
+	} else {
+		log.Debug().Msg("Prompting for params")
+		params, err = promptForConfigurableVariables(pkg)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed to prompt for params")
+			return nil, err
+		}
 	}
 	var m struct {
 		PackagePayload struct {
-			Successful graphql.Boolean `json:"successful"`
+			Successful graphql.Boolean
 			Result     struct {
-				ID graphql.ID `json:"id"`
-			} `json:"result"`
+				ID graphql.ID
+			}
 			Messages []struct {
-				Code    graphql.String `json:"code"`
-				Field   graphql.String `json:"field"`
-				Message graphql.String `json:"message"`
+				Code    graphql.String
+				Field   graphql.String
+				Message graphql.String
 				Options []struct {
-					Key   graphql.String `json:"key"`
-					Value graphql.String `json:"value"`
-				} `json:"options"`
+					Key   graphql.String
+					Value graphql.String
+				}
 			}
 		} `graphql:"configurePackage(manifestID: $manifestID, organizationId: $organizationId, params: $params, targetID: $targetID)"`
 	}
@@ -272,10 +305,10 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 		"manifestID":     graphql.ID(pkg.ManifestID),
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
-		"params":         Params(paramString),
+		"params":         params,
 	}
 
-	err = client.Mutate(context.Background(), &m, variables)
+	err = client.Mutate(context.Background(), &m, variables, graphql.OperationName("configurePackage"))
 
 	if err != nil {
 		return nil, err
@@ -288,7 +321,7 @@ func ConfigurePackage(client *graphql.Client, orgID string, name string) (*Packa
 	log.Error().Str("packageName", name).Interface("packageID", m).Msg("Package configure failed")
 	msgs, err := json.Marshal(m.PackagePayload.Messages)
 	if err != nil {
-		return pkg, errors.New(fmt.Sprintf("failed to configure package and couldn't marshal error messages: %v", err)) //nolint: revive,gosimple
+		return pkg, fmt.Errorf("failed to configure package and couldn't marshal error messages: %w", err)
 	}
-	return pkg, errors.New(fmt.Sprintf("failed to configure package: %v", string(msgs))) //nolint: revive,gosimple
+	return pkg, fmt.Errorf("failed to configure package: %v", string(msgs))
 }

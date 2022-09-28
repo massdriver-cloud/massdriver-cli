@@ -32,6 +32,7 @@ type Schema struct {
 	Properties PropertiesMap `json:"properties"`
 	Required   []string      `json:"required,omitempty"`
 	Examples   []Example     `json:"examples,omitempty"`
+	Type       string        `json:"type,omitempty"`
 }
 
 type Example struct {

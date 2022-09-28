@@ -25,9 +25,12 @@ var packageConfigureCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 }
 
+var PackageConfigureJSONPath string
+
 func init() {
 	rootCmd.AddCommand(packageCmd)
 	packageCmd.AddCommand(packageConfigureCmd)
+	packageConfigureCmd.Flags().StringVar(&PackageConfigureJSONPath, "f", "", "Path to JSON or YAML file to use for package configuration")
 }
 
 func runPackageConfigure(cmd *cobra.Command, args []string) error {
@@ -39,6 +42,6 @@ func runPackageConfigure(cmd *cobra.Command, args []string) error {
 	}
 
 	client := api.NewClient()
-	_, err := api.ConfigurePackage(client, orgID, args[0])
+	_, err := api.ConfigurePackage(client, orgID, args[0], PackageConfigureJSONPath)
 	return err
 }
