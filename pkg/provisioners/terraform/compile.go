@@ -185,9 +185,9 @@ func getDevParams(path string) (map[string]interface{}, error) {
 				"md-manifest": bundleName,
 				"md-package":  namePrefix,
 			},
-			"observability": {
-				"alarm_webhook_url": "https://placeholder.com"
-             		}
+			"observability": map[string]interface{}{
+				"alarm_webhook_url": "https://placeholder.com",
+			},
 		}
 	}
 
