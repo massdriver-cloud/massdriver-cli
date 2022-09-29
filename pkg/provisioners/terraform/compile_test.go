@@ -92,6 +92,66 @@ func TestGenerateFiles(t *testing.T) {
 `,
 			},
 		},
+		{
+			name:       "missing params",
+			bundlePath: "testdata/testbundle-broken/",
+			srcDir:     "src",
+			expected: map[string]string{
+				"_connections_variables.tf.json": `{
+    "variable": {
+        "foo": {
+            "type": "string"
+        }
+    }
+}
+`,
+				"_params_variables.tf.json": `{
+    "variable": {
+        "age": {
+            "type": "number",
+            "default": null
+        },
+        "name": {
+            "type": "string"
+        },
+        "status": {
+            "type": "any",
+            "default": null
+        }
+    }
+}
+`,
+				"_params.auto.tfvars.json": `{
+    "age": 25,
+    "md_metadata": {
+        "default_tags": {
+            "md-manifest": "_params.auto.tfvars.json",
+            "md-package": "local-dev-_params.auto.tfvars.json-000",
+            "md-project": "local",
+            "md-target": "dev"
+        },
+        "name_prefix": "local-dev-_params.auto.tfvars.json-000"
+    },
+    "name": "John Doe",
+    "status": {
+        "alive": "TODO: REPLACE ME",
+        "daysSinceLastCrime": 0,
+        "knownConvictions": [],
+        "relationship": "single",
+        "someOtherExistingNestedValue": "TODO: REPLACE ME"
+    }
+}
+`,
+				"_md_variables.tf.json": `{
+    "variable": {
+        "md_metadata": {
+            "type": "any"
+        }
+    }
+}
+`,
+			},
+		},
 	}
 
 	for _, tc := range tests {

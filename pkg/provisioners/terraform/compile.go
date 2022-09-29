@@ -61,6 +61,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 			return err
 		}
 	}
+
 	err = CompileDevParams(devParamPath, devParamsVariablesFile)
 	if err != nil {
 		return fmt.Errorf("error compiling dev params: %w", err)
@@ -142,14 +143,21 @@ func getExistingParams(path string) (map[string]interface{}, error) {
 	if err != nil {
 		return params, err
 	}
-	if _, statErr := os.Stat(abs); os.IsNotExist(statErr) {
+
+	stat, statErr := os.Stat(abs)
+	if os.IsNotExist(statErr) {
 		// no existing params return empty map
 		return params, nil
 	} else if statErr != nil {
 		return params, statErr
 	}
+	// if the file exists but is empty
+	if stat.Size() == 0 {
+		return params, nil
+	}
+
 	log.Debug().Str("path", abs).Msg("reading existing params")
-	byteData, err := ioutil.ReadFile(path)
+	byteData, err := ioutil.ReadFile(abs)
 	if err != nil {
 		return params, err
 	}

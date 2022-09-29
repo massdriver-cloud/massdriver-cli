@@ -12,10 +12,12 @@ var MassdriverArtifactDefinitions = []string{
 	"massdriver/azure-data-lake-storage",
 	"massdriver/azure-databricks-workspace",
 	"massdriver/azure-service-principal",
+	"massdriver/azure-storage-account",
 	"massdriver/azure-virtual-network",
-	"massdriver/draft-node",
+	"massdriver/cosmosdb-sql-authentication",
+	// draft-node
 	"massdriver/elasticsearch-authentication",
-	"massdriver/env-file",
+	// env-file
 	"massdriver/gcp-bucket-https",
 	"massdriver/gcp-cloud-function",
 	"massdriver/gcp-firebase-authentication",
@@ -30,6 +32,7 @@ var MassdriverArtifactDefinitions = []string{
 	"massdriver/mysql-authentication",
 	"massdriver/postgresql-authentication",
 	"massdriver/redis-authentication",
+	"massdriver/sftp-authentication",
 }
 
 func ListMassdriverArtifactDefinitions() ([]string, error) {

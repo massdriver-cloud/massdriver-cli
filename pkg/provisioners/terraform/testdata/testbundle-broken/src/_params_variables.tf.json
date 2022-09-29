@@ -1,0 +1,15 @@
+{
+    "variable": {
+        "age": {
+            "type": "number",
+            "default": null
+        },
+        "name": {
+            "type": "string"
+        },
+        "status": {
+            "type": "any",
+            "default": null
+        }
+    }
+}
