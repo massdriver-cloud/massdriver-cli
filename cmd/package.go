@@ -30,7 +30,7 @@ var PackageConfigureJSONPath string
 func init() {
 	rootCmd.AddCommand(packageCmd)
 	packageCmd.AddCommand(packageConfigureCmd)
-	packageConfigureCmd.Flags().StringVar(&PackageConfigureJSONPath, "f", "", "Path to JSON or YAML file to use for package configuration")
+	packageConfigureCmd.Flags().StringVar(&PackageConfigureJSONPath, "params", "", "Path to JSON or YAML file to use for package configuration")
 }
 
 func runPackageConfigure(cmd *cobra.Command, args []string) error {
