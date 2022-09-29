@@ -130,7 +130,10 @@ func TestGenerateFiles(t *testing.T) {
             "md-project": "local",
             "md-target": "dev"
         },
-        "name_prefix": "local-dev-_params.auto.tfvars.json-000"
+        "name_prefix": "local-dev-_params.auto.tfvars.json-000",
+        "observability": {
+            "alarm_webhook_url": "https://placeholder.com"
+        }
     },
     "name": "John Doe",
     "status": {
