@@ -125,12 +125,12 @@ func TestGenerateFiles(t *testing.T) {
     "age": 25,
     "md_metadata": {
         "default_tags": {
-            "md-manifest": "_params.auto.tfvars.json",
-            "md-package": "local-dev-_params.auto.tfvars.json-000",
+            "md-manifest": "testbundle-broken",
+            "md-package": "local-dev-testbundle-broken-000",
             "md-project": "local",
             "md-target": "dev"
         },
-        "name_prefix": "local-dev-_params.auto.tfvars.json-000"
+        "name_prefix": "local-dev-testbundle-broken-000"
     },
     "name": "John Doe",
     "status": {
