@@ -131,6 +131,9 @@ func TestGenerateFiles(t *testing.T) {
             "md-target": "dev"
         },
         "name_prefix": "local-dev-testbundle-broken-000"
+        "observability": {
+            "alarm_webhook_url": "https://placeholder.com"
+        }
     },
     "name": "John Doe",
     "status": {
