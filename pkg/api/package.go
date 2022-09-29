@@ -233,7 +233,10 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 			log.Fatal().Err(err).Msg("Failed to prompt for presets")
 			return ret, err
 		}
-		initialValues = exampleMap[answers.Presets].Values
+		for k, v := range exampleMap[answers.Presets].Values {
+			initialValues[k] = v
+		}
+		log.Debug().Msg("initial values: " + fmt.Sprintf("%+v", initialValues))
 	}
 
 	options := surveyjson.JSONSchemaOptions{
@@ -335,8 +338,8 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
 		"params":         ParamString(paramString),
-		// "params":         params,
 	}
+	log.Debug().Str("variables", string(paramString)).Msg("variables")
 
 	err = client.Mutate(context.Background(), &m, variables, graphql.OperationName("configurePackage"))
 
