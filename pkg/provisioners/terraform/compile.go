@@ -151,8 +151,8 @@ func getExistingParams(path string) (map[string]interface{}, error) {
 	} else if statErr != nil {
 		return params, statErr
 	}
+	// if the file exists but is empty
 	if stat.Size() == 0 {
-	
 		return params, nil
 	}
 
