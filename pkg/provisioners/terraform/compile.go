@@ -152,7 +152,7 @@ func getExistingParams(path string) (map[string]interface{}, error) {
 		return params, statErr
 	}
 	if stat.Size() == 0 {
-		log.Info().Msg("size is 0")
+	
 		return params, nil
 	}
 
