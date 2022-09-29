@@ -16,17 +16,32 @@ import (
 	"github.com/jackdelahunt/survey-json-schema/pkg/surveyjson"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"github.com/rs/zerolog/log"
-	yaml "gopkg.in/yaml.v2"
 )
 
 type Package struct {
 	ID               string
 	Name             string
 	NamePrefix       string
+	ProjectID        string
 	ManifestID       string
 	TargetID         string
 	ActiveDeployment Deployment
 	ParamsSchema     jsonschema.Schema
+}
+
+func (p *Package) GetMDMetadata() map[string]interface{} {
+	if p != nil {
+		return map[string]interface{}{
+			"name_prefix": p.NamePrefix,
+			"default_tags": map[string]string{
+				"md-project":  "local",
+				"md-target":   p.TargetID,
+				"md-manifest": p.ManifestID,
+				"md-package":  p.ProjectID,
+			},
+		}
+	}
+	return map[string]interface{}{}
 }
 
 const deploymentTimeout time.Duration = time.Duration(5) * time.Minute
@@ -85,7 +100,10 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 				Status graphql.String
 			}
 			Target struct {
-				ID graphql.String
+				ID      graphql.String
+				Project struct {
+					ID graphql.String
+				}
 			}
 			ParamsSchema graphql.String `scalar:"true"`
 		} `graphql:"getPackageByNamingConvention(name: $name, organizationId: $organizationId)"`
@@ -106,6 +124,7 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 		ID:         string(q.GetPackageByNamingConvention.ID),
 		Name:       name,
 		NamePrefix: string(q.GetPackageByNamingConvention.NamePrefix),
+		ProjectID:  string(q.GetPackageByNamingConvention.Target.Project.ID),
 		ManifestID: string(q.GetPackageByNamingConvention.Manifest.ID),
 		TargetID:   string(q.GetPackageByNamingConvention.Target.ID),
 		// NOTE: this is any _previous_ ActiveDeployment that is running
@@ -166,6 +185,12 @@ func (p Params) GetGraphQLType() string {
 	return "JSON"
 }
 
+type ParamString string
+
+func (p ParamString) GetGraphQLType() string {
+	return "JSON"
+}
+
 func promptForConfigurableVariables(pkg *Package) (Params, error) {
 	ret := Params(map[string]interface{}{})
 	// start by prompting for which set of presets to use
@@ -175,7 +200,9 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 		exampleMap[example.Name] = example
 		exampleNames[i] = example.Name
 	}
-	initialValues := make(map[string]interface{})
+	initialValues := map[string]interface{}{
+		"md_metadata": pkg.GetMDMetadata(),
+	}
 	if len(exampleNames) > 0 {
 		var qs = []*survey.Question{
 			{
@@ -236,7 +263,7 @@ func promptForConfigurableVariables(pkg *Package) (Params, error) {
 	return ret, unmarshalErr
 }
 
-func readParamsFromFile(path string) (Params, error) {
+func readParamsFromFile(path string, pkg *Package) (Params, error) {
 	ret := Params(map[string]interface{}{})
 	file, err := os.Open(path)
 	if err != nil {
@@ -246,8 +273,10 @@ func readParamsFromFile(path string) (Params, error) {
 
 	byteValue, _ := ioutil.ReadAll(file)
 
-	// note, all json is valid yaml so we use yaml to unmarshal to support both encodings
-	err = yaml.Unmarshal(byteValue, &ret)
+	err = json.Unmarshal(byteValue, &ret)
+	if _, ok := ret["md_metadata"]; !ok {
+		ret["md_metadata"] = pkg.GetMDMetadata()
+	}
 	return ret, err
 }
 
@@ -262,7 +291,7 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 	var params Params
 	if len(jsonPath) > 0 {
 		log.Debug().Str("jsonPath", jsonPath).Msg("Reading params from file")
-		params, err = readParamsFromFile(jsonPath)
+		params, err = readParamsFromFile(jsonPath, pkg)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to read params from file")
 			return nil, err
@@ -305,7 +334,8 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 		"manifestID":     graphql.ID(pkg.ManifestID),
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
-		"params":         params,
+		"params":         ParamString(paramString),
+		// "params":         params,
 	}
 
 	err = client.Mutate(context.Background(), &m, variables, graphql.OperationName("configurePackage"))
