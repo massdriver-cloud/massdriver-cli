@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/hasura/go-graphql-client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"github.com/rs/zerolog/log"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Package struct {
@@ -35,7 +37,7 @@ func (p *Package) GetMDMetadata() map[string]interface{} {
 				"md-project":  "local",
 				"md-target":   p.TargetID,
 				"md-manifest": p.ManifestID,
-				"md-package":  p.ProjectID,
+				"md-package":  p.ID,
 			},
 			"observability": map[string]interface{}{
 				"alarm_webhook_url": "https://placeholder.com",
@@ -183,7 +185,7 @@ func (p ParamString) GetGraphQLType() string {
 	return "JSON"
 }
 
-func readParamsFromFile(path string, pkg *Package) (map[string]interface{}, error) {
+func ReadParamsFromFile(path string, pkg *Package) (map[string]interface{}, error) {
 	ret := map[string]interface{}{}
 	file, err := os.Open(path)
 	if err != nil {
@@ -193,14 +195,25 @@ func readParamsFromFile(path string, pkg *Package) (map[string]interface{}, erro
 
 	byteValue, _ := ioutil.ReadAll(file)
 
-	err = json.Unmarshal(byteValue, &ret)
-	if _, ok := ret["md_metadata"]; !ok {
-		ret["md_metadata"] = pkg.GetMDMetadata()
+	switch filepath.Ext(path) {
+	case ".json":
+		err = json.Unmarshal(byteValue, &ret)
+		if _, ok := ret["md_metadata"]; !ok {
+			ret["md_metadata"] = pkg.GetMDMetadata()
+		}
+	case ".yaml", ".yml":
+		err = yaml.Unmarshal(byteValue, &ret)
+		if _, ok := ret["md_metadata"]; !ok {
+			ret["md_metadata"] = pkg.GetMDMetadata()
+		}
+	default:
+		return ret, errors.New("invalid file type, must me json or yaml")
 	}
+
 	return ret, err
 }
 
-func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Package, error) {
+func ConfigurePackage(client *graphql.Client, orgID, name, paramValuePath string) (*Package, error) {
 	log.Debug().Str("packageName", name).Msg("Configuring package")
 	pkg, err := GetPackage(client, orgID, name)
 	if err != nil {
@@ -208,8 +221,8 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 		return nil, err
 	}
 	var params map[string]interface{}
-	if len(jsonPath) > 0 {
-		params, err = readParamsFromFile(jsonPath, pkg)
+	if len(paramValuePath) > 0 {
+		params, err = ReadParamsFromFile(paramValuePath, pkg)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to read params from file")
 			return nil, err
