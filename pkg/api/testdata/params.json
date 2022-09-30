@@ -1,0 +1,28 @@
+{
+    "cluster_configuration": {
+        "enable_binary_authorization": false
+    },
+    "cluster_networking": {
+        "cluster_ipv4_cidr_block": "/16",
+        "master_ipv4_cidr_block": "172.16.0.0/28",
+        "services_ipv4_cidr_block": "/20"
+    },
+    "core_services": {
+        "cloud_dns_managed_zones": [],
+        "enable_ingress": false
+    },
+    "k8s_version": "1.21",
+    "node_groups": [
+        {
+            "name": "small-pool",
+            "machine_type": "e2-highcpu-2",
+            "min_size": 1,
+            "max_size": 5
+        }
+    ],
+    "observability": {
+        "logging": {
+            "destination": "disabled"
+        }
+    }
+}

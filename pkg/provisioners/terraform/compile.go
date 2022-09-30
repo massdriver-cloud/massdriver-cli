@@ -172,22 +172,31 @@ func getDevParams(path string) (map[string]interface{}, error) {
 		return params, fmt.Errorf("error getting existing params: %w", err)
 	}
 
+	bundleName := filepath.Base(filepath.Dir(filepath.Dir(path)))
+	namePrefix := fmt.Sprintf("local-dev-%s-000", bundleName)
+	boilerplateMetadata := map[string]interface{}{
+		"name_prefix": namePrefix,
+		"default_tags": map[string]interface{}{
+			"md-project":  "local",
+			"md-target":   "dev",
+			"md-manifest": bundleName,
+			"md-package":  namePrefix,
+		},
+		"observability": map[string]interface{}{
+			"alarm_webhook_url": "https://placeholder.com",
+		},
+	}
+
 	// if md_metadata is not set, initialize it to a reasonable starting point
 	if _, ok := params["md_metadata"]; !ok {
-		bundleName := filepath.Base(path)
-		namePrefix := fmt.Sprintf("local-dev-%s-000", bundleName)
 		// TODO name this something better than foo (e.g. the bundle name)
-		params["md_metadata"] = map[string]interface{}{
-			"name_prefix": namePrefix,
-			"default_tags": map[string]interface{}{
-				"md-project":  "local",
-				"md-target":   "dev",
-				"md-manifest": bundleName,
-				"md-package":  namePrefix,
-			},
-			"observability": map[string]interface{}{
-				"alarm_webhook_url": "https://placeholder.com",
-			},
+		params["md_metadata"] = boilerplateMetadata
+	} else {
+		// merge md metadata ties go to existing values
+		for k, v := range boilerplateMetadata {
+			if _, ok2 := params["md_metadata"].(map[string]interface{})[k]; !ok2 {
+				params["md_metadata"].(map[string]interface{})[k] = v
+			}
 		}
 	}
 
