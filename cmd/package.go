@@ -30,7 +30,10 @@ var PackageConfigureJSONPath string
 func init() {
 	rootCmd.AddCommand(packageCmd)
 	packageCmd.AddCommand(packageConfigureCmd)
-	packageConfigureCmd.Flags().StringVar(&PackageConfigureJSONPath, "params", "", "Path to JSON or YAML file to use for package configuration")
+	packageConfigureCmd.Flags().StringVarP(&PackageConfigureJSONPath, "file", "f", "", "Path to JSON or YAML file to use for package configuration")
+	if err := cobra.MarkFlagRequired(packageConfigureCmd.Flags(), "file"); err != nil {
+		log.Fatal().Err(err).Msg("failed to mark flag as required")
+	}
 }
 
 func runPackageConfigure(cmd *cobra.Command, args []string) error {
