@@ -11,9 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/hasura/go-graphql-client"
-	"github.com/jackdelahunt/survey-json-schema/pkg/surveyjson"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
 	"github.com/rs/zerolog/log"
 )
@@ -38,6 +36,9 @@ func (p *Package) GetMDMetadata() map[string]interface{} {
 				"md-target":   p.TargetID,
 				"md-manifest": p.ManifestID,
 				"md-package":  p.ProjectID,
+			},
+			"observability": map[string]interface{}{
+				"alarm_webhook_url": "https://placeholder.com",
 			},
 		}
 	}
@@ -144,10 +145,6 @@ func GetPackage(client *graphql.Client, orgID string, name string) (*Package, er
 
 func deserializeSchema(schema graphql.String) *jsonschema.Schema {
 	var s jsonschema.Schema
-	// byteData, err := json.Marshal(schema)
-	// if err != nil {
-	// 	log.Fatal().Err(err).Msg("Failed to marshal schema")
-	// }
 	byteData := []byte(schema)
 
 	// do a little json dance to get the schema into our structured go type
@@ -179,95 +176,15 @@ func checkDeploymentStatus(client *graphql.Client, orgID string, id string, time
 	}
 }
 
-type Params map[string]interface{}
-
-func (p Params) GetGraphQLType() string {
-	return "JSON"
-}
-
+// this is how we get the graphql client to understand this is a JSON type
 type ParamString string
 
 func (p ParamString) GetGraphQLType() string {
 	return "JSON"
 }
 
-func promptForConfigurableVariables(pkg *Package) (Params, error) {
-	ret := Params(map[string]interface{}{})
-	// start by prompting for which set of presets to use
-	exampleNames := make([]string, len(pkg.ParamsSchema.Examples))
-	exampleMap := make(map[string]jsonschema.Example)
-	for i, example := range pkg.ParamsSchema.Examples {
-		exampleMap[example.Name] = example
-		exampleNames[i] = example.Name
-	}
-	initialValues := map[string]interface{}{
-		"md_metadata": pkg.GetMDMetadata(),
-	}
-	if len(exampleNames) > 0 {
-		var qs = []*survey.Question{
-			{
-				Name: "Presets",
-				Prompt: &survey.Select{
-					Message: "Choose a guided configuration for this package:",
-					Options: exampleNames,
-					Description: func(value string, index int) string {
-						bytes, err := json.MarshalIndent(exampleMap[value].Values, "", "  ")
-						if err != nil {
-							log.Debug().Err(err).Msg("Failed to get example description")
-							return ""
-						}
-						return string(bytes)
-					},
-				},
-				Validate: survey.Required,
-			},
-		}
-
-		var answers struct {
-			Presets string
-		}
-
-		log.Debug().Msg("Prompting for presets")
-		err := survey.Ask(qs, &answers)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to prompt for presets")
-			return ret, err
-		}
-		for k, v := range exampleMap[answers.Presets].Values {
-			initialValues[k] = v
-		}
-		log.Debug().Msg("initial values: " + fmt.Sprintf("%+v", initialValues))
-	}
-
-	options := surveyjson.JSONSchemaOptions{
-		Out:                 os.Stdout,
-		In:                  os.Stdin,
-		OutErr:              os.Stderr,
-		AskExisting:         true,
-		AutoAcceptDefaults:  false,
-		NoAsk:               false,
-		IgnoreMissingValues: false,
-	}
-
-	// this is a hack, the surveyjson library expects a top level type (which is always object for us)
-	pkg.ParamsSchema.Type = "object"
-	schemaBytes, err := json.Marshal(pkg.ParamsSchema)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to marshal params schema")
-		return ret, err
-	}
-
-	result, err := options.GenerateValues(schemaBytes, initialValues)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to collect param values")
-		return ret, err
-	}
-	unmarshalErr := json.Unmarshal(result, &ret)
-	return ret, unmarshalErr
-}
-
-func readParamsFromFile(path string, pkg *Package) (Params, error) {
-	ret := Params(map[string]interface{}{})
+func readParamsFromFile(path string, pkg *Package) (map[string]interface{}, error) {
+	ret := map[string]interface{}{}
 	file, err := os.Open(path)
 	if err != nil {
 		return ret, err
@@ -290,20 +207,11 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 		log.Fatal().Err(err).Msg("Failed to get package")
 		return nil, err
 	}
-	// TODO can we fill in md_metadata intelligently here? or should we let XO do this?
-	var params Params
+	var params map[string]interface{}
 	if len(jsonPath) > 0 {
-		log.Debug().Str("jsonPath", jsonPath).Msg("Reading params from file")
 		params, err = readParamsFromFile(jsonPath, pkg)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to read params from file")
-			return nil, err
-		}
-	} else {
-		log.Debug().Msg("Prompting for params")
-		params, err = promptForConfigurableVariables(pkg)
-		if err != nil {
-			log.Fatal().Err(err).Msg("Failed to prompt for params")
 			return nil, err
 		}
 	}
@@ -325,21 +233,18 @@ func ConfigurePackage(client *graphql.Client, orgID, name, jsonPath string) (*Pa
 		} `graphql:"configurePackage(manifestID: $manifestID, organizationId: $organizationId, params: $params, targetID: $targetID)"`
 	}
 
-	// TODO not sure if graphql library expects a JSON type field as a string or a map
 	paramString, err := json.Marshal(params)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to marshal params")
 		return nil, err
 	}
-	log.Debug().Str("params", fmt.Sprintf("%v", params)).Msg("Params")
-	log.Debug().Str("paramString", string(paramString)).Msg("Params Marshaled")
 	variables := map[string]interface{}{
 		"manifestID":     graphql.ID(pkg.ManifestID),
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
-		"params":         ParamString(paramString),
+		// we need to convert to out ParamString type so that gql client understands this is a JSON field
+		"params": ParamString(paramString),
 	}
-	log.Debug().Str("variables", string(paramString)).Msg("variables")
 
 	err = client.Mutate(context.Background(), &m, variables, graphql.OperationName("configurePackage"))
 

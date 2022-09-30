@@ -70,7 +70,10 @@ func TestGenerateFiles(t *testing.T) {
             "md-project": "local",
             "md-target": "dev"
         },
-        "name_prefix": "local-dev-testbundle-000"
+        "name_prefix": "local-dev-testbundle-000",
+        "observability": {
+            "alarm_webhook_url": "https://placeholder.com"
+        }
     },
     "name": "John Doe",
     "status": {
@@ -130,7 +133,7 @@ func TestGenerateFiles(t *testing.T) {
             "md-project": "local",
             "md-target": "dev"
         },
-        "name_prefix": "local-dev-testbundle-broken-000"
+        "name_prefix": "local-dev-testbundle-broken-000",
         "observability": {
             "alarm_webhook_url": "https://placeholder.com"
         }

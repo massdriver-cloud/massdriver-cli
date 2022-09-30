@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/hasura/go-graphql-client v0.8.0
-	github.com/jackdelahunt/survey-json-schema v0.12.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/cobra v1.5.0
@@ -15,13 +14,11 @@ require (
 )
 
 require (
-	github.com/fatih/color v1.7.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
-	github.com/pkg/errors v0.9.1 // indirect
+	github.com/stretchr/testify v1.8.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
