@@ -170,7 +170,7 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	if errType := checkIsApplication(app); errType != nil {
 		return errType
 	}
-
+	name := args[0]
 	orgID := os.Getenv("MASSDRIVER_ORG_ID")
 	if orgID == "" {
 		return errors.New("MASSDRIVER_ORG_ID must be set")
