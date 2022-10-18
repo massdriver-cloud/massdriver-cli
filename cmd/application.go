@@ -5,6 +5,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -169,19 +170,22 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	if errType := checkIsApplication(app); errType != nil {
 		return errType
 	}
-	// original
-	name := args[0]
+
+	maybeNameWithSuffix := args[0]
+	slugs := strings.Split(maybeNameWithSuffix, "-")
+	slugsWithoutSuffix := slugs[0:3]
+	name := strings.Join(slugsWithoutSuffix, "-")
 
 	orgID := os.Getenv("MASSDRIVER_ORG_ID")
 	if orgID == "" {
-		log.Fatal().Msg("MASSDRIVER_ORG_ID must be set")
+		return errors.New("MASSDRIVER_ORG_ID must be set")
 	}
 
 	client := api.NewClient()
 	deployment, err := api.DeployPackage(client, orgID, name)
 
 	if err != nil {
-		log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("Deployment failed")
+		log.Error().Msgf("Deployment failed")
 		return err
 	}
 
