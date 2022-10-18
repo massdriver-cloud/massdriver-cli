@@ -171,11 +171,6 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 		return errType
 	}
 
-	maybeNameWithSuffix := args[0]
-	slugs := strings.Split(maybeNameWithSuffix, "-")
-	slugsWithoutSuffix := slugs[0:3]
-	name := strings.Join(slugsWithoutSuffix, "-")
-
 	orgID := os.Getenv("MASSDRIVER_ORG_ID")
 	if orgID == "" {
 		return errors.New("MASSDRIVER_ORG_ID must be set")
