@@ -180,7 +180,7 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	deployment, err := api.DeployPackage(client, orgID, name)
 
 	if err != nil {
-		log.Error().Msgf("Deployment failed")
+		log.Error().Msg("Deployment failed")
 		return err
 	}
 
