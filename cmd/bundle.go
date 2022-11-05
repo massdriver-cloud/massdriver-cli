@@ -52,9 +52,14 @@ func init() {
 	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is massdriver.yaml directory)")
 
 	bundleCmd.AddCommand(bundleGenerateCmd)
-	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
+	bundleGenerateCmd.Flags().StringP("output", "o", ".", "Directory to generate bundle in")
 	bundleCmd.AddCommand(bundleNewCmd)
-	bundleNewCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
+	// --name ${bundleName} --access ${bundleAccess} --description ${bundleDescription} --output ${bundleOutput} --dependencies
+	bundleNewCmd.Flags().StringP("name", "", ".", "Name of the bundle")
+	bundleNewCmd.Flags().StringP("access", "", ".", "")
+	bundleNewCmd.Flags().StringP("description", "", ".", "")
+	bundleNewCmd.Flags().StringP("connections", "", ".", "")
+	bundleNewCmd.Flags().StringP("output", "", ".", "Directory to generate bundle in")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
@@ -104,14 +109,38 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 func runBundleGenerate(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	var err error
+	name, errName := cmd.Flags().GetString("name")
+	if errName != nil {
+		return errName
+	}
 
-	outputDir, err := cmd.Flags().GetString("output-dir")
+	access, errAcc := cmd.Flags().GetString("access")
+	if errAcc != nil {
+		return errAcc
+	}
+
+	description, errDesc := cmd.Flags().GetString("description")
+	if errDesc != nil {
+		return errDesc
+	}
+
+	// connections, errCon := cmd.Flags().GetString("connections")
+	// if errCon != nil {
+	// 	return errCon
+	// }
+
+	outputDir, err := cmd.Flags().GetString("output")
 	if err != nil {
 		return err
 	}
 
 	templateData := template.Data{
+		Name: name,
+		Access: access,
+		Description: description,
+		Connections: map[string]interface{}{
+			"hank": "hank",
+		},
 		OutputDir:    outputDir,
 		Type:         "bundle",
 		TemplateName: "terraform",

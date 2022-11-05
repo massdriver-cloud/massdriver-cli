@@ -42,6 +42,9 @@ func RunPrompt(t *template.Data) error {
 }
 
 func getName(t *template.Data) error {
+	if t.Name != "" {
+		return nil
+	}
 	validate := func(input string) error {
 		if !bundleTypeFormat.MatchString(input) {
 			return errors.New("name must be greater than 4 characters and can only include lowercase letters and dashes")
@@ -67,6 +70,9 @@ func getName(t *template.Data) error {
 }
 
 func getAccessLevel(t *template.Data) error {
+	if t.Access != "" {
+		return nil
+	}
 	prompt := promptui.Select{
 		Label: "Access Level",
 		Items: []string{"public", "private"},
@@ -83,6 +89,9 @@ func getAccessLevel(t *template.Data) error {
 }
 
 func getDescription(t *template.Data) error {
+	if t.Description != "" {
+		return nil
+	}
 	prompt := promptui.Prompt{
 		Label: "Description",
 	}
@@ -98,6 +107,9 @@ func getDescription(t *template.Data) error {
 }
 
 func getOutputDir(t *template.Data) error {
+	if t.OutputDir != "" {
+		return nil
+	}
 	prompt := promptui.Prompt{
 		Label:   `Output directory`,
 		Default: t.Name,
@@ -115,6 +127,10 @@ func getOutputDir(t *template.Data) error {
 
 // TODO fetch these from the API instead of hardcoding
 func GetConnections(t *template.Data) error {
+	// probably have to map the input to some struct
+	if t.Connections != nil {
+		return nil
+	}
 	artDefs, err := common.ListMassdriverArtifactDefinitions()
 	if err != nil {
 		return err
