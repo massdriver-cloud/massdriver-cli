@@ -42,7 +42,7 @@ func RunPrompt(t *template.Data) error {
 }
 
 func getName(t *template.Data) error {
-	if t.Name != "" {
+	if t.Name != "." {
 		return nil
 	}
 	validate := func(input string) error {
@@ -70,7 +70,7 @@ func getName(t *template.Data) error {
 }
 
 func getAccessLevel(t *template.Data) error {
-	if t.Access != "" {
+	if t.Access != "." {
 		return nil
 	}
 	prompt := promptui.Select{
@@ -89,7 +89,7 @@ func getAccessLevel(t *template.Data) error {
 }
 
 func getDescription(t *template.Data) error {
-	if t.Description != "" {
+	if t.Description != "." {
 		return nil
 	}
 	prompt := promptui.Prompt{
@@ -107,7 +107,7 @@ func getDescription(t *template.Data) error {
 }
 
 func getOutputDir(t *template.Data) error {
-	if t.OutputDir != "" {
+	if t.OutputDir != "." {
 		return nil
 	}
 	prompt := promptui.Prompt{

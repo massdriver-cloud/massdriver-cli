@@ -145,6 +145,7 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 		Type:         "bundle",
 		TemplateName: "terraform",
 	}
+	fmt.Printf("Tempalte is %v", templateData)
 
 	err = bundle.RunPrompt(&templateData)
 	if err != nil {
