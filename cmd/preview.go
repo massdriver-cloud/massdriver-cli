@@ -10,26 +10,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var projectCmd = &cobra.Command{
-	Use:     "project",
-	Aliases: []string{"proj"},
-	Short:   "Project management",
+var previewCmd = &cobra.Command{
+	Use:     "preview",
+	Aliases: []string{"pv"},
+	Short:   "Preview Environments",
 	Long:    ``,
 }
 
-var projectGetDefaultParams = &cobra.Command{
-	Use:   "get-default-params",
-	Short: "Gets default parameters for all manifests in project.",
-	RunE:  runProjectGetDefaultParams,
+var previewInit = &cobra.Command{
+	Use:   "init",
+	Short: "Generate an environment params template for creating preview environments.",
+	RunE:  runPreviewInit,
 	Args:  cobra.ExactArgs(1),
 }
 
 func init() {
-	rootCmd.AddCommand(projectCmd)
-	projectCmd.AddCommand(projectGetDefaultParams)
+	rootCmd.AddCommand(previewCmd)
+	previewCmd.AddCommand(previewInit)
 }
 
-func runProjectGetDefaultParams(cmd *cobra.Command, args []string) error {
+func runPreviewInit(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	projectSlugOrId := args[0]
