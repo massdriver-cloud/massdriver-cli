@@ -41,6 +41,6 @@ func GetProject(client *graphql.Client, orgID string, id string) (*Project, erro
 		DefaultParams: q.Project.DefaultParams,
 	}
 
-	log.Debug().Str("projectId", string(q.Project.ID)).Msg("Got project")
+	log.Debug().Str("id", string(q.Project.ID)).Msg("Got project")
 	return &project, nil
 }
