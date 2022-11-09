@@ -14,26 +14,26 @@ var imageCmd = &cobra.Command{
 	Long:  ``,
 }
 
-var imageBuildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "",
+// var imageBuildCmd = &cobra.Command{
+// 	Use:   "build",
+// 	Short: "",
 
-	RunE: runImageBuild,
-}
+// 	RunE: runImageBuild,
+// }
 
-var imageListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "",
+// var imageListCmd = &cobra.Command{
+// 	Use:   "list",
+// 	Short: "",
 
-	RunE: runImageList,
-}
+// 	RunE: runImageList,
+// }
 
-var imagePushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "",
+// var imagePushCmd = &cobra.Command{
+// 	Use:   "push",
+// 	Short: "",
 
-	RunE: runImagePush,
-}
+// 	RunE: runImagePush,
+// }
 
 var packageImgCmd = &cobra.Command{
 	Use:   "package",
@@ -45,58 +45,61 @@ var packageImgCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(imageCmd)
 
-	imageCmd.AddCommand(imageBuildCmd)
-	imageCmd.AddCommand(imageListCmd)
-	imageCmd.AddCommand(imagePushCmd)
+	// imageCmd.AddCommand(imageBuildCmd)
+	// imageCmd.AddCommand(imageListCmd)
+	// imageCmd.AddCommand(imagePushCmd)
 	imageCmd.AddCommand(packageImgCmd)
 }
 
-func runImageBuild(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
+// func runImageBuild(cmd *cobra.Command, args []string) error {
+// 	setupLogging(cmd)
 
-	_, errClient := initClient(cmd)
-	if errClient != nil {
-		return errClient
-	}
+// 	_, errClient := initClient(cmd)
+// 	if errClient != nil {
+// 		return errClient
+// 	}
 
-	errBuild := containers.BuildImage(containers.BuildOptions{})
-	if errBuild != nil {
-		return errBuild
-	}
+// 	cupboard := NewCupboard()
+// 	errBuild := cupboard.BuildImage(containers.BuildOptions{})
+// 	if errBuild != nil {
+// 		return errBuild
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func runImageList(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
+// func runImageList(cmd *cobra.Command, args []string) error {
+// 	setupLogging(cmd)
 
-	_, errClient := initClient(cmd)
-	if errClient != nil {
-		return errClient
-	}
+// 	_, errClient := initClient(cmd)
+// 	if errClient != nil {
+// 		return errClient
+// 	}
 
-	errBuild := containers.ListImages()
-	if errBuild != nil {
-		return errBuild
-	}
+// 	cupboard := NewCupboard()
+// 	errBuild := containers.ListImages()
+// 	if errBuild != nil {
+// 		return errBuild
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func runImagePush(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
+// func runImagePush(cmd *cobra.Command, args []string) error {
+// 	setupLogging(cmd)
 
-	_, errClient := initClient(cmd)
-	if errClient != nil {
-		return errClient
-	}
+// 	_, errClient := initClient(cmd)
+// 	if errClient != nil {
+// 		return errClient
+// 	}
 
-	errBuild := containers.PushImage("latest")
-	if errBuild != nil {
-		return errBuild
-	}
-	return nil
-}
+// 	cupboard := NewCupboard()
+// 	errBuild := cupboard.PushImage("latest")
+// 	if errBuild != nil {
+// 		return errBuild
+// 	}
+// 	return nil
+// }
 
 func runPackageCmd(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
@@ -110,9 +113,10 @@ func runPackageCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	errBuild := containers.Package(b)
-	if errBuild != nil {
-		return errBuild
+	cupboard := NewCupboard()
+	errPack := cupboard.Package(b)
+	if errPack != nil {
+		return errPack
 	}
 
 	return nil

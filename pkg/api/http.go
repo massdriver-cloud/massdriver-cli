@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TODO: are retries configurable?
 func NewClient() *graphql.Client {
 	c := http.Client{Transport: &transport{underlyingTransport: http.DefaultTransport}}
 	client := graphql.NewClient("https://api.massdriver.cloud/api/", &c)
