@@ -1,14 +1,14 @@
 package api
 
 type RepositoryAuth struct {
-	ID               string
-	Name             string
-	NamePrefix       string
-	ProjectID        string
-	ManifestID       string
-	TargetID         string
+	ID         string
+	Name       string
+	NamePrefix string
+	ProjectID  string
+	ManifestID string
+	TargetID   string
 	// TODO: implement caching + expiration
-	Token string
+	Token            string
 	ActiveDeployment Deployment
 	ParamsSchema     jsonschema.Schema
 }
