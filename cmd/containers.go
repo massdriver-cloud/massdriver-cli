@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/containers"
 
 	"github.com/spf13/cobra"
@@ -33,12 +35,20 @@ var imagePushCmd = &cobra.Command{
 	RunE: runImagePush,
 }
 
+var packageImgCmd = &cobra.Command{
+	Use:   "package",
+	Short: "",
+
+	RunE: runPackageCmd,
+}
+
 func init() {
 	rootCmd.AddCommand(imageCmd)
 
 	imageCmd.AddCommand(imageBuildCmd)
 	imageCmd.AddCommand(imageListCmd)
 	imageCmd.AddCommand(imagePushCmd)
+	imageCmd.AddCommand(packageImgCmd)
 }
 
 func runImageBuild(cmd *cobra.Command, args []string) error {
@@ -49,7 +59,7 @@ func runImageBuild(cmd *cobra.Command, args []string) error {
 		return errClient
 	}
 
-	errBuild := containers.BuildImage()
+	errBuild := containers.BuildImage(containers.BuildOptions{})
 	if errBuild != nil {
 		return errBuild
 	}
@@ -85,5 +95,25 @@ func runImagePush(cmd *cobra.Command, args []string) error {
 	if errBuild != nil {
 		return errBuild
 	}
+	return nil
+}
+
+func runPackageCmd(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	_, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
+	}
+	b, err := bundle.Parse(common.MassdriverYamlFilename, nil)
+	if err != nil {
+		return err
+	}
+
+	errBuild := containers.Package(b)
+	if errBuild != nil {
+		return errBuild
+	}
+
 	return nil
 }

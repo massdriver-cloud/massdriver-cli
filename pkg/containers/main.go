@@ -5,16 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
-	"math"
 	"os"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,7 +20,52 @@ type LogLine struct {
 	Stream string `json:"stream"`
 }
 
-func BuildImage() error {
+type ImageTag struct {
+	Tag string `json:"tag"`
+}
+
+type BuildOptions struct {
+	Tags []ImageTag
+}
+
+func (opts *BuildOptions) GetTags() []string {
+	var tags []string
+	for _, tag := range opts.Tags {
+		tags = append(tags, tag.Tag)
+	}
+	return tags
+}
+
+func imageURIFromBundle(b *bundle.Bundle) string {
+	repository := "us-west1-docker.pkg.dev/md-wbeebe-0808-example-apps/sat-test-6789"
+	return repository + "/" + b.Name + ":latest"
+}
+
+// Build and tag with md_name_prefix
+// Push to registry
+func Package(b *bundle.Bundle) error {
+	imageURI := imageURIFromBundle(b)
+	opts := BuildOptions{
+		Tags: []ImageTag{
+			{
+				Tag: imageURI,
+			},
+		},
+	}
+	errBuild := BuildImage(opts)
+	if errBuild != nil {
+		return errBuild
+	}
+
+	errPush := PushImage(imageURI)
+	if errPush != nil {
+		return errPush
+	}
+
+	return nil
+}
+
+func BuildImage(opts BuildOptions) error {
 	log.Info().Msg("Building image")
 	ctx := context.TODO()
 
@@ -31,18 +74,19 @@ func BuildImage() error {
 		return err
 	}
 
-	opts := types.ImageBuildOptions{
+	cliOpts := types.ImageBuildOptions{
+		// TODO: allow config from massdriver.yaml?
 		Dockerfile: "./Dockerfile",
-		// TODO: auto-tag with md_name_prefix and current environment
-		Tags: []string{"latest"},
+		Tags:       opts.GetTags(),
 		// Remove: true,
 	}
+	// TODO: this is the "context" argument, make configurable
 	tar, err := archive.TarWithOptions(".", &archive.TarOptions{})
 	if err != nil {
 		return err
 	}
 
-	res, errBuild := cli.ImageBuild(ctx, tar, opts)
+	res, errBuild := cli.ImageBuild(ctx, tar, cliOpts)
 	if errBuild != nil {
 		return errBuild
 	}
@@ -101,17 +145,21 @@ func ListImages() error {
 	return nil
 }
 
-const repoHost = "https://hub.docker.com"
-
 func PushImage(imageURI string) error {
 	ctx := context.TODO()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return err
 	}
+
+	authStr, errCfg := getAuthConfig(os.Getenv("REGISTRY_AUTH_TOKEN"), imageURI)
+	if errCfg != nil {
+		return errCfg
+	}
+
 	reader, errPush := cli.ImagePush(ctx, imageURI, types.ImagePushOptions{
 		// All           bool
-		// RegistryAuth  string // RegistryAuth is the base64 encoded credentials for the registry
+		RegistryAuth: authStr, // RegistryAuth is the base64 encoded credentials for the registry
 		// PrivilegeFunc RequestPrivilegeFunc
 		// Platform      string
 	})
@@ -120,49 +168,4 @@ func PushImage(imageURI string) error {
 	}
 	defer reader.Close()
 	return print(reader)
-}
-
-func print(rd io.Reader) error {
-	scanner := bufio.NewScanner(rd)
-	for scanner.Scan() {
-		logStr := strings.TrimSuffix(scanner.Text(), "\n")
-		log := []byte(logStr)
-		fmt.Println(log)
-	}
-
-	// errLine := &ErrorLine{}
-	// json.Unmarshal([]byte(lastLine), errLine)
-	// if errLine.Error != "" {
-	// 	// return errors.New(errLine.Error)
-	// 	return nil
-	// }
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func humanFileSize(size float64) string {
-	var suffixes = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
-
-	base := math.Log(size) / math.Log(1024)
-	getSize := Round(math.Pow(1024, base-math.Floor(base)), .5, 2)
-	getSuffix := suffixes[int(math.Floor(base))]
-	return strconv.FormatFloat(getSize, 'f', -1, 64) + "" + string(getSuffix)
-}
-
-func Round(val float64, roundOn float64, places int) (newVal float64) {
-	var round float64
-	pow := math.Pow(10, float64(places))
-	digit := pow * val
-	_, div := math.Modf(digit)
-	if div >= roundOn {
-		round = math.Ceil(digit)
-	} else {
-		round = math.Floor(digit)
-	}
-	newVal = round / pow
-	return
 }
