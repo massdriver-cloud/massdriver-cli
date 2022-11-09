@@ -13,6 +13,15 @@ import (
 	"github.com/docker/docker/api/types"
 )
 
+type LogLine struct {
+	Stream string `json:"stream"`
+}
+
+type LogLinePush struct {
+	Status   string `json:"status"`
+	Progress string `json:"progress"`
+}
+
 // TODO: move hackathon notes
 // AWS
 // https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html
@@ -54,7 +63,18 @@ func print(rd io.Reader) error {
 	scanner := bufio.NewScanner(rd)
 	for scanner.Scan() {
 		logStr := strings.TrimSuffix(scanner.Text(), "\n")
-		fmt.Println(logStr)
+		log := []byte(logStr)
+
+		var logLine LogLinePush
+		err := json.Unmarshal(log, &logLine)
+		if err != nil {
+			return err
+		}
+		msg := strings.TrimSuffix(logLine.Status, "\n")
+		if msg == "" {
+			continue
+		}
+		fmt.Println(msg)
 	}
 
 	// errLine := &ErrorLine{}

@@ -16,10 +16,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type LogLine struct {
-	Stream string `json:"stream"`
-}
-
 type ImageTag struct {
 	Tag string `json:"tag"`
 }
@@ -36,15 +32,31 @@ func (opts *BuildOptions) GetTags() []string {
 	return tags
 }
 
+// TODO: un-hack the static registry string
 func imageURIFromBundle(b *bundle.Bundle) string {
 	repository := "us-west1-docker.pkg.dev/md-wbeebe-0808-example-apps/sat-test-6789"
 	return repository + "/" + b.Name + ":latest"
+}
+
+func repositoryFromBundle(b *bundle.Bundle) string {
+	imageURI := imageURIFromBundle(b)
+	return strings.Replace(imageURI, "/"+b.Name+":latest", "", -1)
+}
+
+func CheckRepositoryExists(repository string) (bool, error) {
+	return true, nil
+}
+
+func CreateRepository() error {
+	return nil
 }
 
 // Build and tag with md_name_prefix
 // Push to registry
 func Package(b *bundle.Bundle) error {
 	imageURI := imageURIFromBundle(b)
+	repository := repositoryFromBundle(b)
+	log.Info().Msg(repository)
 	opts := BuildOptions{
 		Tags: []ImageTag{
 			{
@@ -52,17 +64,23 @@ func Package(b *bundle.Bundle) error {
 			},
 		},
 	}
+	// check that the repository exists
 	errBuild := BuildImage(opts)
 	if errBuild != nil {
 		return errBuild
 	}
 
-	errPush := PushImage(imageURI)
-	if errPush != nil {
-		return errPush
+	repoExists, errCheck := CheckRepositoryExists(repository)
+	if errCheck != nil {
+		return errCheck
 	}
 
-	return nil
+	if repoExists {
+		return PushImage(imageURI)
+	}
+
+	log.Info().Msg("Repository does not exist, creating")
+	return CreateRepository()
 }
 
 func BuildImage(opts BuildOptions) error {
@@ -157,6 +175,7 @@ func PushImage(imageURI string) error {
 		return errCfg
 	}
 
+	// log.Info().Msgf("Pushing image %s", imageURI)
 	reader, errPush := cli.ImagePush(ctx, imageURI, types.ImagePushOptions{
 		// All           bool
 		RegistryAuth: authStr, // RegistryAuth is the base64 encoded credentials for the registry
