@@ -1,5 +1,13 @@
 package api
 
+import (
+	"context"
+
+	"github.com/hasura/go-graphql-client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/jsonschema"
+	"github.com/rs/zerolog/log"
+)
+
 type RepositoryAuth struct {
 	ID         string
 	Name       string

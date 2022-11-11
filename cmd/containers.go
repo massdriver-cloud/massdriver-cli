@@ -4,6 +4,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/containers"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 
 	"github.com/spf13/cobra"
 )
@@ -113,7 +114,21 @@ func runPackageCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	cupboard := NewCupboard()
+	templateData := template.Data{
+		Access: "private",
+		// TODO: unify bundle build and app build outputDir logic and support
+		OutputDir: ".",
+	}
+
+	errPrompt := containers.RunPromptNew(&templateData)
+	if errPrompt != nil {
+		return errPrompt
+	}
+
+	cupboard, errNew := containers.NewCupboard()
+	if errNew != nil {
+		return errNew
+	}
 	errPack := cupboard.Package(b)
 	if errPack != nil {
 		return errPack

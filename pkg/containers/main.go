@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -12,6 +14,8 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/hasura/go-graphql-client"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/rs/zerolog/log"
 )
@@ -25,28 +29,28 @@ type BuildOptions struct {
 }
 
 type Cupboard struct {
-	client ContainerClient
-	graphClient api.Client
-	Package(string) error
+	dockerClient ContainerClient
+	graphClient  *graphql.Client
+	// Package(string) error
 }
 
-type ContainerClient struct {
-	ImageList() error
-	ImageBuild() error
-	ImagePush() error
+type ContainerClient interface {
+	ImageList(ctx context.Context, options types.ImageListOptions) ([]types.ImageSummary, error)
+	ImageBuild(ctx context.Context, buildContext io.Reader, options types.ImageBuildOptions) (types.ImageBuildResponse, error)
+	ImagePush(ctx context.Context, image string, options types.ImagePushOptions) (io.ReadCloser, error)
 }
 
-func NewCupboard() *Cupboard {
+func NewCupboard() (*Cupboard, error) {
 	containerClient, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	graphClient := api.NewClient()
 
-	return Cupboard{
-		client: containerClient,
-		graphClient: graphClient,
-	}
+	return &Cupboard{
+		dockerClient: containerClient,
+		graphClient:  graphClient,
+	}, nil
 }
 
 func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
@@ -60,8 +64,8 @@ func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
 			},
 		},
 	}
-	// check that the repository exists
-	errBuild := cupboard.dockerClient.BuildImage(opts)
+
+	errBuild := cupboard.BuildImage(opts)
 	if errBuild != nil {
 		return errBuild
 	}
@@ -72,7 +76,7 @@ func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
 	}
 
 	if repoExists {
-		return cupboard.dockerClient.PushImage(imageURI)
+		return cupboard.PushImage(imageURI)
 	}
 
 	log.Info().Msg("Repository does not exist, creating")
@@ -179,9 +183,14 @@ func (cupboard *Cupboard) PushImage(imageURI string) error {
 	if cupboard.graphClient == nil {
 		return errors.New("graphClient is nil")
 	}
+	orgID := "ord-1"
+	name := "sat-test-6789"
 
 	authToken, err := api.GetToken(cupboard.graphClient, orgID, name)
-	authStr, errCfg := getAuthConfig(authToken, imageURI)
+	if err != nil {
+		return err
+	}
+	authStr, errCfg := getAuthConfig(authToken.Token, imageURI)
 	if errCfg != nil {
 		return errCfg
 	}
@@ -198,4 +207,3 @@ func (cupboard *Cupboard) PushImage(imageURI string) error {
 	defer reader.Close()
 	return print(reader)
 }
-
