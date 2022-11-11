@@ -1,0 +1,9 @@
+query getArtifactsByType($organizationId: ID!, $artifactType: String! ) {
+  artifacts(organizationId: $organizationId, input: {filter: {type: $artifactType}}) {
+    next
+    items {
+      name
+      id
+    }
+  }
+}

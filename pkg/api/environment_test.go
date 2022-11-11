@@ -11,7 +11,7 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
 )
 
-func TestCreatePreviewEnvironment(t *testing.T) {
+func TestDeployPreviewEnvironment(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc(APIURL, func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -31,7 +31,7 @@ func TestCreatePreviewEnvironment(t *testing.T) {
 
 	template := `{"hostname": "pr-${GITHUB_PR}.preview.example.com"}`
 	previewConfig := strings.NewReader(template)
-	environment, err := api.CreatePreviewEnvironment(client, "faux-org-id", "ecomm", previewConfig)
+	environment, err := api.DeployPreviewEnvironment(client, "faux-org-id", "ecomm", previewConfig)
 
 	if err != nil {
 		t.Fatal(err)

@@ -178,13 +178,6 @@ func checkDeploymentStatus(client *graphql.Client, orgID string, id string, time
 	}
 }
 
-// this is how we get the graphql client to understand this is a JSON type
-type ParamString string
-
-func (p ParamString) GetGraphQLType() string {
-	return "JSON"
-}
-
 func ReadParamsFromFile(path string, pkg *Package) (map[string]interface{}, error) {
 	ret := map[string]interface{}{}
 	file, err := os.Open(path)
@@ -255,8 +248,7 @@ func ConfigurePackage(client *graphql.Client, orgID, name, paramValuePath string
 		"manifestID":     graphql.ID(pkg.ManifestID),
 		"targetID":       graphql.ID(pkg.TargetID),
 		"organizationId": graphql.ID(orgID),
-		// we need to convert to out ParamString type so that gql client understands this is a JSON field
-		"params": ParamString(paramString),
+		"params":         JSONScalar(paramString),
 	}
 
 	err = client.Mutate(context.Background(), &m, variables, graphql.OperationName("configurePackage"))
