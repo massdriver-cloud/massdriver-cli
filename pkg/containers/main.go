@@ -28,7 +28,7 @@ type BuildOptions struct {
 	Tags []ImageTag
 }
 
-type Cupboard struct {
+type RegistryManager struct {
 	dockerClient ContainerClient
 	graphClient  *graphql.Client
 	// Package(string) error
@@ -40,20 +40,20 @@ type ContainerClient interface {
 	ImagePush(ctx context.Context, image string, options types.ImagePushOptions) (io.ReadCloser, error)
 }
 
-func NewCupboard() (*Cupboard, error) {
+func NewRegistryManager() (*RegistryManager, error) {
 	containerClient, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, err
 	}
 	graphClient := api.NewClient()
 
-	return &Cupboard{
+	return &RegistryManager{
 		dockerClient: containerClient,
 		graphClient:  graphClient,
 	}, nil
 }
 
-func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
+func (m *RegistryManager) Package(b *bundle.Bundle) error {
 	imageURI := imageURIFromBundle(b)
 	repository := repositoryFromBundle(b)
 	log.Info().Msg(repository)
@@ -65,7 +65,7 @@ func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
 		},
 	}
 
-	errBuild := cupboard.BuildImage(opts)
+	errBuild := m.BuildImage(opts)
 	if errBuild != nil {
 		return errBuild
 	}
@@ -76,7 +76,7 @@ func (cupboard *Cupboard) Package(b *bundle.Bundle) error {
 	}
 
 	if repoExists {
-		return cupboard.PushImage(imageURI)
+		return m.PushImage(imageURI)
 	}
 
 	log.Info().Msg("Repository does not exist, creating")
@@ -110,7 +110,7 @@ func CreateRepository() error {
 	return nil
 }
 
-func (cupboard *Cupboard) BuildImage(opts BuildOptions) error {
+func (m *RegistryManager) BuildImage(opts BuildOptions) error {
 	log.Info().Msg("Building image")
 	ctx := context.TODO()
 
@@ -127,7 +127,7 @@ func (cupboard *Cupboard) BuildImage(opts BuildOptions) error {
 		// Remove: true,
 	}
 
-	res, errBuild := cupboard.dockerClient.ImageBuild(ctx, tar, cliOpts)
+	res, errBuild := m.dockerClient.ImageBuild(ctx, tar, cliOpts)
 	if errBuild != nil {
 		return errBuild
 	}
@@ -154,8 +154,8 @@ func (cupboard *Cupboard) BuildImage(opts BuildOptions) error {
 	return nil
 }
 
-func (cupboard *Cupboard) ListImages() error {
-	images, err := cupboard.dockerClient.ImageList(context.TODO(), types.ImageListOptions{})
+func (m *RegistryManager) ListImages() error {
+	images, err := m.dockerClient.ImageList(context.TODO(), types.ImageListOptions{})
 	if err != nil {
 		return err
 	}
@@ -178,15 +178,15 @@ func (cupboard *Cupboard) ListImages() error {
 	return nil
 }
 
-func (cupboard *Cupboard) PushImage(imageURI string) error {
+func (m *RegistryManager) PushImage(imageURI string) error {
 	ctx := context.TODO()
-	if cupboard.graphClient == nil {
+	if m.graphClient == nil {
 		return errors.New("graphClient is nil")
 	}
 	orgID := "ord-1"
 	name := "sat-test-6789"
 
-	authToken, err := api.GetToken(cupboard.graphClient, orgID, name)
+	authToken, err := api.GetToken(m.graphClient, orgID, name)
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (cupboard *Cupboard) PushImage(imageURI string) error {
 		return errCfg
 	}
 
-	reader, errPush := cupboard.dockerClient.ImagePush(ctx, imageURI, types.ImagePushOptions{
+	reader, errPush := m.dockerClient.ImagePush(ctx, imageURI, types.ImagePushOptions{
 		// All           bool
 		RegistryAuth: authStr, // RegistryAuth is the base64 encoded credentials for the registry
 		// PrivilegeFunc RequestPrivilegeFunc

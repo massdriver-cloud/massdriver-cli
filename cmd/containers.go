@@ -125,11 +125,11 @@ func runPackageCmd(cmd *cobra.Command, args []string) error {
 		return errPrompt
 	}
 
-	cupboard, errNew := containers.NewCupboard()
+	m, errNew := containers.NewRegistryManager()
 	if errNew != nil {
 		return errNew
 	}
-	errPack := cupboard.Package(b)
+	errPack := m.Package(b)
 	if errPack != nil {
 		return errPack
 	}
