@@ -14,3 +14,8 @@ type Project struct {
 	Slug          string
 	DefaultParams map[string]interface{}
 }
+
+type Deployment struct {
+	ID     string
+	Status string
+}

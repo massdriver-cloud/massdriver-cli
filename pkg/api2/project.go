@@ -1,4 +1,3 @@
-// Manages credential-type artifacts
 package api2
 
 import (

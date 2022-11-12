@@ -4,7 +4,6 @@ import (
 	"os"
 )
 
-// TODO: use generics
 func Contains(s []string, str string) bool {
 	for _, v := range s {
 		if v == str {
@@ -31,7 +30,6 @@ func WriteFile(filePath string, data []byte, errToBytes error) error {
 	return nil
 }
 
-// TODO: use generics
 func RemoveDuplicateValues(stringSlice []string) []string {
 	keysSeen := make(map[string]bool)
 	list := []string{}

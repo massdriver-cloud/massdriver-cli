@@ -13,3 +13,9 @@ query getProjectById($organizationId: ID!, $id: ID!){
     id, defaultParams, slug
   }
 }
+
+query getDeploymentById($organizationId: ID!, $id: ID!){
+  deployment(organizationId: $organizationId, id: $id){
+    id, status
+  }
+}

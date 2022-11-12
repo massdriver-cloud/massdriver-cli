@@ -23,6 +23,7 @@ type Environment struct {
 	Config         string
 }
 
+// TODO Move to api2
 func DeployPreviewEnvironment(client *graphql.Client, orgID string, id string, templateData io.Reader) (*Environment, error) {
 	log.Info().Str("project", id).Msg("Deploying preview environment.")
 
