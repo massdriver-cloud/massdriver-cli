@@ -38,22 +38,22 @@ func buildRows(selected map[string]bool, artifacts []api2.Artifact) []table.Row 
 
 	for _, artifact := range artifacts {
 		selectedIndicator := unchecked
-		// TODO: DRY up a selectable table
-		if _, ok := selected[artifact.Name]; ok {
+		// TODO: DRY up a selectable table "Identity()"
+		if _, ok := selected[artifact.ID]; ok {
 			selectedIndicator = checked
 		}
 
-		// TODO: DRY up a selectable table
-		cloudName := artifact.Name
-		row := table.Row{selectedIndicator, cloudName, artifact.Name}
+		// TODO: DRY up a selectable table "FormatRow()"
+		row := table.Row{selectedIndicator, artifact.Name, artifact.ID}
 		rows = append(rows, row)
 	}
 
 	return rows
 }
 
+// TODO: Add public `ToggleRow(i int)“ error function for testing
 func (m model) toggleSelectedRow() {
-	// TODO: DRY up a selectable table
+	// TODO: DRY up a selectable table "Identity()"
 	selectedArtifact := m.table.SelectedRow()[2]
 
 	if m.selected[selectedArtifact] {
@@ -98,10 +98,11 @@ func (m model) helpView() string {
 }
 
 func New(sourceArtifacts []api2.Artifact) ([]api2.Artifact, error) {
+	// TODO: DRY up a selectable table "Headers()"
 	columns := []table.Column{
 		{Title: checked, Width: 3},
-		{Title: "Cloud", Width: 10},
-		{Title: "Type", Width: 40},
+		{Title: "Name", Width: 40},
+		{Title: "ID", Width: 40},
 	}
 
 	selectedArtifacts := []api2.Artifact{}
@@ -147,10 +148,11 @@ func New(sourceArtifacts []api2.Artifact) ([]api2.Artifact, error) {
 
 		for _, row := range out.rows {
 			// TODO: DRY up a selectable table
-			typeName := row[2]
-			if m.selected[typeName] {
-				// TODO: DRY up a selectable table
-				def := api2.Artifact{Name: typeName}
+			artifactId := row[2]
+			artifactName := row[1]
+			if m.selected[artifactId] {
+				// TODO: DRY up a selectable table "FormatResult()"
+				def := api2.Artifact{Name: artifactName, ID: artifactId}
 				selectedArtifacts = append(selectedArtifacts, def)
 			}
 		}

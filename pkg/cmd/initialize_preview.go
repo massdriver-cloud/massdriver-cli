@@ -3,21 +3,19 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
-
 	"github.com/Khan/genqlient/graphql"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api2"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/views/artifacts_table"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/views/credential_types_table"
 )
 
+// Present the initialize preview workflow
 func InitializePreview(client graphql.Client, orgId string) (map[string]string, error) {
 	selectedArtifactTypes, err := credential_types_table.New(api2.ListCredentialTypes())
 
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("[DEBUG] Selected ArtDefs: %v", selectedArtifactTypes)
 
 	selectedCredentials := map[string]string{}
 
@@ -33,7 +31,6 @@ func InitializePreview(client graphql.Client, orgId string) (map[string]string, 
 }
 
 func initializePreviewPromptForCredentials(client graphql.Client, orgId string, artifacType string) (string, error) {
-	artifactIdMap := map[string]api2.Artifact{}
 	artifactId := ""
 	firstPage, err := api2.ListCredentials(client, orgId, artifacType)
 
@@ -41,35 +38,29 @@ func initializePreviewPromptForCredentials(client graphql.Client, orgId string, 
 		return artifactId, err
 	}
 
-	for _, artifactRecord := range firstPage {
-		artifactIdMap[artifactRecord.Id] = artifactRecord.ToArtifact()
-	}
-
-	options := keys(artifactIdMap)
-
-	if len(options) == 0 {
+	if len(firstPage) == 0 {
 		// User has none of this type of artifact ... should this be an error?
+		fmt.Printf("[INFO] No artifacts of type '%s' found.", artifacType)
 		return "", nil
 	}
 
-	prompt := &survey.Select{
-		Message: "Which credential?",
-		Options: options,
-		Description: func(value string, index int) string {
-			artifactId := options[index]
-			return artifactIdMap[artifactId].Name
-		},
+	artifactList := []api2.Artifact{}
+	for _, artifactRecord := range firstPage {
+		// TODO: call ToArtifact() from ListCredentials
+		artifactList = append(artifactList, artifactRecord.ToArtifact())
 	}
 
-	err = survey.AskOne(prompt, &artifactId)
-
-	return artifactId, err
-}
-
-func keys[K comparable, V any](m map[K]V) []K {
-	keys := make([]K, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
+	// TODO: set the table to only allowing one selection
+	selectedArtifact, err := artifacts_table.New(artifactList)
+	if err != nil {
+		return artifactId, err
 	}
-	return keys
+
+	if len(selectedArtifact) == 0 {
+		return artifactId, err
+	}
+
+	artifactId = selectedArtifact[0].ID
+
+	return artifactId, nil
 }

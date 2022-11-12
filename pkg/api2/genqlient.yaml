@@ -1,6 +1,17 @@
-# Default genqlient config; for full documentation see:
+# For full documentation see:
 # https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+
 schema: schema.graphql
+
 operations:
-- genqlient.graphql
+  - genqlient.graphql
+
 generated: generated.go
+
+package: api2
+
+bindings:
+  JSON:
+    type: map[string]interface{}
+    marshaler: encoding/json.Marshal
+    unmarshaler: encoding/json.Unmarshal

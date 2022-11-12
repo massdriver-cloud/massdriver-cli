@@ -19,7 +19,7 @@ func ListCredentialTypes() []ArtifactDefinition {
 	return credentialArtifactDefinitions
 }
 
-// Get the first page of credentials for an artifac type
+// Get the first page of credentials for an artifact type
 func ListCredentials(client graphql.Client, orgID string, artifacType string) ([]getArtifactsByTypeArtifactsPaginatedArtifactsItemsArtifact, error) {
 	response, err := getArtifactsByType(context.Background(), client, orgID, artifacType)
 

@@ -4,6 +4,8 @@ package api2
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/Khan/genqlient/graphql"
 )
@@ -19,6 +21,18 @@ func (v *__getArtifactsByTypeInput) GetOrganizationId() string { return v.Organi
 
 // GetArtifactType returns __getArtifactsByTypeInput.ArtifactType, and is useful for accessing the field via an interface.
 func (v *__getArtifactsByTypeInput) GetArtifactType() string { return v.ArtifactType }
+
+// __getProjectByIdInput is used internally by genqlient
+type __getProjectByIdInput struct {
+	OrganizationId string `json:"organizationId"`
+	Id             string `json:"id"`
+}
+
+// GetOrganizationId returns __getProjectByIdInput.OrganizationId, and is useful for accessing the field via an interface.
+func (v *__getProjectByIdInput) GetOrganizationId() string { return v.OrganizationId }
+
+// GetId returns __getProjectByIdInput.Id, and is useful for accessing the field via an interface.
+func (v *__getProjectByIdInput) GetId() string { return v.Id }
 
 // getArtifactsByTypeArtifactsPaginatedArtifacts includes the requested fields of the GraphQL type PaginatedArtifacts.
 type getArtifactsByTypeArtifactsPaginatedArtifacts struct {
@@ -59,6 +73,99 @@ func (v *getArtifactsByTypeResponse) GetArtifacts() getArtifactsByTypeArtifactsP
 	return v.Artifacts
 }
 
+// getProjectByIdProject includes the requested fields of the GraphQL type Project.
+type getProjectByIdProject struct {
+	Id            string                 `json:"id"`
+	DefaultParams map[string]interface{} `json:"-"`
+	Slug          string                 `json:"slug"`
+}
+
+// GetId returns getProjectByIdProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectByIdProject) GetId() string { return v.Id }
+
+// GetDefaultParams returns getProjectByIdProject.DefaultParams, and is useful for accessing the field via an interface.
+func (v *getProjectByIdProject) GetDefaultParams() map[string]interface{} { return v.DefaultParams }
+
+// GetSlug returns getProjectByIdProject.Slug, and is useful for accessing the field via an interface.
+func (v *getProjectByIdProject) GetSlug() string { return v.Slug }
+
+func (v *getProjectByIdProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectByIdProject
+		DefaultParams json.RawMessage `json:"defaultParams"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectByIdProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.DefaultParams
+		src := firstPass.DefaultParams
+		if len(src) != 0 && string(src) != "null" {
+			err = json.Unmarshal(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"Unable to unmarshal getProjectByIdProject.DefaultParams: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalgetProjectByIdProject struct {
+	Id string `json:"id"`
+
+	DefaultParams json.RawMessage `json:"defaultParams"`
+
+	Slug string `json:"slug"`
+}
+
+func (v *getProjectByIdProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectByIdProject) __premarshalJSON() (*__premarshalgetProjectByIdProject, error) {
+	var retval __premarshalgetProjectByIdProject
+
+	retval.Id = v.Id
+	{
+
+		dst := &retval.DefaultParams
+		src := v.DefaultParams
+		var err error
+		*dst, err = json.Marshal(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"Unable to marshal getProjectByIdProject.DefaultParams: %w", err)
+		}
+	}
+	retval.Slug = v.Slug
+	return &retval, nil
+}
+
+// getProjectByIdResponse is returned by getProjectById on success.
+type getProjectByIdResponse struct {
+	Project getProjectByIdProject `json:"project"`
+}
+
+// GetProject returns getProjectByIdResponse.Project, and is useful for accessing the field via an interface.
+func (v *getProjectByIdResponse) GetProject() getProjectByIdProject { return v.Project }
+
 func getArtifactsByType(
 	ctx context.Context,
 	client graphql.Client,
@@ -86,6 +193,42 @@ query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 	var err error
 
 	var data getArtifactsByTypeResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+func getProjectById(
+	ctx context.Context,
+	client graphql.Client,
+	organizationId string,
+	id string,
+) (*getProjectByIdResponse, error) {
+	req := &graphql.Request{
+		OpName: "getProjectById",
+		Query: `
+query getProjectById ($organizationId: ID!, $id: ID!) {
+	project(organizationId: $organizationId, id: $id) {
+		id
+		defaultParams
+		slug
+	}
+}
+`,
+		Variables: &__getProjectByIdInput{
+			OrganizationId: organizationId,
+			Id:             id,
+		},
+	}
+	var err error
+
+	var data getProjectByIdResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(

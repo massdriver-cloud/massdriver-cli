@@ -2,6 +2,7 @@ package api_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -15,10 +16,8 @@ func TestDeployPreviewEnvironment(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc(APIURL, func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
-		response := map[string]interface{}{
-			"data": map[string]interface{}{},
-		}
+		fmt.Printf("calling this")
+		response := map[string]interface{}{}
 
 		data, _ := json.Marshal(response)
 		mustWrite(w, string(data))

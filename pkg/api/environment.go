@@ -81,6 +81,7 @@ func DeployPreviewEnvironment(client *graphql.Client, orgID string, id string, t
 		return nil, err
 	}
 
+	fmt.Printf("DEBUG %v", m)
 	if m.EnvironmentPayload.Successful {
 		url := fmt.Sprintf(urlTemplate, id, m.EnvironmentPayload.Result.ID)
 		log.Info().
