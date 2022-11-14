@@ -1,53 +1,94 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/Khan/genqlient/graphql"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api2"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/config"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/views/artifacts_table"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/views/credential_types_table"
+	"github.com/rs/zerolog/log"
 )
 
 // Present the initialize preview workflow
-func InitializePreview(client graphql.Client, orgId string) (map[string]string, error) {
+func InitializePreview(config *config.Config, projectSlugOrID string, previewCfgPath string) error {
+	client := api2.NewClient(config.APIKey)
+	previewCfg, err := DoInitializePreview(client, config.OrgID, projectSlugOrID)
+
+	if err != nil {
+		return err
+	}
+
+	return initializePreviewSerializeCfg(previewCfg, previewCfgPath)
+}
+
+func initializePreviewSerializeCfg(cfg map[string]interface{}, path string) error {
+	previewConf, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, previewConf, 0600)
+	return err
+}
+
+func DoInitializePreview(client graphql.Client, orgID string, projectSlugOrID string) (map[string]interface{}, error) {
+	defaultParams, err := initializePreviewGetProjectDefaultParams(client, orgID, projectSlugOrID)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get project")
+		return nil, err
+	}
+
 	selectedArtifactTypes, err := credential_types_table.New(api2.ListCredentialTypes())
 
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to get artifacts")
 		return nil, err
 	}
 
 	selectedCredentials := map[string]string{}
 
 	for _, t := range selectedArtifactTypes {
-		artifactId, err := initializePreviewPromptForCredentials(client, orgId, t.Name)
+		artifactId, err := initializePreviewPromptForCredentials(client, orgID, t.Name)
 		if err != nil {
 			return nil, err
 		}
 		selectedCredentials[t.Name] = artifactId
 	}
 
-	return selectedCredentials, nil
+	conf := map[string]interface{}{
+		"artifacts":     selectedCredentials,
+		"packageParams": defaultParams,
+	}
+
+	return conf, nil
 }
 
-func initializePreviewPromptForCredentials(client graphql.Client, orgId string, artifacType string) (string, error) {
+func initializePreviewGetProjectDefaultParams(client graphql.Client, orgID string, projectSlugOrID string) (map[string]interface{}, error) {
+	project, err := api2.GetProject(client, orgID, projectSlugOrID)
+	if err != nil {
+		return nil, err
+	}
+
+	return project.DefaultParams, nil
+}
+
+func initializePreviewPromptForCredentials(client graphql.Client, orgID string, artifacType string) (string, error) {
 	artifactId := ""
-	firstPage, err := api2.ListCredentials(client, orgId, artifacType)
+	artifactList, err := api2.ListCredentials(client, orgID, artifacType)
 
 	if err != nil {
 		return artifactId, err
 	}
 
-	if len(firstPage) == 0 {
+	if len(artifactList) == 0 {
 		// User has none of this type of artifact ... should this be an error?
 		fmt.Printf("[INFO] No artifacts of type '%s' found.", artifacType)
 		return "", nil
-	}
-
-	artifactList := []api2.Artifact{}
-	for _, artifactRecord := range firstPage {
-		// TODO: call ToArtifact() from ListCredentials
-		artifactList = append(artifactList, artifactRecord.ToArtifact())
 	}
 
 	// TODO: set the table to only allowing one selection

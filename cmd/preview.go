@@ -1,13 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
-	"github.com/massdriver-cloud/massdriver-cli/pkg/api2"
 	masscmd "github.com/massdriver-cloud/massdriver-cli/pkg/cmd"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/config"
 	"github.com/rs/zerolog/log"
@@ -61,12 +57,12 @@ func runPreviewDeploy(cmd *cobra.Command, args []string) error {
 	}
 
 	client := api.NewClient()
-	environment, err := api.DeployPreviewEnvironment(client, c.OrgId, projectSlugOrId, previewConfig)
+	environment, err := api.DeployPreviewEnvironment(client, c.OrgID, projectSlugOrId, previewConfig)
 
 	_ = environment
 
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get project")
+		log.Error().Err(err).Msg("Failed to deploy environment")
 		return err
 	}
 
@@ -76,43 +72,14 @@ func runPreviewDeploy(cmd *cobra.Command, args []string) error {
 func runPreviewInit(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 	c := config.Get()
-	projectSlugOrId := args[0]
+	projectSlugOrID := args[0]
 
-	client := api.NewClient()
-	project, err := api.GetProject(client, c.OrgId, projectSlugOrId)
+	err := masscmd.InitializePreview(c, projectSlugOrID, previewParamsPath)
 
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get project")
-		return err
-	}
-
-	client2 := api2.NewClient(c.APIKey)
-	selectedArtifacts, err := masscmd.InitializePreview(client2, c.OrgId)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get artifacts")
-		return err
-	}
-
-	fmt.Printf("Artifacts: %v\n", selectedArtifacts)
-	fmt.Printf("Default Params: %v\n", project.DefaultParams)
-
-	conf := map[string]interface{}{
-		"artifacts":     selectedArtifacts,
-		"packageParams": project.DefaultParams,
-	}
-
-	log.Info().Str("id", project.ID).Str("slug", project.Slug).Msgf("Preview environment default parameters output to %s", previewParamsPath)
-	return writePreviewConfigFile(conf, previewParamsPath)
-}
-
-func writePreviewConfigFile(conf map[string]interface{}, path string) error {
-
-	previewConf, err := json.MarshalIndent(conf, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, previewConf, 0600)
-	return err
+	log.Info().Str("id", projectSlugOrID).Msgf("Preview environment default parameters output to %s", previewParamsPath)
+	return nil
 }

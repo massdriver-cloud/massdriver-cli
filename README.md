@@ -30,3 +30,10 @@ Next you'll need to build your bundle. This will convert your params and connect
 ```shell
 mass bundle build
 ```
+
+## Active Refactoring
+
+* `./cmd` - Cobra commands; args / flags parsing, calls to domain commands (`./pkg/cmd`)
+* `./pkg/cmd` - high level testable commands; leave out cobra specifics
+* `./pkg/api2` - GraphQL queries/mutations written w/ Genqclient (actively migrating)
+* `./pkg/views` - Bubbletea interfaces used by applicable `./pkg/cmd`s

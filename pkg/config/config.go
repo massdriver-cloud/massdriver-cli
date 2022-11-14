@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	OrgId  string `env:"MASSDRIVER_ORG_ID,required"`
+	OrgID  string `env:"MASSDRIVER_ORG_ID,required"`
 	APIKey string `env:"MASSDRIVER_API_KEY,required"`
 }
 

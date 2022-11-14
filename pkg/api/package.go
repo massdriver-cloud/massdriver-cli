@@ -1,5 +1,3 @@
-// TODO: consider: https://github.com/Khan/genqlient (need to look into testing w/ it, but looks nice for a lot of queries)
-// TODO: websocket or longpoll gql subscription - there isnt a phoenix socket impl for golang I could find, so we'll probably have to longpoll
 package api
 
 import (
