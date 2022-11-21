@@ -9,12 +9,16 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 )
 
+const (
+	DevParamsFilename = "_params.auto.json"
+	DevConnectionsFilename = "_connections.auto.json"
+	DevMDFilename = "_md_variables.auto.json"
+)
+
 func GenerateFiles(bundlePath string, srcDir string) error {
 	massdriverVariables := map[string]interface{}{
-		"variable": map[string]interface{}{
-			"md_metadata": map[string]string{
-				"type": "any",
-			},
+		"md_metadata": map[string]string{
+			"type": "any",
 		},
 	}
 
@@ -36,7 +40,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 		return err
 	}
 
-	massdriverVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, "_md_variables.tf.json"))
+	massdriverVariablesFile, err := os.Create(path.Join(bundlePath, srcDir, "_md_variables.json"))
 	if err != nil {
 		return err
 	}
@@ -48,8 +52,36 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	devParamPath := path.Join(bundlePath, "src", common.DevParamsFilename)
+	devParamPath := path.Join(bundlePath, "src", DevParamsFilename)
 	devParamsVariablesFile, err := os.OpenFile(devParamPath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil { // fall back to create missing file
+		devParamsVariablesFile, err = os.Create(devParamPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = CompileDevParams(devParamPath, devParamsVariablesFile)
+	if err != nil {
+		return fmt.Errorf("error compiling dev params: %w", err)
+	}
+
+	conParamPath := path.Join(bundlePath, "src", DevConnectionsFilename)
+	devParamsVariablesFile, err = os.OpenFile(conParamPath, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil { // fall back to create missing file
+		devParamsVariablesFile, err = os.Create(devParamPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = CompileDevParams(devParamPath, devParamsVariablesFile)
+	if err != nil {
+		return fmt.Errorf("error compiling dev params: %w", err)
+	}
+
+	mdParamPath := path.Join(bundlePath, "src", DevMDFilename)
+	devParamsVariablesFile, err = os.OpenFile(mdParamPath, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil { // fall back to create missing file
 		devParamsVariablesFile, err = os.Create(devParamPath)
 		if err != nil {
