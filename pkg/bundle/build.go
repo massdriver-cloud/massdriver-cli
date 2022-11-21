@@ -5,6 +5,7 @@ import (
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/cdk8s"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/provisioners/terraform"
 
 	"github.com/rs/zerolog/log"
@@ -37,6 +38,12 @@ func (b *Bundle) Build(c *client.MassdriverClient, output string) error {
 		switch step.Provisioner {
 		case "terraform":
 			err = terraform.GenerateFiles(output, step.Path)
+			if err != nil {
+				log.Error().Err(err).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
+				return err
+			}
+		case "cdk8s":
+			err = cdk8s.GenerateFiles(output, step.Path)
 			if err != nil {
 				log.Error().Err(err).Str("provisioner", step.Provisioner).Msg("an error occurred while generating provisioner files")
 				return err
