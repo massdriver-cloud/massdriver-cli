@@ -65,13 +65,13 @@ func DoDeployPreviewEnvironment(client graphql.Client, orgID string, id string, 
 
 func DeployPreviewEnvironment(client graphql.Client, orgID string, id string, previewConfigPath string, ciContextPath string) (*api2.Environment, error) {
 	ciContext := map[string]interface{}{}
-	err := readJsonFile(ciContextPath, &ciContext)
+	err := readJSONFile(ciContextPath, &ciContext)
 	if err != nil {
 		return nil, err
 	}
 
 	previewConfig := previewConfig{}
-	err = readJsonFile(previewConfigPath, &previewConfig)
+	err = readJSONFile(previewConfigPath, &previewConfig)
 
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, id string, pr
 	return DoDeployPreviewEnvironment(client, orgID, id, previewConfig.GetCredentials(), previewConfig.PackageParams, ciContext)
 }
 
-func readJsonFile(filename string, v interface{}) error {
+func readJSONFile(filename string, v interface{}) error {
 	fileBytes, err := os.ReadFile(filename)
 
 	if err != nil {
