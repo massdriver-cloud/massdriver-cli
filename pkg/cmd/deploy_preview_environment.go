@@ -80,7 +80,7 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, id string, pr
 	return DoDeployPreviewEnvironment(client, orgID, id, previewConfig.GetCredentials(), previewConfig.PackageParams, ciContext)
 }
 
-func readJsonFile(filename string, v any) error {
+func readJsonFile(filename string, v interface{}) error {
 	fileBytes, err := os.ReadFile(filename)
 
 	if err != nil {
