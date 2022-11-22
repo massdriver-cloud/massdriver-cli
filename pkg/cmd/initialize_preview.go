@@ -80,11 +80,11 @@ func initializePreviewGetProjectDefaultParams(client graphql.Client, orgID strin
 }
 
 func initializePreviewPromptForCredentials(client graphql.Client, orgID string, artifacType string) (string, error) {
-	artifactId := ""
+	artifactID := ""
 	artifactList, err := api2.ListCredentials(client, orgID, artifacType)
 
 	if err != nil {
-		return artifactId, err
+		return artifactID, err
 	}
 
 	if len(artifactList) == 0 {
@@ -96,14 +96,14 @@ func initializePreviewPromptForCredentials(client graphql.Client, orgID string, 
 	// TODO: set the table to only allowing one selection
 	selectedArtifact, err := artifacts_table.New(artifactList)
 	if err != nil {
-		return artifactId, err
+		return artifactID, err
 	}
 
 	if len(selectedArtifact) == 0 {
-		return artifactId, err
+		return artifactID, err
 	}
 
-	artifactId = selectedArtifact[0].ID
+	artifactID = selectedArtifact[0].ID
 
-	return artifactId, nil
+	return artifactID, nil
 }

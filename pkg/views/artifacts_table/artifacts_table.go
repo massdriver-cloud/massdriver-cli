@@ -154,11 +154,11 @@ func New(sourceArtifacts []api2.Artifact) ([]api2.Artifact, error) {
 
 		for _, row := range out.rows {
 			// TODO: DRY up a selectable table
-			artifactId := row[2]
+			artifactID := row[2]
 			artifactName := row[1]
-			if m.selected[artifactId] {
+			if m.selected[artifactID] {
 				// TODO: DRY up a selectable table "FormatResult()"
-				def := api2.Artifact{Name: artifactName, ID: artifactId}
+				def := api2.Artifact{Name: artifactName, ID: artifactID}
 				selectedArtifacts = append(selectedArtifacts, def)
 			}
 		}
