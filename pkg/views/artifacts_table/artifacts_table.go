@@ -1,3 +1,4 @@
+// nolint
 // TODO: refactor w/ credential_types to make a bubble tea module for table selection
 // with input testing
 // https://github.com/charmbracelet/bubbles/blob/master/textarea/textarea_test.go#L445

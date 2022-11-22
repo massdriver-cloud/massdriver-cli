@@ -55,11 +55,11 @@ func DoInitializePreview(client graphql.Client, orgID string, projectSlugOrID st
 	selectedCredentials := map[string]string{}
 
 	for _, t := range selectedArtifactTypes {
-		artifactId, err := initializePreviewPromptForCredentials(client, orgID, t.Name)
-		if err != nil {
-			return nil, err
+		artifactID, credErr := initializePreviewPromptForCredentials(client, orgID, t.Name)
+		if credErr != nil {
+			return nil, credErr
 		}
-		selectedCredentials[t.Name] = artifactId
+		selectedCredentials[t.Name] = artifactID
 	}
 
 	conf := map[string]interface{}{

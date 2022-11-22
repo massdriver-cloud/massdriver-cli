@@ -170,8 +170,8 @@ func checkDeploymentStatus(client *gql.Client, orgID string, id string, timeout 
 		log.Debug().Str("deploymentId", id).Msg("Deployment completed")
 		return &deployment, nil
 	case "FAILED":
-		log.Debug().Str("deploymentId", id).Msg("Deployment failed")
-		return nil, errors.New("Deployment failed")
+		log.Debug().Str("deploymentId", id).Msg("deployment failed")
+		return nil, errors.New("deployment failed")
 	default:
 		time.Sleep(deploymentStatusSleep)
 		return checkDeploymentStatus(client, orgID, id, timeout)
