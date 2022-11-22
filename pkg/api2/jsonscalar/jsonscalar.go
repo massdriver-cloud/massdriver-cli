@@ -10,6 +10,6 @@ func Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(string(bytes))
 }
 
-func Unmarshal(data []byte, v any) error {
+func Unmarshal(data []byte, v interface{}) error {
 	return errors.New("Unimplemented")
 }
