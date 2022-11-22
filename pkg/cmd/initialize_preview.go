@@ -61,7 +61,7 @@ func DoInitializePreview(client graphql.Client, orgID string, projectSlugOrID st
 	}
 
 	conf := map[string]interface{}{
-		"artifacts":     selectedCredentials,
+		"credentials":   selectedCredentials,
 		"packageParams": defaultParams,
 	}
 

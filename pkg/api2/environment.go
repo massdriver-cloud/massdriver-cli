@@ -2,8 +2,11 @@ package api2
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/rs/zerolog/log"
 )
 
 func DeployPreviewEnvironment(client graphql.Client, orgID string, projectID string, credentials []Credential, packageParams map[string]interface{}, ciContext map[string]interface{}) (Environment, error) {
@@ -29,14 +32,11 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, projectID str
 		return env, nil
 	}
 
-	// TODO return mutation errors
-	// log.Error().Str("project", id).Msg("Preview environment deployment failed.")
-	// msgs, err := json.Marshal(previewEnv.DeployPreviewEnvironment.Messages)
-	// if err != nil {
-	// 	return &environment, fmt.Errorf("failed to deploy preview environment and couldn't marshal error messages: %w", err)
-	// }
+	log.Error().Str("project", projectID).Msg("Preview environment deployment failed.")
+	msgs, err := json.Marshal(response.DeployPreviewEnvironment.Messages)
+	if err != nil {
+		return env, fmt.Errorf("failed to deploy preview environment and couldn't marshal error messages: %w", err)
+	}
 
-	// return &environment, fmt.Errorf("failed to deploy environment: %v", string(msgs))
-
-	return Environment{}, err
+	return env, fmt.Errorf("failed to deploy environment: %v", string(msgs))
 }

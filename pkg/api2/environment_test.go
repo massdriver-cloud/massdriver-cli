@@ -15,7 +15,8 @@ func TestDeployPreviewEnvironment(t *testing.T) {
 	mux.HandleFunc(APIURL, func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		// TODO: This isn't necessary just here for my sanity trying to debug JSON! w/ genqlient
+		// Parse the body input variable to get a pr number
+		// Confirm that it gets JSON encoded and escaped
 		var params map[string]interface{}
 		json.NewDecoder(req.Body).Decode(&params)
 		input := params["variables"].(map[string]interface{})["input"]
@@ -63,13 +64,12 @@ func TestDeployPreviewEnvironment(t *testing.T) {
 
 	environment, err := api2.DeployPreviewEnvironment(client, "faux-org-id", "faux-project-id", credentials, confMap, ciContext)
 
-	// TODO test interpolation GITHUB_PR, etc
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	got := environment.ID
-	want := "env-uuid1"
+	got := environment.Slug
+	want := "p69"
 
 	if got != want {
 		t.Errorf("got %s , wanted %s", got, want)

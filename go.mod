@@ -10,6 +10,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/hasura/go-graphql-client v0.8.0
 	github.com/manifoldco/promptui v0.9.0
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/rs/zerolog v1.26.1
 	github.com/sethvargo/go-envconfig v0.8.2
 	github.com/spf13/cobra v1.5.0
