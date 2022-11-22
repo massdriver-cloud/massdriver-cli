@@ -1,4 +1,4 @@
-// nolint
+//nolint:errcheck
 package api2_test
 
 import (

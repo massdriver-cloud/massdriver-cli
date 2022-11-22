@@ -1,7 +1,8 @@
-// nolint
 // TODO: refactor w/ credential_types to make a bubble tea module for table selection
 // with input testing
 // https://github.com/charmbracelet/bubbles/blob/master/textarea/textarea_test.go#L445
+//
+//nolint:revive,stylecheck
 package artifacts_table
 
 import (
@@ -69,6 +70,7 @@ func (m model) toggleSelectedRow() {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	//nolint:gocritic
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {

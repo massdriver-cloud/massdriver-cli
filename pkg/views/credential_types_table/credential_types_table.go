@@ -1,4 +1,4 @@
-// nolint
+//nolint:revive,stylecheck
 package credential_types_table
 
 import (
@@ -63,6 +63,7 @@ func (m model) toggleSelectedRow() {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	//nolint:gocritic
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -96,6 +97,7 @@ func (m model) helpView() string {
 }
 
 func New(defTypes []api2.ArtifactDefinition) ([]api2.ArtifactDefinition, error) {
+	//nolint:gomnd
 	columns := []table.Column{
 		{Title: checked, Width: 3},
 		{Title: "Cloud", Width: 10},
@@ -106,6 +108,7 @@ func New(defTypes []api2.ArtifactDefinition) ([]api2.ArtifactDefinition, error) 
 	selected := map[string]bool{}
 	rows := buildRows(map[string]bool{}, defTypes)
 
+	//nolint:gomnd
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
