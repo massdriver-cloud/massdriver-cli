@@ -13,5 +13,5 @@ package: api2
 bindings:
   JSON:
     type: map[string]interface{}
-    marshaler: encoding/json.Marshal
-    unmarshaler: encoding/json.Unmarshal
+    marshaler: github.com/massdriver-cloud/massdriver-cli/pkg/api2/jsonscalar.Marshal
+    # unmarshaler: github.com/massdriver-cloud/massdriver-cli/pkg/api2/jsonscalar.Unmarshal

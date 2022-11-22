@@ -19,3 +19,13 @@ query getDeploymentById($organizationId: ID!, $id: ID!){
     id, status
   }
 }
+
+mutation deployPreviewEnvironment($orgId: ID!, $projectId: ID!, $input: PreviewEnvironmentInput!) {
+  deployPreviewEnvironment(projectId: $projectId, organizationId: $orgId, input: $input) {
+    successful
+    result {id, slug}
+    messages {
+      message
+    }
+  }
+}

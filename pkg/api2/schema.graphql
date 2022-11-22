@@ -68,7 +68,7 @@ type BlueprintLinkSource {
 
 input ArtifactsInput {
   "The number of items to return."
-  first: Int
+  limit: Int
 
   "A cursor pointing to an item. Instructs the API to return items after the cursor."
   after: String
@@ -78,8 +78,8 @@ input ArtifactsInput {
 
 "A template of a manifest to with a specific role in the architecture."
 type BlueprintPart {
-  "The name of this template manifest."
-  name: String!
+  "The role of this template manifest."
+  role: String!
 
   "The description of this template manifest."
   description: String
@@ -247,6 +247,16 @@ type ProjectDeletionLifecyclePackageError {
   package: Package!
   message: String!
   target: Target
+}
+
+type GraphPosition {
+  x: Int
+  y: Int
+}
+
+input Credential {
+  artifactDefinitionType: String!
+  artifactId: ID!
 }
 
 type Target {
@@ -446,6 +456,11 @@ input BlueprintInput {
   part: BlueprintInputPart
 }
 
+input GraphPositionParams {
+  x: Int!
+  y: Int!
+}
+
 "Artifact definition filters"
 input ArtifactDefinitionFilters {
   "The service for which to get compatible artifact definitions"
@@ -621,6 +636,7 @@ type Manifest {
   slug: String!
   suffix: String!
   description: String
+  position: GraphPosition
   deletable: ManifestDeletionLifecycle!
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -632,8 +648,8 @@ type Manifest {
 union BlueprintComponent = BlueprintPart | BlueprintChoice
 
 input BlueprintInputPart {
-  "The name of this template manifest."
-  name: String!
+  "The role of this template manifest."
+  role: String!
 
   "The description of this template manifest."
   description: String
@@ -866,7 +882,7 @@ input ManifestParams {
   "The description for the created manifest."
   description: String
 
-  "The name of the blueprint part that the manifest will be created from."
+  "The role of the blueprint part that the manifest will be created from."
   role: String!
 }
 
@@ -999,7 +1015,7 @@ enum AlarmState {
 
 input ProviderResourcesInput {
   "The number of items to return."
-  first: Int
+  limit: Int
 
   "A cursor pointing to an item. Instructs the API to return items after the cursor."
   after: String
@@ -1132,6 +1148,15 @@ input BlueprintInputLinkSource {
   srcField: String!
 }
 
+input PreviewEnvironmentInput {
+  credentials: [Credential]
+
+  "GitHub Action event payload."
+  ciContext: JSON!
+
+  packageParams: JSON!
+}
+
 type Deployment {
   id: ID!
 
@@ -1252,6 +1277,8 @@ type RootMutationType {
   "Instantiate the architecture with the provided ID into the given project with the provided set of manifest configurations."
   instantiateArchitecture(id: ID!, organizationId: ID!, projectId: ID!, manifests: [ManifestParams!]!): InstantiatedArchitecture
 
+  diagramToArchitecture(organizationId: ID!, projectId: ID!): ArchitecturePayload!
+
   createBillingSubscription(organizationId: ID!, planId: ID!): BillingSubscriptionPayload
 
   createContainerRepository(organizationId: ID!, name: String!, location: String!, artifactId: ID!, cloud: String!): ContainerRepositoryPayload
@@ -1290,6 +1317,9 @@ type RootMutationType {
   "Removes a manifest from a project. This will fail if infrastructure is still provisioned in a target."
   deleteManifest(organizationId: ID!, id: ID!): ManifestPayload
 
+  "Set the manifest position in the graph page"
+  setManifestPosition(organizationId: ID!, id: ID!, params: GraphPositionParams!): ManifestPayload
+
   "Create an organization"
   createOrganization(name: String!, slug: String!): OrganizationPayload
 
@@ -1319,10 +1349,8 @@ type RootMutationType {
   "Create a target"
   createTarget(organizationId: ID!, projectId: ID!, name: String!, slug: String!, description: String): TargetPayload
 
-  "Create a Preview Environment"
-  createPreviewEnvironment(
-    organizationId: ID!, projectId: ID!, name: String!, slug: String!, description: String, prMetadata: JSON!, envParams: JSON!
-  ): TargetPayload
+  "Deploy a Preview Environment"
+  deployPreviewEnvironment(organizationId: ID!, projectId: ID!, input: PreviewEnvironmentInput!): TargetPayload
 
   "Update a target"
   updateTarget(organizationId: ID!, id: ID!, name: String!, description: String): TargetPayload

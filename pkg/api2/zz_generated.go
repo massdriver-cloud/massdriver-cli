@@ -8,7 +8,145 @@ import (
 	"fmt"
 
 	"github.com/Khan/genqlient/graphql"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api2/jsonscalar"
 )
+
+type Credential struct {
+	ArtifactDefinitionType string `json:"artifactDefinitionType"`
+	ArtifactId             string `json:"artifactId"`
+}
+
+// GetArtifactDefinitionType returns Credential.ArtifactDefinitionType, and is useful for accessing the field via an interface.
+func (v *Credential) GetArtifactDefinitionType() string { return v.ArtifactDefinitionType }
+
+// GetArtifactId returns Credential.ArtifactId, and is useful for accessing the field via an interface.
+func (v *Credential) GetArtifactId() string { return v.ArtifactId }
+
+type PreviewEnvironmentInput struct {
+	Credentials []Credential `json:"credentials"`
+	// GitHub Action event payload.
+	CiContext     map[string]interface{} `json:"-"`
+	PackageParams map[string]interface{} `json:"-"`
+}
+
+// GetCredentials returns PreviewEnvironmentInput.Credentials, and is useful for accessing the field via an interface.
+func (v *PreviewEnvironmentInput) GetCredentials() []Credential { return v.Credentials }
+
+// GetCiContext returns PreviewEnvironmentInput.CiContext, and is useful for accessing the field via an interface.
+func (v *PreviewEnvironmentInput) GetCiContext() map[string]interface{} { return v.CiContext }
+
+// GetPackageParams returns PreviewEnvironmentInput.PackageParams, and is useful for accessing the field via an interface.
+func (v *PreviewEnvironmentInput) GetPackageParams() map[string]interface{} { return v.PackageParams }
+
+func (v *PreviewEnvironmentInput) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*PreviewEnvironmentInput
+		CiContext     json.RawMessage `json:"ciContext"`
+		PackageParams json.RawMessage `json:"packageParams"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.PreviewEnvironmentInput = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.CiContext
+		src := firstPass.CiContext
+		if len(src) != 0 && string(src) != "null" {
+			err = json.Unmarshal(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal PreviewEnvironmentInput.CiContext: %w", err)
+			}
+		}
+	}
+
+	{
+		dst := &v.PackageParams
+		src := firstPass.PackageParams
+		if len(src) != 0 && string(src) != "null" {
+			err = json.Unmarshal(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"unable to unmarshal PreviewEnvironmentInput.PackageParams: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalPreviewEnvironmentInput struct {
+	Credentials []Credential `json:"credentials"`
+
+	CiContext json.RawMessage `json:"ciContext"`
+
+	PackageParams json.RawMessage `json:"packageParams"`
+}
+
+func (v *PreviewEnvironmentInput) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *PreviewEnvironmentInput) __premarshalJSON() (*__premarshalPreviewEnvironmentInput, error) {
+	var retval __premarshalPreviewEnvironmentInput
+
+	retval.Credentials = v.Credentials
+	{
+
+		dst := &retval.CiContext
+		src := v.CiContext
+		var err error
+		*dst, err = jsonscalar.Marshal(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal PreviewEnvironmentInput.CiContext: %w", err)
+		}
+	}
+	{
+
+		dst := &retval.PackageParams
+		src := v.PackageParams
+		var err error
+		*dst, err = jsonscalar.Marshal(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"unable to marshal PreviewEnvironmentInput.PackageParams: %w", err)
+		}
+	}
+	return &retval, nil
+}
+
+// __deployPreviewEnvironmentInput is used internally by genqlient
+type __deployPreviewEnvironmentInput struct {
+	OrgId     string                  `json:"orgId"`
+	ProjectId string                  `json:"projectId"`
+	Input     PreviewEnvironmentInput `json:"input"`
+}
+
+// GetOrgId returns __deployPreviewEnvironmentInput.OrgId, and is useful for accessing the field via an interface.
+func (v *__deployPreviewEnvironmentInput) GetOrgId() string { return v.OrgId }
+
+// GetProjectId returns __deployPreviewEnvironmentInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__deployPreviewEnvironmentInput) GetProjectId() string { return v.ProjectId }
+
+// GetInput returns __deployPreviewEnvironmentInput.Input, and is useful for accessing the field via an interface.
+func (v *__deployPreviewEnvironmentInput) GetInput() PreviewEnvironmentInput { return v.Input }
 
 // __getArtifactsByTypeInput is used internally by genqlient
 type __getArtifactsByTypeInput struct {
@@ -45,6 +183,92 @@ func (v *__getProjectByIdInput) GetOrganizationId() string { return v.Organizati
 
 // GetId returns __getProjectByIdInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectByIdInput) GetId() string { return v.Id }
+
+// deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload includes the requested fields of the GraphQL type TargetPayload.
+type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload struct {
+	// Indicates if the mutation completed successfully or not.
+	Successful bool `json:"successful"`
+	// The object created/updated/deleted by the mutation. May be null if mutation failed.
+	Result deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget `json:"result"`
+	// A list of failed validations. May be blank or null if mutation succeeded.
+	Messages []deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage `json:"messages"`
+}
+
+// GetSuccessful returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload.Successful, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload) GetSuccessful() bool {
+	return v.Successful
+}
+
+// GetResult returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload.Result, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload) GetResult() deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget {
+	return v.Result
+}
+
+// GetMessages returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload.Messages, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload) GetMessages() []deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage {
+	return v.Messages
+}
+
+// deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage includes the requested fields of the GraphQL type ValidationMessage.
+// The GraphQL type's documentation follows.
+//
+// Validation messages are returned when mutation input does not meet the requirements.
+// While client-side validation is highly recommended to provide the best User Experience,
+// All inputs will always be validated server-side.
+//
+// Some examples of validations are:
+//
+// * Username must be at least 10 characters
+// * Email field does not contain an email address
+// * Birth Date is required
+//
+// While GraphQL has support for required values, mutation data fields are always
+// set to optional in our API. This allows 'required field' messages
+// to be returned in the same manner as other validations. The only exceptions
+// are id fields, which may be required to perform updates or deletes.
+type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage struct {
+	// A friendly error message, appropriate for display to the end user.
+	//
+	// The message is interpolated to include the appropriate variables.
+	//
+	// Example: `Username must be at least 10 characters`
+	//
+	// This message may change without notice, so we do not recommend you match against the text.
+	// Instead, use the *code* field for matching.
+	Message string `json:"message"`
+}
+
+// GetMessage returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage.Message, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesValidationMessage) GetMessage() string {
+	return v.Message
+}
+
+// deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget includes the requested fields of the GraphQL type Target.
+type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget struct {
+	Id   string `json:"id"`
+	Slug string `json:"slug"`
+}
+
+// GetId returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Id, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetId() string {
+	return v.Id
+}
+
+// GetSlug returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Slug, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetSlug() string {
+	return v.Slug
+}
+
+// deployPreviewEnvironmentResponse is returned by deployPreviewEnvironment on success.
+type deployPreviewEnvironmentResponse struct {
+	// Deploy a Preview Environment
+	DeployPreviewEnvironment deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload `json:"deployPreviewEnvironment"`
+}
+
+// GetDeployPreviewEnvironment returns deployPreviewEnvironmentResponse.DeployPreviewEnvironment, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentResponse) GetDeployPreviewEnvironment() deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload {
+	return v.DeployPreviewEnvironment
+}
 
 // getArtifactsByTypeArtifactsPaginatedArtifacts includes the requested fields of the GraphQL type PaginatedArtifacts.
 type getArtifactsByTypeArtifactsPaginatedArtifacts struct {
@@ -147,7 +371,7 @@ func (v *getProjectByIdProject) UnmarshalJSON(b []byte) error {
 				src, dst)
 			if err != nil {
 				return fmt.Errorf(
-					"Unable to unmarshal getProjectByIdProject.DefaultParams: %w", err)
+					"unable to unmarshal getProjectByIdProject.DefaultParams: %w", err)
 			}
 		}
 	}
@@ -179,11 +403,11 @@ func (v *getProjectByIdProject) __premarshalJSON() (*__premarshalgetProjectByIdP
 		dst := &retval.DefaultParams
 		src := v.DefaultParams
 		var err error
-		*dst, err = json.Marshal(
+		*dst, err = jsonscalar.Marshal(
 			&src)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"Unable to marshal getProjectByIdProject.DefaultParams: %w", err)
+				"unable to marshal getProjectByIdProject.DefaultParams: %w", err)
 		}
 	}
 	retval.Slug = v.Slug
@@ -198,15 +422,54 @@ type getProjectByIdResponse struct {
 // GetProject returns getProjectByIdResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectByIdResponse) GetProject() getProjectByIdProject { return v.Project }
 
-func getArtifactsByType(
+// The query or mutation executed by deployPreviewEnvironment.
+const deployPreviewEnvironmentOperation = `
+mutation deployPreviewEnvironment ($orgId: ID!, $projectId: ID!, $input: PreviewEnvironmentInput!) {
+	deployPreviewEnvironment(projectId: $projectId, organizationId: $orgId, input: $input) {
+		successful
+		result {
+			id
+			slug
+		}
+		messages {
+			message
+		}
+	}
+}
+`
+
+func deployPreviewEnvironment(
 	ctx context.Context,
 	client graphql.Client,
-	organizationId string,
-	artifactType string,
-) (*getArtifactsByTypeResponse, error) {
+	orgId string,
+	projectId string,
+	input PreviewEnvironmentInput,
+) (*deployPreviewEnvironmentResponse, error) {
 	req := &graphql.Request{
-		OpName: "getArtifactsByType",
-		Query: `
+		OpName: "deployPreviewEnvironment",
+		Query:  deployPreviewEnvironmentOperation,
+		Variables: &__deployPreviewEnvironmentInput{
+			OrgId:     orgId,
+			ProjectId: projectId,
+			Input:     input,
+		},
+	}
+	var err error
+
+	var data deployPreviewEnvironmentResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
+// The query or mutation executed by getArtifactsByType.
+const getArtifactsByTypeOperation = `
 query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 	artifacts(organizationId: $organizationId, input: {filter:{type:$artifactType}}) {
 		next
@@ -216,7 +479,17 @@ query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 		}
 	}
 }
-`,
+`
+
+func getArtifactsByType(
+	ctx context.Context,
+	client graphql.Client,
+	organizationId string,
+	artifactType string,
+) (*getArtifactsByTypeResponse, error) {
+	req := &graphql.Request{
+		OpName: "getArtifactsByType",
+		Query:  getArtifactsByTypeOperation,
 		Variables: &__getArtifactsByTypeInput{
 			OrganizationId: organizationId,
 			ArtifactType:   artifactType,
@@ -236,6 +509,16 @@ query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 	return &data, err
 }
 
+// The query or mutation executed by getDeploymentById.
+const getDeploymentByIdOperation = `
+query getDeploymentById ($organizationId: ID!, $id: ID!) {
+	deployment(organizationId: $organizationId, id: $id) {
+		id
+		status
+	}
+}
+`
+
 func getDeploymentById(
 	ctx context.Context,
 	client graphql.Client,
@@ -244,14 +527,7 @@ func getDeploymentById(
 ) (*getDeploymentByIdResponse, error) {
 	req := &graphql.Request{
 		OpName: "getDeploymentById",
-		Query: `
-query getDeploymentById ($organizationId: ID!, $id: ID!) {
-	deployment(organizationId: $organizationId, id: $id) {
-		id
-		status
-	}
-}
-`,
+		Query:  getDeploymentByIdOperation,
 		Variables: &__getDeploymentByIdInput{
 			OrganizationId: organizationId,
 			Id:             id,
@@ -271,6 +547,17 @@ query getDeploymentById ($organizationId: ID!, $id: ID!) {
 	return &data, err
 }
 
+// The query or mutation executed by getProjectById.
+const getProjectByIdOperation = `
+query getProjectById ($organizationId: ID!, $id: ID!) {
+	project(organizationId: $organizationId, id: $id) {
+		id
+		defaultParams
+		slug
+	}
+}
+`
+
 func getProjectById(
 	ctx context.Context,
 	client graphql.Client,
@@ -279,15 +566,7 @@ func getProjectById(
 ) (*getProjectByIdResponse, error) {
 	req := &graphql.Request{
 		OpName: "getProjectById",
-		Query: `
-query getProjectById ($organizationId: ID!, $id: ID!) {
-	project(organizationId: $organizationId, id: $id) {
-		id
-		defaultParams
-		slug
-	}
-}
-`,
+		Query:  getProjectByIdOperation,
 		Variables: &__getProjectByIdInput{
 			OrganizationId: organizationId,
 			Id:             id,

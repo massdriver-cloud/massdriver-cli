@@ -2,6 +2,9 @@ INSTALL_PATH ?= /usr/local/bin
 GIT_SHA := $(shell git log -1 --pretty=format:"%H")
 LD_FLAGS := "-X github.com/massdriver-cloud/massdriver-cli/pkg/version.version=dev -X github.com/massdriver-cloud/massdriver-cli/pkg/version.gitSHA=local-dev-${GIT_SHA}"
 
+MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MKFILE_DIR := $(dir $(MKFILE_PATH))
+
 .PHONY: test
 test:
 	go test ./cmd
@@ -32,3 +35,12 @@ install.macos: build
 .PHONY: install.linux
 install.linux: build.linux
 	cp -f bin/mass-linux-amd64 ${INSTALL_PATH}/mass
+
+# build the api2 client
+MASSDRIVER_PATH?=../massdriver
+API2_PATH?=${MKFILE_DIR}/pkg/api2
+api:
+	cd ${MASSDRIVER_PATH} && \
+		mix absinthe.schema.sdl ${API2_PATH}/schema.graphql && \
+		cd ${API2_PATH} && \
+		go generate

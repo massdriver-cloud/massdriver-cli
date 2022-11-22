@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"os"
-
-	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api2"
 	masscmd "github.com/massdriver-cloud/massdriver-cli/pkg/cmd"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/config"
 	"github.com/rs/zerolog/log"
@@ -50,22 +48,15 @@ func runPreviewDeploy(cmd *cobra.Command, args []string) error {
 
 	projectSlugOrId := args[0]
 
-	previewConfig, err := os.Open(previewParamsPath)
-
-	if err != nil {
-		return err
-	}
-
-	client := api.NewClient()
-	environment, err := api.DeployPreviewEnvironment(client, c.OrgID, projectSlugOrId, previewConfig)
-
-	_ = environment
+	client := api2.NewClient(c.APIKey)
+	environment, err := masscmd.DeployPreviewEnvironment(client, c.OrgID, projectSlugOrId, previewParamsPath, previewCiContextPath)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to deploy environment")
 		return err
 	}
 
+	log.Info().Str("id", environment.ID).Str("Config", previewParamsPath).Msgf("Preview environment deploying.")
 	return nil
 }
 

@@ -2,8 +2,8 @@ github.com/99designs/gqlgen v0.17.2/go.mod h1:K5fzLKwtph+FFgh9j7nFbRUdBKvTcGnsta
 github.com/AlecAivazis/survey/v2 v2.3.7-0.20221107161134-b54ce3849e47 h1:nrcd9kR1EhiXfmhvqxhJfsD0mnxoopMrzTs2nqSWe10=
 github.com/AlecAivazis/survey/v2 v2.3.7-0.20221107161134-b54ce3849e47/go.mod h1:4AuI9b7RjAR+G7v9+C4YSlX/YL3K3cWNXgWXOhllqvI=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/Khan/genqlient v0.5.0 h1:TMZJ+tl/BpbmGyIBiXzKzUftDhw4ZWxQZ+1ydn0gyII=
-github.com/Khan/genqlient v0.5.0/go.mod h1:EpIvDVXYm01GP6AXzjA7dKriPTH6GmtpmvTAwUUqIX8=
+github.com/Khan/genqlient v0.5.1-0.20221121163509-587f77046bb4 h1:BEPLHADYu2ZQZhJe5s1OrMb1pElkgnzWihbRFlA4xBg=
+github.com/Khan/genqlient v0.5.1-0.20221121163509-587f77046bb4/go.mod h1:EpIvDVXYm01GP6AXzjA7dKriPTH6GmtpmvTAwUUqIX8=
 github.com/Microsoft/go-winio v0.4.14/go.mod h1:qXqCSQ3Xa7+6tgxaGTIe4Kpcdsi+P8jBhyzoq1bpyYA=
 github.com/Microsoft/go-winio v0.4.16/go.mod h1:XB6nPKklQyQ7GC9LdcBEcBl8PF76WugXOPRXwdLnMv0=
 github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6FgY=

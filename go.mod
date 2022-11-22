@@ -3,7 +3,7 @@ module github.com/massdriver-cloud/massdriver-cli
 go 1.18
 
 require (
-	github.com/Khan/genqlient v0.5.0
+	github.com/Khan/genqlient v0.5.1-0.20221121163509-587f77046bb4
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.23.0
 	github.com/charmbracelet/lipgloss v0.6.0

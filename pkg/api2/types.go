@@ -19,3 +19,8 @@ type Deployment struct {
 	ID     string
 	Status string
 }
+
+type Environment struct {
+	ID   string
+	Slug string
+}
