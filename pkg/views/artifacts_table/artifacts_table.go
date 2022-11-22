@@ -102,6 +102,8 @@ func (m model) helpView() string {
 
 func New(sourceArtifacts []api2.Artifact) ([]api2.Artifact, error) {
 	// TODO: DRY up a selectable table "Headers()"
+
+	//nolint:gomnd
 	columns := []table.Column{
 		{Title: checked, Width: 3},
 		{Title: "Name", Width: 40},
@@ -112,6 +114,7 @@ func New(sourceArtifacts []api2.Artifact) ([]api2.Artifact, error) {
 	selected := map[string]bool{}
 	rows := buildRows(map[string]bool{}, sourceArtifacts)
 
+	//nolint:gomnd
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),

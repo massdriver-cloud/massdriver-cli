@@ -46,10 +46,10 @@ func runPreviewDeploy(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 	c := config.Get()
 
-	projectSlugOrId := args[0]
+	projectSlugOrID := args[0]
 
 	client := api2.NewClient(c.APIKey)
-	environment, err := masscmd.DeployPreviewEnvironment(client, c.OrgID, projectSlugOrId, previewParamsPath, previewCiContextPath)
+	environment, err := masscmd.DeployPreviewEnvironment(client, c.OrgID, projectSlugOrID, previewParamsPath, previewCiContextPath)
 
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to deploy environment")

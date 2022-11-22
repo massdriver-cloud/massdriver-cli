@@ -59,7 +59,8 @@ func DoDeployPreviewEnvironment(client graphql.Client, orgID string, id string, 
 		Interface("environment", previewEnv.ID).
 		Msg("Preview environment deploying.")
 
-	browser.OpenURL(url)
+	err = browser.OpenURL(url)
+	_ = err
 	return &previewEnv, nil
 }
 
@@ -70,14 +71,14 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, id string, pr
 		return nil, err
 	}
 
-	previewConfig := previewConfig{}
-	err = readJSONFile(previewConfigPath, &previewConfig)
+	config := previewConfig{}
+	err = readJSONFile(previewConfigPath, &config)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return DoDeployPreviewEnvironment(client, orgID, id, previewConfig.GetCredentials(), previewConfig.PackageParams, ciContext)
+	return DoDeployPreviewEnvironment(client, orgID, id, config.GetCredentials(), config.PackageParams, ciContext)
 }
 
 func readJSONFile(filename string, v interface{}) error {

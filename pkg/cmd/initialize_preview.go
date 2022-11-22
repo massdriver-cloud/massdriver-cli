@@ -25,13 +25,15 @@ func InitializePreview(config *config.Config, projectSlugOrID string, previewCfg
 	return initializePreviewSerializeCfg(previewCfg, previewCfgPath)
 }
 
+const previewConfMode = 0600
+
 func initializePreviewSerializeCfg(cfg map[string]interface{}, path string) error {
 	previewConf, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(path, previewConf, 0600)
+	err = ioutil.WriteFile(path, previewConf, previewConfMode)
 	return err
 }
 

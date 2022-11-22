@@ -1,3 +1,4 @@
+//nolint:gomnd
 package credential_types_table
 
 import (
