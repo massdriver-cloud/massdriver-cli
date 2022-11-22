@@ -12,8 +12,7 @@ run:
   # Define the Go version limit.
   # Mainly related to generics support in go1.18.
   # Default: use Go version from the go.mod file, fallback on the env var `GOVERSION`, fallback on 1.17
-  go: "1.17" # TODO: change to 1.18 when most linters support it, see https://github.com/golangci/golangci-lint/issues/2649
-
+  go: "1.18"
 
 # This file contains only configs which differ from defaults.
 # All possible options can be found here https://github.com/golangci/golangci-lint/blob/master/.golangci.reference.yml
@@ -124,7 +123,7 @@ linters-settings:
   nolintlint:
     # Exclude following linters from requiring an explanation.
     # Default: []
-    allow-no-explanation: [ funlen, gocognit, lll ]
+    allow-no-explanation: [funlen, gocognit, lll]
     # Enable to require an explanation of nonzero length after each nolint directive.
     # Default: false
     require-explanation: false
@@ -148,7 +147,6 @@ linters-settings:
     # Check usage of exported fields and variables.
     # Default: false
     exported-fields: false # default false # TODO: enable after fixing false positives
-
 
 linters:
   disable-all: true
@@ -251,7 +249,6 @@ linters:
     #- maligned # [deprecated, replaced by govet fieldalignment] Tool to detect Go structs that would take less memory if their fields were sorted
     #- scopelint # [deprecated, replaced by exportloopref] Scopelint checks for unpinned variables in go programs
 
-
 issues:
   # Maximum count of issues with the same text.
   # Set to 0 to disable.
@@ -260,13 +257,13 @@ issues:
 
   exclude-rules:
     - source: "^//\\s*go:generate\\s"
-      linters: [ lll ]
+      linters: [lll]
     - source: "(noinspection|TODO)"
-      linters: [ godot ]
+      linters: [godot]
     - source: "//noinspection"
-      linters: [ gocritic ]
+      linters: [gocritic]
     - source: "^\\s+if _, ok := err\\.\\([^.]+\\.InternalError\\); ok {"
-      linters: [ errorlint ]
+      linters: [errorlint]
     - path: "_test\\.go"
       linters:
         - bodyclose
