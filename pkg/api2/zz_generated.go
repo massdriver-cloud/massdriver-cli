@@ -65,7 +65,7 @@ func (v *PreviewEnvironmentInput) UnmarshalJSON(b []byte) error {
 				src, dst)
 			if err != nil {
 				return fmt.Errorf(
-					"unable to unmarshal PreviewEnvironmentInput.CiContext: %w", err)
+					"Unable to unmarshal PreviewEnvironmentInput.CiContext: %w", err)
 			}
 		}
 	}
@@ -78,7 +78,7 @@ func (v *PreviewEnvironmentInput) UnmarshalJSON(b []byte) error {
 				src, dst)
 			if err != nil {
 				return fmt.Errorf(
-					"unable to unmarshal PreviewEnvironmentInput.PackageParams: %w", err)
+					"Unable to unmarshal PreviewEnvironmentInput.PackageParams: %w", err)
 			}
 		}
 	}
@@ -114,7 +114,7 @@ func (v *PreviewEnvironmentInput) __premarshalJSON() (*__premarshalPreviewEnviro
 			&src)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"unable to marshal PreviewEnvironmentInput.CiContext: %w", err)
+				"Unable to marshal PreviewEnvironmentInput.CiContext: %w", err)
 		}
 	}
 	{
@@ -126,7 +126,7 @@ func (v *PreviewEnvironmentInput) __premarshalJSON() (*__premarshalPreviewEnviro
 			&src)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"unable to marshal PreviewEnvironmentInput.PackageParams: %w", err)
+				"Unable to marshal PreviewEnvironmentInput.PackageParams: %w", err)
 		}
 	}
 	return &retval, nil
@@ -371,7 +371,7 @@ func (v *getProjectByIdProject) UnmarshalJSON(b []byte) error {
 				src, dst)
 			if err != nil {
 				return fmt.Errorf(
-					"unable to unmarshal getProjectByIdProject.DefaultParams: %w", err)
+					"Unable to unmarshal getProjectByIdProject.DefaultParams: %w", err)
 			}
 		}
 	}
@@ -407,7 +407,7 @@ func (v *getProjectByIdProject) __premarshalJSON() (*__premarshalgetProjectByIdP
 			&src)
 		if err != nil {
 			return nil, fmt.Errorf(
-				"unable to marshal getProjectByIdProject.DefaultParams: %w", err)
+				"Unable to marshal getProjectByIdProject.DefaultParams: %w", err)
 		}
 	}
 	retval.Slug = v.Slug
@@ -422,8 +422,16 @@ type getProjectByIdResponse struct {
 // GetProject returns getProjectByIdResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectByIdResponse) GetProject() getProjectByIdProject { return v.Project }
 
-// The query or mutation executed by deployPreviewEnvironment.
-const deployPreviewEnvironmentOperation = `
+func deployPreviewEnvironment(
+	ctx context.Context,
+	client graphql.Client,
+	orgId string,
+	projectId string,
+	input PreviewEnvironmentInput,
+) (*deployPreviewEnvironmentResponse, error) {
+	req := &graphql.Request{
+		OpName: "deployPreviewEnvironment",
+		Query: `
 mutation deployPreviewEnvironment ($orgId: ID!, $projectId: ID!, $input: PreviewEnvironmentInput!) {
 	deployPreviewEnvironment(projectId: $projectId, organizationId: $orgId, input: $input) {
 		successful
@@ -436,18 +444,7 @@ mutation deployPreviewEnvironment ($orgId: ID!, $projectId: ID!, $input: Preview
 		}
 	}
 }
-`
-
-func deployPreviewEnvironment(
-	ctx context.Context,
-	client graphql.Client,
-	orgId string,
-	projectId string,
-	input PreviewEnvironmentInput,
-) (*deployPreviewEnvironmentResponse, error) {
-	req := &graphql.Request{
-		OpName: "deployPreviewEnvironment",
-		Query:  deployPreviewEnvironmentOperation,
+`,
 		Variables: &__deployPreviewEnvironmentInput{
 			OrgId:     orgId,
 			ProjectId: projectId,
@@ -468,8 +465,15 @@ func deployPreviewEnvironment(
 	return &data, err
 }
 
-// The query or mutation executed by getArtifactsByType.
-const getArtifactsByTypeOperation = `
+func getArtifactsByType(
+	ctx context.Context,
+	client graphql.Client,
+	organizationId string,
+	artifactType string,
+) (*getArtifactsByTypeResponse, error) {
+	req := &graphql.Request{
+		OpName: "getArtifactsByType",
+		Query: `
 query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 	artifacts(organizationId: $organizationId, input: {filter:{type:$artifactType}}) {
 		next
@@ -479,17 +483,7 @@ query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 		}
 	}
 }
-`
-
-func getArtifactsByType(
-	ctx context.Context,
-	client graphql.Client,
-	organizationId string,
-	artifactType string,
-) (*getArtifactsByTypeResponse, error) {
-	req := &graphql.Request{
-		OpName: "getArtifactsByType",
-		Query:  getArtifactsByTypeOperation,
+`,
 		Variables: &__getArtifactsByTypeInput{
 			OrganizationId: organizationId,
 			ArtifactType:   artifactType,
@@ -509,16 +503,6 @@ func getArtifactsByType(
 	return &data, err
 }
 
-// The query or mutation executed by getDeploymentById.
-const getDeploymentByIdOperation = `
-query getDeploymentById ($organizationId: ID!, $id: ID!) {
-	deployment(organizationId: $organizationId, id: $id) {
-		id
-		status
-	}
-}
-`
-
 func getDeploymentById(
 	ctx context.Context,
 	client graphql.Client,
@@ -527,7 +511,14 @@ func getDeploymentById(
 ) (*getDeploymentByIdResponse, error) {
 	req := &graphql.Request{
 		OpName: "getDeploymentById",
-		Query:  getDeploymentByIdOperation,
+		Query: `
+query getDeploymentById ($organizationId: ID!, $id: ID!) {
+	deployment(organizationId: $organizationId, id: $id) {
+		id
+		status
+	}
+}
+`,
 		Variables: &__getDeploymentByIdInput{
 			OrganizationId: organizationId,
 			Id:             id,
@@ -547,17 +538,6 @@ func getDeploymentById(
 	return &data, err
 }
 
-// The query or mutation executed by getProjectById.
-const getProjectByIdOperation = `
-query getProjectById ($organizationId: ID!, $id: ID!) {
-	project(organizationId: $organizationId, id: $id) {
-		id
-		defaultParams
-		slug
-	}
-}
-`
-
 func getProjectById(
 	ctx context.Context,
 	client graphql.Client,
@@ -566,7 +546,15 @@ func getProjectById(
 ) (*getProjectByIdResponse, error) {
 	req := &graphql.Request{
 		OpName: "getProjectById",
-		Query:  getProjectByIdOperation,
+		Query: `
+query getProjectById ($organizationId: ID!, $id: ID!) {
+	project(organizationId: $organizationId, id: $id) {
+		id
+		defaultParams
+		slug
+	}
+}
+`,
 		Variables: &__getProjectByIdInput{
 			OrganizationId: organizationId,
 			Id:             id,
