@@ -256,6 +256,8 @@ issues:
   max-same-issues: 50
 
   exclude-rules:
+    - linters: [revive]
+      text: "var-naming: var artifactId should be artifactID"
     - source: "^//\\s*go:generate\\s"
       linters: [lll]
     - source: "(noinspection|TODO)"
