@@ -1,4 +1,3 @@
-//
 package api_test
 
 import (

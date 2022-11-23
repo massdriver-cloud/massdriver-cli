@@ -233,7 +233,7 @@ var placeholderValue = "TODO: REPLACE ME"
 // 4. If the param is an array fallback to empty array.
 // 5. If the param is a number and defines a minimum use that value.
 // 4. Use a TODO string placeholder value
-func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{}) interface{} { // nolint:gocognit
+func FillDevParam(prop jsonschema.Property, existingVal, exampleVal interface{}) interface{} { //nolint:gocognit
 	// the base case is we fall back to a placeholder to indicate to the developer they should replace this value.
 	var ret interface{} = placeholderValue
 
