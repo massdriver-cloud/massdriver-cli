@@ -42,7 +42,7 @@ func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error)
 		return "", err
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 	req := client.NewRequest("PUT", "bundles", bytes.NewBuffer(bodyBytes))
 	resp, err := c.Do(&ctx, req)
 	if err != nil {
@@ -86,8 +86,7 @@ func (b *Bundle) generateBundlePublishBody() PublishPost {
 }
 
 func UploadToPresignedS3URL(url string, object io.Reader) error {
-	// TODO: is there a better place to pull this context from?
-	req, err := http.NewRequestWithContext(context.TODO(), "PUT", url, object)
+	req, err := http.NewRequestWithContext(context.Background(), "PUT", url, object)
 	if err != nil {
 		return err
 	}

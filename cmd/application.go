@@ -1,19 +1,16 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/api2"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/config"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -172,16 +169,14 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	// original
 	name := args[0]
 
-	orgID := os.Getenv("MASSDRIVER_ORG_ID")
-	if orgID == "" {
-		log.Fatal().Msg("MASSDRIVER_ORG_ID must be set")
-	}
+	c := config.Get()
 
 	client := api.NewClient()
-	deployment, err := api.DeployPackage(client, orgID, name)
+	client2 := api2.NewClient(c.APIKey)
+	deployment, err := api.DeployPackage(client, &client2, c.OrgID, name)
 
 	if err != nil {
-		log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("Deployment failed")
+		log.Fatal().Err(err).Str("deploymentId", deployment.ID).Msg("deployment failed")
 		return err
 	}
 
@@ -189,7 +184,7 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// TODO: move to "mass repo"
+// TODO: move to `mass repos`
 func runApplicationTemplatesList(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 

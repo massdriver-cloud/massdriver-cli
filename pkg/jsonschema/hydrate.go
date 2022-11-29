@@ -106,9 +106,6 @@ func hydrateMassdriverRef(ctx context.Context, c *client.MassdriverClient, hydra
 }
 
 func hydrateHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
-	// TODO: this is a security risk as we're blindly doing a get based on a bundle author provided URL
-	// see: https://securego.io/docs/rules/g107.html
-	// tracked in: https://github.com/massdriver-cloud/massdriver-cli/issues/43
 	var referencedSchema map[string]interface{}
 	request, err := http.NewRequestWithContext(ctx, "GET", schemaRefValue, nil)
 	if err != nil {
