@@ -5,12 +5,13 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"gopkg.in/yaml.v3"
 )
 
 // TODO: combine with bundle.Parse
-func Parse(path string, overrides map[string]interface{}) (*Application, error) {
-	app := new(Application)
+func Parse(path string, overrides map[string]interface{}) (*bundle.Bundle, error) {
+	app := new(bundle.Bundle)
 
 	yamlFile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -28,7 +29,7 @@ func Parse(path string, overrides map[string]interface{}) (*Application, error) 
 	return app, nil
 }
 
-func applyOverrides(a *Application, overrides map[string]interface{}) error {
+func applyOverrides(a *bundle.Bundle, overrides map[string]interface{}) error {
 	if access, found := overrides["access"]; found {
 		if access == "public" || access == "private" {
 			var ok bool

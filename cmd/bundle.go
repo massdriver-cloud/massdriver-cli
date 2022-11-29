@@ -60,13 +60,6 @@ func init() {
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
 }
 
-func checkIsBundle(b *bundle.Bundle) error {
-	if b.Type != "bundle" {
-		return fmt.Errorf("mass bundle publish can only be used with bundle type massdriver.yaml")
-	}
-	return nil
-}
-
 func runBundleBuild(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
@@ -89,8 +82,8 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if errType := checkIsBundle(b); errType != nil {
-		return errType
+	if !b.IsInfrastructure() {
+		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
 	}
 
 	if errBuild := b.Build(c, output); errBuild != nil {
@@ -146,8 +139,8 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if errType := checkIsBundle(b); errType != nil {
-		return errType
+	if !b.IsInfrastructure() {
+		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
 	}
 
 	if errPublish := bundle.Publish(c, b); errPublish != nil {

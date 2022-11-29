@@ -11,7 +11,7 @@ func TestParseBundle(t *testing.T) {
 	var got, _ = bundle.Parse("./testdata/massdriver.yaml", nil)
 	var want = bundle.Bundle{
 		Schema:      "draft-07",
-		Type:        "bundle",
+		Type:        "infrastructure",
 		Name:        "aws-vpc",
 		Description: "Something",
 		Access:      "public",
