@@ -5,19 +5,20 @@ import (
 	"testing"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/application"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 )
 
 func TestParse(t *testing.T) {
 	type test struct {
 		name    string
 		appPath string
-		want    application.Application
+		want    bundle.Bundle
 	}
 	tests := []test{
 		{
 			name:    "app-spec",
 			appPath: "./testdata/massdriver.yaml",
-			want: application.Application{
+			want: bundle.Bundle{
 				Schema:      "draft-07",
 				Name:        "my-app",
 				Description: "An application",
@@ -61,7 +62,7 @@ func TestParse(t *testing.T) {
 						"sqs",
 					},
 				},
-				App: application.AppBlock{
+				App: bundle.AppBlock{
 					Envs: map[string]string{
 						"LOG_LEVEL":      "params.log_level",
 						"MONGO_USERNAME": "connections.mongo.authentication.username",

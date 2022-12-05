@@ -83,13 +83,6 @@ func init() {
 	applicationTemplatesCmd.AddCommand(applicationTemplatesListCmd)
 }
 
-func checkIsApplication(app *application.Application) error {
-	if app.Type != "application" {
-		return fmt.Errorf("mass app build can only be used with application type massdriver.yaml")
-	}
-	return nil
-}
-
 func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
@@ -104,9 +97,11 @@ func runApplicationBuild(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if errType := checkIsApplication(app); errType != nil {
-		return errType
+	if !app.IsApplication() {
+		return fmt.Errorf("this command can only be used with bundle type 'application'")
 	}
+	application.Build(app, c, output)
+
 	return app.Build(c, output)
 }
 
@@ -143,11 +138,11 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if errType := checkIsApplication(app); errType != nil {
-		return errType
+	if !app.IsApplication() {
+		return fmt.Errorf("this command can only be used with bundle type 'application'")
 	}
 
-	if errPub := bundle.Publish(c, app.AsBundle()); errPub != nil {
+	if errPub := bundle.Publish(c, app); errPub != nil {
 		return errPub
 	}
 	log.Info().Msg("Application published successfully!")
@@ -163,8 +158,8 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if errType := checkIsApplication(app); errType != nil {
-		return errType
+	if !app.IsApplication() {
+		return fmt.Errorf("this command can only be used with bundle type 'application'")
 	}
 	// original
 	name := args[0]

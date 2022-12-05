@@ -1,6 +1,8 @@
 package bundle
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 type Step struct {
 	Path        string `json:"path" yaml:"path"`
@@ -19,6 +21,12 @@ type Bundle struct {
 	Params      map[string]interface{} `json:"params" yaml:"params"`
 	Connections map[string]interface{} `json:"connections" yaml:"connections"`
 	UI          map[string]interface{} `json:"ui" yaml:"ui"`
+	App         AppBlock               `json:"app" yaml:"app"`
+}
+
+type AppBlock struct {
+	Envs     map[string]string `json:"envs" yaml:"envs"`
+	Policies []string          `json:"policies" yaml:"policies"`
 }
 
 type PublishPost struct {
@@ -49,4 +57,13 @@ type S3PresignEndpointResponse struct {
 	CanonicalRequestBytes []byte   `xml:"CanonicalRequestBytes"`
 	RequestID             string   `xml:"RequestId"`
 	HostID                string   `xml:"HostId"`
+}
+
+func (b *Bundle) IsInfrastructure() bool {
+	// a Deprecation warning is printed in the bundle parse function
+	return b.Type == "bundle" || b.Type == "infrastructure"
+}
+
+func (b *Bundle) IsApplication() bool {
+	return b.Type == "application"
 }

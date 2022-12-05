@@ -1,17 +1,14 @@
 package application
 
 import (
+	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/rs/zerolog/log"
 )
 
-func (app *Application) Build(c *client.MassdriverClient, output string) error {
+func Build(b *bundle.Bundle, c *client.MassdriverClient, output string) error {
 	log.Info().Msg("Building application...")
-	// pre-bundle app-specific build logic goes here //
-
-	// we were trying to avoid any conversion from app to bundle etc
-	// this is cheap until the build function is consolidated
-	b := app.AsBundle()
+	// app-specific build logic goes here //
 	if errBuild := b.Build(c, output); errBuild != nil {
 		return errBuild
 	}

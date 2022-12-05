@@ -15,7 +15,7 @@ func TestGenerate(t *testing.T) {
 		Name:         "aws-vpc",
 		Access:       "Private",
 		Description:  "a vpc",
-		Type:         "bundle",
+		Type:         "infrastructure",
 		TemplateName: "terraform",
 	}
 

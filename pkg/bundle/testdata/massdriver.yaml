@@ -1,7 +1,7 @@
 schema: draft-07
 name: aws-vpc
 description: Something
-type: bundle
+type: infrastructure
 access: public
 params:
   required: ["name"]

@@ -1,7 +1,7 @@
 uuid: FC2C7101-86A6-437B-B8C2-A2391FE8C847
 name: aws-vpc
 schema: draft-07
-type: bundle
+type: infrastructure
 description: Something
 access: public
 params:
