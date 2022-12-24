@@ -25,17 +25,10 @@ var bundleBuildCmd = &cobra.Command{
 	RunE: runBundleBuild,
 }
 
-var bundleGenerateCmd = &cobra.Command{
-	Use:     "generate",
-	Aliases: []string{"gen"},
-	Short:   "Deprecated: Generates a new bundle",
-	RunE:    runBundleGenerate,
-}
-
 var bundleNewCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Creates a new bundle from a template",
-	RunE:  runBundleGenerate,
+	RunE:  runBundleNew,
 }
 
 var bundlePublishCmd = &cobra.Command{
@@ -45,16 +38,26 @@ var bundlePublishCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+var name string
+var access string
+var description string
+var output string
+var connections []string
+var connectionNames []string
+
 func init() {
 	rootCmd.AddCommand(bundleCmd)
 
 	bundleCmd.AddCommand(bundleBuildCmd)
 	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is massdriver.yaml directory)")
 
-	bundleCmd.AddCommand(bundleGenerateCmd)
-	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 	bundleCmd.AddCommand(bundleNewCmd)
-	bundleNewCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
+	bundleNewCmd.Flags().StringVarP(&name, "name", "n", "", "Name of the bundle")
+	bundleNewCmd.Flags().StringVarP(&access, "access", "a", "", "Access level of the bundle")
+	bundleNewCmd.Flags().StringVarP(&description, "description", "d", "", "Description of the bundle")
+	bundleNewCmd.Flags().StringVarP(&output, "output", "o", "", "Path to output directory")
+	bundleNewCmd.Flags().StringSliceVarP(&connections, "connections", "c", []string{}, "List of bundle connections")
+	bundleNewCmd.Flags().StringSliceVarP(&connectionNames, "connection-names", "x", []string{}, "Names for the bundle connections")
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
@@ -94,33 +97,89 @@ func runBundleBuild(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func runBundleGenerate(cmd *cobra.Command, args []string) error {
-	setupLogging(cmd)
-
-	var err error
-
-	outputDir, err := cmd.Flags().GetString("output-dir")
+func runBundleNew(cmd *cobra.Command, args []string) error {
+	// Check the value of the name flag
+	name, err := cmd.Flags().GetString("name")
 	if err != nil {
-		return err
+		log.Fatal().Err(err).Msg("failed to get name flag")
+	}
+	if name == "" {
+		// If the name flag is not set, prompt the user for the values of the name, access, description, output, connections, and connection names flags
+		templateData := template.Data{
+			Type:         "bundle",
+			TemplateName: "terraform",
+		}
+		return bundle.RunPrompt(&templateData)
 	}
 
+	if len(name) < 5 {
+		log.Fatal().Msg("name must be at least 5 characters long")
+	}
+
+	// If the name flag is set, then check the values of the access, description, output, connections, and connection names flags
+	access, err := cmd.Flags().GetString("access")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get access flag")
+	}
+	if access == "" {
+		log.Fatal().Msg("access flag is required")
+	}
+	if access != "private" && access != "public" {
+		log.Fatal().Msg("access must be either 'private' or 'public'")
+	}
+
+	description, err := cmd.Flags().GetString("description")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get description flag")
+	}
+	if description == "" {
+		log.Fatal().Msg("description flag is required")
+	}
+
+	output, err := cmd.Flags().GetString("output")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get output flag")
+	}
+	if output == "" {
+		log.Fatal().Msg("output flag is required")
+	}
+
+	connections, err := cmd.Flags().GetStringSlice("connections")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get connections flag")
+	}
+	if len(connections) == 0 {
+		log.Fatal().Msg("connections flag is required")
+	}
+
+	connectionNames, err := cmd.Flags().GetStringSlice("connection-names")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to get connection-names flag")
+	}
+
+	// Check that the number of connections and connection names is equal so they can be indexed to match
+	if len(connections) != len(connectionNames) {
+		log.Fatal().Msg("the number of connections and connection names must be equal")
+	}
+
+	// Create a map of connection names to connections
+	connectionMap := make(map[string]string)
+	for i, connection := range connections {
+		connectionMap[connectionNames[i]] = connection
+	}
+
+	// If all flags are set, generate the bundle
 	templateData := template.Data{
-		OutputDir:    outputDir,
-		Type:         "bundle",
-		TemplateName: "terraform",
+		OutputDir:       output,
+		Type:            "bundle",
+		TemplateName:    "terraform",
+		Name:            name,
+		Access:          access,
+		Description:     description,
+		Connections:     connections,
+		ConnectionNames: connectionNames,
 	}
-
-	err = bundle.RunPrompt(&templateData)
-	if err != nil {
-		return err
-	}
-
-	err = bundle.Generate(&templateData)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return bundle.Generate(&templateData)
 }
 
 func runBundlePublish(cmd *cobra.Command, args []string) error {
