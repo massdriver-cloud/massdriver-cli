@@ -81,6 +81,7 @@ func (b *Bundle) generateBundlePublishBody() PublishPost {
 	body.ConnectionsSchema = b.Connections
 	body.ParamsSchema = b.Params
 	body.UISchema = b.UI
+	body.AppBlock = b.App
 
 	return body
 }

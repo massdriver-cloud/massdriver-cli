@@ -21,12 +21,20 @@ type Bundle struct {
 	Params      map[string]interface{} `json:"params" yaml:"params"`
 	Connections map[string]interface{} `json:"connections" yaml:"connections"`
 	UI          map[string]interface{} `json:"ui" yaml:"ui"`
-	App         AppBlock               `json:"app" yaml:"app"`
+	App         *AppBlock              `json:"app" yaml:"app"`
 }
 
 type AppBlock struct {
 	Envs     map[string]string `json:"envs" yaml:"envs"`
 	Policies []string          `json:"policies" yaml:"policies"`
+	Secrets  map[string]Secret `json:"secrets" yaml:"secrets"`
+}
+
+type Secret struct {
+	Required    bool   `json:"required" yaml:"required"`
+	Json        bool   `json:"json" yaml:"json"`
+	Title       string `json:"title" yaml:"title"`
+	Description string `json:"description" yaml:"description"`
 }
 
 type PublishPost struct {
@@ -39,6 +47,7 @@ type PublishPost struct {
 	ConnectionsSchema map[string]interface{} `json:"connections_schema"`
 	ParamsSchema      map[string]interface{} `json:"params_schema"`
 	UISchema          map[string]interface{} `json:"ui_schema"`
+	AppBlock          *AppBlock              `json:"app,omitempty"`
 }
 
 type PublishResponse struct {
