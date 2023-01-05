@@ -19,7 +19,7 @@ func TestPublish(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "simple",
+			name: "Does not submit an app block field if one does not exist",
 			bundle: bundle.Bundle{
 				Name:        "the-bundle",
 				Description: "something",
@@ -40,8 +40,48 @@ func TestPublish(t *testing.T) {
 				UI: map[string]interface{}{
 					"ui": "baz",
 				},
+				App: nil,
 			},
 			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"}}`,
+		},
+		{
+			name: "Submits an app block field if one does exist",
+			bundle: bundle.Bundle{
+				Name:        "the-bundle",
+				Description: "something",
+				SourceURL:   "github.com/some-repo",
+				Type:        "bundle",
+				Access:      "public",
+				Artifacts: map[string]interface{}{
+					"artifacts": "foo",
+				},
+				Connections: map[string]interface{}{
+					"connections": "bar",
+				},
+				Params: map[string]interface{}{
+					"params": map[string]string{
+						"hello": "world",
+					},
+				},
+				UI: map[string]interface{}{
+					"ui": "baz",
+				},
+				App: &bundle.AppBlock{
+					Secrets: map[string]bundle.Secret{
+						"STRIPE_KEY": {
+							Required:    true,
+							Json:        false,
+							Title:       "A secret",
+							Description: "Access key for live stripe accounts",
+						},
+					},
+					Policies: []string{".connections.vpc.data.infrastructure.arn"},
+					Envs: map[string]string{
+						"LOG_LEVEL": "warn",
+					},
+				},
+			},
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"},"app":{"envs":{"LOG_LEVEL":"warn"},"policies":[".connections.vpc.data.infrastructure.arn"],"secrets":{"STRIPE_KEY":{"required":true,"json":false,"title":"A secret","description":"Access key for live stripe accounts"}}}}`,
 		},
 	}
 
