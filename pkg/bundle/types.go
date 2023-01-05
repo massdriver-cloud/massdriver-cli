@@ -47,7 +47,7 @@ type PublishPost struct {
 	ConnectionsSchema map[string]interface{} `json:"connections_schema"`
 	ParamsSchema      map[string]interface{} `json:"params_schema"`
 	UISchema          map[string]interface{} `json:"ui_schema"`
-	AppBlock          *AppBlock              `json:"app,omitempty"`
+	AppSpec           *AppBlock              `json:"app,omitempty"`
 }
 
 type PublishResponse struct {
