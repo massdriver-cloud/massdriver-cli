@@ -10,7 +10,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
@@ -27,7 +29,7 @@ func Publish(c *client.MassdriverClient, b *Bundle) error {
 		return errPackage
 	}
 
-	uploadURL, err := b.PublishToMassdriver(c)
+	uploadURL, err := b.PublishToMassdriver(path.Dir(common.MassdriverYamlFilename), c)
 	if err != nil {
 		return err
 	}
@@ -35,9 +37,17 @@ func Publish(c *client.MassdriverClient, b *Bundle) error {
 	return UploadToPresignedS3URL(uploadURL, &buf)
 }
 
-func (b *Bundle) PublishToMassdriver(c *client.MassdriverClient) (string, error) {
+func (b *Bundle) PublishToMassdriver(srcDir string, c *client.MassdriverClient) (string, error) {
 	body := b.generateBundlePublishBody()
+
+	err := checkForOperatorGuideAndSetValue(srcDir, &body)
+
+	if err != nil {
+		return "", err
+	}
+
 	bodyBytes, err := json.Marshal(body)
+
 	if err != nil {
 		return "", err
 	}
@@ -111,5 +121,27 @@ func UploadToPresignedS3URL(url string, object io.Reader) error {
 
 		return errors.New("unable to upload content: " + respContent.Message)
 	}
+	return nil
+}
+
+func checkForOperatorGuideAndSetValue(path string, body *PublishPost) error {
+	pathsToCheck := []string{"operator.mdx", "operator.md"}
+
+	for _, fileName := range pathsToCheck {
+		_, err := os.Stat(filepath.Join(path, fileName))
+
+		if err != nil {
+			continue
+		}
+
+		content, err := os.ReadFile(filepath.Join(path, fileName))
+
+		if err != nil {
+			return fmt.Errorf("error reading %s", fileName)
+		}
+
+		body.OperatorGuide = content
+	}
+
 	return nil
 }

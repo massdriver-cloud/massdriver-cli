@@ -14,12 +14,14 @@ import (
 func TestPublish(t *testing.T) {
 	type test struct {
 		name     string
+		path     string
 		bundle   bundle.Bundle
 		wantBody string
 	}
 	tests := []test{
 		{
 			name: "Does not submit an app block field if one does not exist",
+			path: "./templates",
 			bundle: bundle.Bundle{
 				Name:        "the-bundle",
 				Description: "something",
@@ -46,6 +48,7 @@ func TestPublish(t *testing.T) {
 		},
 		{
 			name: "Submits an app block field if one does exist",
+			path: "./templates",
 			bundle: bundle.Bundle{
 				Name:        "the-bundle",
 				Description: "something",
@@ -83,6 +86,86 @@ func TestPublish(t *testing.T) {
 			},
 			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"},"app":{"envs":{"LOG_LEVEL":"warn"},"policies":[".connections.vpc.data.infrastructure.arn"],"secrets":{"STRIPE_KEY":{"required":true,"json":false,"title":"A secret","description":"Access key for live stripe accounts"}}}}`,
 		},
+		{
+			name: "Submits an operator.md guide if exist",
+			path: "./testdata/guides/md",
+			bundle: bundle.Bundle{
+				Name:        "the-bundle",
+				Description: "something",
+				SourceURL:   "github.com/some-repo",
+				Type:        "bundle",
+				Access:      "public",
+				Artifacts: map[string]interface{}{
+					"artifacts": "foo",
+				},
+				Connections: map[string]interface{}{
+					"connections": "bar",
+				},
+				Params: map[string]interface{}{
+					"params": map[string]string{
+						"hello": "world",
+					},
+				},
+				UI: map[string]interface{}{
+					"ui": "baz",
+				},
+				App: &bundle.AppBlock{
+					Secrets: map[string]bundle.Secret{
+						"STRIPE_KEY": {
+							Required:    true,
+							Json:        false,
+							Title:       "A secret",
+							Description: "Access key for live stripe accounts",
+						},
+					},
+					Policies: []string{".connections.vpc.data.infrastructure.arn"},
+					Envs: map[string]string{
+						"LOG_LEVEL": "warn",
+					},
+				},
+			},
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"},"operator_guide":"IyBTb21lIE1hcmtkb3duIQ==","app":{"envs":{"LOG_LEVEL":"warn"},"policies":[".connections.vpc.data.infrastructure.arn"],"secrets":{"STRIPE_KEY":{"required":true,"json":false,"title":"A secret","description":"Access key for live stripe accounts"}}}}`,
+		},
+		{
+			name: "Submits an operator.mdx guide if exist",
+			path: "./testdata/guides/mdx",
+			bundle: bundle.Bundle{
+				Name:        "the-bundle",
+				Description: "something",
+				SourceURL:   "github.com/some-repo",
+				Type:        "bundle",
+				Access:      "public",
+				Artifacts: map[string]interface{}{
+					"artifacts": "foo",
+				},
+				Connections: map[string]interface{}{
+					"connections": "bar",
+				},
+				Params: map[string]interface{}{
+					"params": map[string]string{
+						"hello": "world",
+					},
+				},
+				UI: map[string]interface{}{
+					"ui": "baz",
+				},
+				App: &bundle.AppBlock{
+					Secrets: map[string]bundle.Secret{
+						"STRIPE_KEY": {
+							Required:    true,
+							Json:        false,
+							Title:       "A secret",
+							Description: "Access key for live stripe accounts",
+						},
+					},
+					Policies: []string{".connections.vpc.data.infrastructure.arn"},
+					Envs: map[string]string{
+						"LOG_LEVEL": "warn",
+					},
+				},
+			},
+			wantBody: `{"name":"the-bundle","description":"something","type":"bundle","source_url":"github.com/some-repo","access":"public","artifacts_schema":{"artifacts":"foo"},"connections_schema":{"connections":"bar"},"params_schema":{"params":{"hello":"world"}},"ui_schema":{"ui":"baz"},"operator_guide":"IyBTb21lIE1hcmtkb3duIQ==","app":{"envs":{"LOG_LEVEL":"warn"},"policies":[".connections.vpc.data.infrastructure.arn"],"secrets":{"STRIPE_KEY":{"required":true,"json":false,"title":"A secret","description":"Access key for live stripe accounts"}}}}`,
+		},
 	}
 
 	for _, tc := range tests {
@@ -104,7 +187,7 @@ func TestPublish(t *testing.T) {
 
 			c := client.NewClient().WithBaseURL(testServer.URL)
 
-			gotResponse, err := tc.bundle.PublishToMassdriver(c)
+			gotResponse, err := tc.bundle.PublishToMassdriver(tc.path, c)
 			if err != nil {
 				t.Fatalf("%d, unexpected error", err)
 			}
