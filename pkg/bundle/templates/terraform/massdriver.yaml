@@ -63,4 +63,3 @@ artifacts:
 ui:
   ui:order:
     - "*"
-
