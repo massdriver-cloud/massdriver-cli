@@ -22,9 +22,10 @@ var imageCmd = &cobra.Command{
 }
 
 var imagePushCmd = &cobra.Command{
-	Use:   "push <namespace>/<image-name> <cloud-region> <massdriver-artifactId>",
+	Use:   "push <namespace>/<image-name>",
 	Short: "Push an image to ECR, ACR or GAR",
 	RunE:  runImagePush,
+	Args:  cobra.ExactArgs(1),
 }
 
 var DockerBuildContext string
@@ -40,8 +41,6 @@ func init() {
 	imagePushCmd.Flags().StringVarP(&DockerBuildContext, "build-context", "b", ".", "Path to the directory to build the image from")
 	imagePushCmd.Flags().StringVarP(&DockerfileName, "dockerfile", "f", "Dockerfile", "Name of the dockerfile to build from if you have named it anything other than Dockerfile")
 	imagePushCmd.Flags().StringVarP(&Tag, "image-tag", "t", "latest", "Unique identifier for this version of the image")
-	imagePushCmd.Flags().StringVarP(&ImageName, "image-name", "n", "", "Name of the image to push in name spaced form I.E. acme-corp/mail-service")
-	imagePushCmd.MarkFlagRequired("image-name")
 	imagePushCmd.Flags().StringVarP(&ArtifactId, "artifact", "a", "", "Massdriver ID of the artifact used to create the repository and generate repository credentials.")
 	imagePushCmd.MarkFlagRequired("artifact")
 	imagePushCmd.Flags().StringVarP(&Region, "region", "r", "", "Cloud region to push the image to")
@@ -63,6 +62,7 @@ func runImagePush(cmd *cobra.Command, args []string) error {
 
 	pushInput := image.PushImageInput{
 		OrganizationId: orgID,
+		ImageName:      args[0],
 	}
 
 	err := validatePushInputAndAddFlags(&pushInput, cmd)
@@ -86,7 +86,6 @@ func validatePushInputAndAddFlags(input *image.PushImageInput, cmd *cobra.Comman
 		{Flag: "dockerfile", Attribute: &input.Dockerfile},
 		{Flag: "build-context", Attribute: &input.DockerBuildContext},
 		{Flag: "image-tag", Attribute: &input.Tag},
-		{Flag: "image-name", Attribute: &input.ImageName},
 		{Flag: "artifact", Attribute: &input.ArtifactId},
 		{Flag: "region", Attribute: &input.Location},
 	}
