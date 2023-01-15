@@ -24,3 +24,8 @@ type Environment struct {
 	ID   string
 	Slug string
 }
+
+type ContainerRepository struct {
+	Token         string
+	RepositoryUri string
+}
