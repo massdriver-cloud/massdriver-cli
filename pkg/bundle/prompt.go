@@ -132,7 +132,7 @@ func GetConnections(t *template.Data) error {
 	for i, v := range selectedDeps {
 		if v == noneDep {
 			if len(selectedDeps) > 1 {
-				return fmt.Errorf("if selecting %v, you cannot select other dependecies. selected %#v", noneDep, selectedDeps)
+				return fmt.Errorf("if selecting %v, you cannot select other dependencies. selected %#v", noneDep, selectedDeps)
 			}
 			return nil
 		}

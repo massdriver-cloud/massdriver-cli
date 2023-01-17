@@ -42,7 +42,7 @@ var name string
 var access string
 var description string
 var output string
-var connections []string
+var connections map[string]interface{}
 var connectionNames []string
 
 func init() {
@@ -113,7 +113,7 @@ func runBundleNew(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(name) < 5 {
-		log.Fatal().Msg("name must be at least 5 characters long")
+		log.Fatal().Msg("name must be greater than 4 characters and can only include lowercase letters and dashes")
 	}
 
 	// If the name flag is set, then check the values of the access, description, output, connections, and connection names flags
@@ -163,9 +163,9 @@ func runBundleNew(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create a map of connection names to connections
-	connectionMap := make(map[string]string)
+	depMap := make(map[string]interface{})
 	for i, connection := range connections {
-		connectionMap[connectionNames[i]] = connection
+		depMap[connectionNames[i]] = connection
 	}
 
 	// If all flags are set, generate the bundle
