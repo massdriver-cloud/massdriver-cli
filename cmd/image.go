@@ -28,22 +28,21 @@ var imagePushCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 }
 
-var DockerBuildContext string
-var DockerfileName string
-var Tag string
-var ArtifactId string
-var ImageName string
-var Region string
+var dockerBuildContext string
+var dockerfileName string
+var tag string
+var artifactId string
+var region string
 
 func init() {
 	rootCmd.AddCommand(imageCmd)
 	imageCmd.AddCommand(imagePushCmd)
-	imagePushCmd.Flags().StringVarP(&DockerBuildContext, "build-context", "b", ".", "Path to the directory to build the image from")
-	imagePushCmd.Flags().StringVarP(&DockerfileName, "dockerfile", "f", "Dockerfile", "Name of the dockerfile to build from if you have named it anything other than Dockerfile")
-	imagePushCmd.Flags().StringVarP(&Tag, "image-tag", "t", "latest", "Unique identifier for this version of the image")
-	imagePushCmd.Flags().StringVarP(&ArtifactId, "artifact", "a", "", "Massdriver ID of the artifact used to create the repository and generate repository credentials.")
+	imagePushCmd.Flags().StringVarP(&dockerBuildContext, "build-context", "b", ".", "Path to the directory to build the image from")
+	imagePushCmd.Flags().StringVarP(&dockerfileName, "dockerfile", "f", "Dockerfile", "Name of the dockerfile to build from if you have named it anything other than Dockerfile")
+	imagePushCmd.Flags().StringVarP(&tag, "image-tag", "t", "latest", "Unique identifier for this version of the image")
+	imagePushCmd.Flags().StringVarP(&artifactId, "artifact", "a", "", "Massdriver ID of the artifact used to create the repository and generate repository credentials.")
 	imagePushCmd.MarkFlagRequired("artifact")
-	imagePushCmd.Flags().StringVarP(&Region, "region", "r", "", "Cloud region to push the image to")
+	imagePushCmd.Flags().StringVarP(&region, "region", "r", "", "Cloud region to push the image to")
 	imagePushCmd.MarkFlagRequired("region")
 }
 
@@ -56,7 +55,7 @@ func runImagePush(cmd *cobra.Command, args []string) error {
 	}
 
 	APIKey := os.Getenv("MASSDRIVER_API_KEY")
-	if orgID == "" {
+	if APIKey == "" {
 		log.Fatal().Msg("MASSDRIVER_API_KEY must be set")
 	}
 
