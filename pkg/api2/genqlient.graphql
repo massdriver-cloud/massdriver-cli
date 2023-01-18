@@ -29,3 +29,9 @@ mutation deployPreviewEnvironment($orgId: ID!, $projectId: ID!, $input: PreviewE
     }
   }
 }
+
+query containerRepository($orgId: ID!, $imageName: String!, $location: String!) {
+  containerRepository(orgId: $orgId, imageName: $imageName, location: $location) {
+    token, repoUri
+  }
+}
