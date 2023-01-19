@@ -7,15 +7,14 @@ import (
 )
 
 func GetContainerRepository(client graphql.Client, artifactID, orgID, imageName, location string) (*ContainerRepository, error) {
-	containerRepository := &ContainerRepository{}
-	response, err := getContainerRepository(context.Background(), client, artifactID, orgID, ContainerRepositoryInput{ImageName: imageName, Location: location})
-
+	result := &ContainerRepository{}
+	response, err := containerRepository(context.Background(), client, orgID, artifactID, ContainerRepositoryInput{ImageName: imageName, Location: location})
 	if err != nil {
-		return containerRepository, err
+		return result, err
 	}
 
-	containerRepository.RepositoryUri = response.ContainerRepository.RepoUri
-	containerRepository.Token = response.ContainerRepository.Token
+	result.RepositoryUri = response.ContainerRepository.RepoUri
+	result.Token = response.ContainerRepository.Token
 
-	return containerRepository, nil
+	return result, nil
 }
