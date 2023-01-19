@@ -144,6 +144,22 @@ func (v *PreviewEnvironmentInput) __premarshalJSON() (*__premarshalPreviewEnviro
 	return &retval, nil
 }
 
+// __containerRepositoryInput is used internally by genqlient
+type __containerRepositoryInput struct {
+	OrgId      string                   `json:"orgId"`
+	ArtifactId string                   `json:"artifactId"`
+	Input      ContainerRepositoryInput `json:"input"`
+}
+
+// GetOrgId returns __containerRepositoryInput.OrgId, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetOrgId() string { return v.OrgId }
+
+// GetArtifactId returns __containerRepositoryInput.ArtifactId, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetArtifactId() string { return v.ArtifactId }
+
+// GetInput returns __containerRepositoryInput.Input, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetInput() ContainerRepositoryInput { return v.Input }
+
 // __deployPreviewEnvironmentInput is used internally by genqlient
 type __deployPreviewEnvironmentInput struct {
 	OrgId     string                  `json:"orgId"`
@@ -172,22 +188,6 @@ func (v *__getArtifactsByTypeInput) GetOrganizationId() string { return v.Organi
 // GetArtifactType returns __getArtifactsByTypeInput.ArtifactType, and is useful for accessing the field via an interface.
 func (v *__getArtifactsByTypeInput) GetArtifactType() string { return v.ArtifactType }
 
-// __getContainerRepositoryInput is used internally by genqlient
-type __getContainerRepositoryInput struct {
-	ArtifactId     string                   `json:"artifactId"`
-	OrganizationId string                   `json:"organizationId"`
-	Input          ContainerRepositoryInput `json:"input"`
-}
-
-// GetArtifactId returns __getContainerRepositoryInput.ArtifactId, and is useful for accessing the field via an interface.
-func (v *__getContainerRepositoryInput) GetArtifactId() string { return v.ArtifactId }
-
-// GetOrganizationId returns __getContainerRepositoryInput.OrganizationId, and is useful for accessing the field via an interface.
-func (v *__getContainerRepositoryInput) GetOrganizationId() string { return v.OrganizationId }
-
-// GetInput returns __getContainerRepositoryInput.Input, and is useful for accessing the field via an interface.
-func (v *__getContainerRepositoryInput) GetInput() ContainerRepositoryInput { return v.Input }
-
 // __getDeploymentByIdInput is used internally by genqlient
 type __getDeploymentByIdInput struct {
 	OrganizationId string `json:"organizationId"`
@@ -211,6 +211,32 @@ func (v *__getProjectByIdInput) GetOrganizationId() string { return v.Organizati
 
 // GetId returns __getProjectByIdInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectByIdInput) GetId() string { return v.Id }
+
+// containerRepositoryContainerRepositoryContainerRepositoryAuth includes the requested fields of the GraphQL type ContainerRepositoryAuth.
+type containerRepositoryContainerRepositoryContainerRepositoryAuth struct {
+	Token   string `json:"token"`
+	RepoUri string `json:"repoUri"`
+}
+
+// GetToken returns containerRepositoryContainerRepositoryContainerRepositoryAuth.Token, and is useful for accessing the field via an interface.
+func (v *containerRepositoryContainerRepositoryContainerRepositoryAuth) GetToken() string {
+	return v.Token
+}
+
+// GetRepoUri returns containerRepositoryContainerRepositoryContainerRepositoryAuth.RepoUri, and is useful for accessing the field via an interface.
+func (v *containerRepositoryContainerRepositoryContainerRepositoryAuth) GetRepoUri() string {
+	return v.RepoUri
+}
+
+// containerRepositoryResponse is returned by containerRepository on success.
+type containerRepositoryResponse struct {
+	ContainerRepository containerRepositoryContainerRepositoryContainerRepositoryAuth `json:"containerRepository"`
+}
+
+// GetContainerRepository returns containerRepositoryResponse.ContainerRepository, and is useful for accessing the field via an interface.
+func (v *containerRepositoryResponse) GetContainerRepository() containerRepositoryContainerRepositoryContainerRepositoryAuth {
+	return v.ContainerRepository
+}
 
 // deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload includes the requested fields of the GraphQL type TargetPayload.
 type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload struct {
@@ -337,32 +363,6 @@ func (v *getArtifactsByTypeResponse) GetArtifacts() getArtifactsByTypeArtifactsP
 	return v.Artifacts
 }
 
-// getContainerRepositoryContainerRepositoryContainerRepositoryAuth includes the requested fields of the GraphQL type ContainerRepositoryAuth.
-type getContainerRepositoryContainerRepositoryContainerRepositoryAuth struct {
-	RepoUri string `json:"repoUri"`
-	Token   string `json:"token"`
-}
-
-// GetRepoUri returns getContainerRepositoryContainerRepositoryContainerRepositoryAuth.RepoUri, and is useful for accessing the field via an interface.
-func (v *getContainerRepositoryContainerRepositoryContainerRepositoryAuth) GetRepoUri() string {
-	return v.RepoUri
-}
-
-// GetToken returns getContainerRepositoryContainerRepositoryContainerRepositoryAuth.Token, and is useful for accessing the field via an interface.
-func (v *getContainerRepositoryContainerRepositoryContainerRepositoryAuth) GetToken() string {
-	return v.Token
-}
-
-// getContainerRepositoryResponse is returned by getContainerRepository on success.
-type getContainerRepositoryResponse struct {
-	ContainerRepository getContainerRepositoryContainerRepositoryContainerRepositoryAuth `json:"containerRepository"`
-}
-
-// GetContainerRepository returns getContainerRepositoryResponse.ContainerRepository, and is useful for accessing the field via an interface.
-func (v *getContainerRepositoryResponse) GetContainerRepository() getContainerRepositoryContainerRepositoryContainerRepositoryAuth {
-	return v.ContainerRepository
-}
-
 // getDeploymentByIdDeployment includes the requested fields of the GraphQL type Deployment.
 type getDeploymentByIdDeployment struct {
 	Id     string `json:"id"`
@@ -476,6 +476,43 @@ type getProjectByIdResponse struct {
 // GetProject returns getProjectByIdResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectByIdResponse) GetProject() getProjectByIdProject { return v.Project }
 
+func containerRepository(
+	ctx context.Context,
+	client graphql.Client,
+	orgId string,
+	artifactId string,
+	input ContainerRepositoryInput,
+) (*containerRepositoryResponse, error) {
+	req := &graphql.Request{
+		OpName: "containerRepository",
+		Query: `
+query containerRepository ($orgId: ID!, $artifactId: ID!, $input: ContainerRepositoryInput!) {
+	containerRepository(organizationId: $orgId, artifactId: $artifactId, input: $input) {
+		token
+		repoUri
+	}
+}
+`,
+		Variables: &__containerRepositoryInput{
+			OrgId:      orgId,
+			ArtifactId: artifactId,
+			Input:      input,
+		},
+	}
+	var err error
+
+	var data containerRepositoryResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deployPreviewEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -546,43 +583,6 @@ query getArtifactsByType ($organizationId: ID!, $artifactType: String!) {
 	var err error
 
 	var data getArtifactsByTypeResponse
-	resp := &graphql.Response{Data: &data}
-
-	err = client.MakeRequest(
-		ctx,
-		req,
-		resp,
-	)
-
-	return &data, err
-}
-
-func getContainerRepository(
-	ctx context.Context,
-	client graphql.Client,
-	artifactId string,
-	organizationId string,
-	input ContainerRepositoryInput,
-) (*getContainerRepositoryResponse, error) {
-	req := &graphql.Request{
-		OpName: "getContainerRepository",
-		Query: `
-query getContainerRepository ($artifactId: ID!, $organizationId: ID!, $input: ContainerRepositoryInput!) {
-	containerRepository(artifactId: $artifactId, organizationId: $organizationId, input: $input) {
-		repoUri
-		token
-	}
-}
-`,
-		Variables: &__getContainerRepositoryInput{
-			ArtifactId:     artifactId,
-			OrganizationId: organizationId,
-			Input:          input,
-		},
-	}
-	var err error
-
-	var data getContainerRepositoryResponse
 	resp := &graphql.Response{Data: &data}
 
 	err = client.MakeRequest(
