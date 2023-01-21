@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/client"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/definition"
@@ -46,9 +47,18 @@ func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.Mass
 			schemaRefDir := cwd
 			var err error
 			if relativeFilePathPattern.MatchString(schemaRefValue) { //nolint:gocritic
-				// this is a local file ref
-				// build up the path from where the dir current schema was read
-				hydratedSchema, err = hydrateFilePathRef(ctx, c, cwd, hydratedSchema, schema, schemaRefValue)
+				// temp hack for type definitions
+				isTypeDefinition := true
+				if isTypeDefinition {
+					refValueSlice := strings.Split(schemaRefValue, "/")
+					refValueName := refValueSlice[len(refValueSlice)-1]
+					optimisticRefValue := fmt.Sprintf("https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/%s", refValueName)
+					hydratedSchema, err = hydrateHTTPRef(ctx, c, hydratedSchema, schema, schemaRefDir, optimisticRefValue)
+				} else {
+					// this is a local file ref
+					// build up the path from where the dir current schema was read
+					hydratedSchema, err = hydrateFilePathRef(ctx, c, cwd, hydratedSchema, schema, schemaRefValue)
+				}
 			} else if httpPattern.MatchString(schemaRefValue) {
 				// HTTP ref. Pull the schema down via HTTP GET and hydrate
 				hydratedSchema, err = hydrateHTTPRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)
@@ -105,47 +115,33 @@ func hydrateMassdriverRef(ctx context.Context, c *client.MassdriverClient, hydra
 	return hydratedSchema, nil
 }
 
-func getHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
+func hydrateHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
 	var referencedSchema map[string]interface{}
 	request, err := http.NewRequestWithContext(ctx, "GET", schemaRefValue, nil)
 	if err != nil {
-		return referencedSchema, err
+		return hydratedSchema, err
 	}
 	resp, doErr := c.Client.Do(request)
 	if doErr != nil {
-		return referencedSchema, doErr
+		return hydratedSchema, doErr
 	}
 	if resp.StatusCode != http.StatusOK {
-		return referencedSchema, errors.New("received non-200 response getting ref " + resp.Status + " " + schemaRefValue)
+		return hydratedSchema, errors.New("received non-200 response getting ref " + resp.Status + " " + schemaRefValue)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return referencedSchema, err
+		return hydratedSchema, err
 	}
 	err = json.Unmarshal(body, &referencedSchema)
 	if err != nil {
-		return referencedSchema, err
-	}
-	return referencedSchema, nil
-}
-
-func hydrateHTTPRef(ctx context.Context, c *client.MassdriverClient, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefDir string, schemaRefValue string) (map[string]interface{}, error) {
-	var referencedSchema map[string]interface{}
-	hydratedSchema, errGet := getHTTPRef(ctx, c, hydratedSchema, schema, schemaRefDir, schemaRefValue)
-	if errGet != nil {
-		return nil, errGet
+		return hydratedSchema, err
 	}
 
-	// the local refs can be looked up as well
-	hydratedSchema, errReplace := optimisticallyReplaceRef(ctx, schema, referencedSchema, schemaRefDir, c)
-	if errReplace != nil {
-		return hydratedSchema, errReplace
-	}
-
-	return hydratedSchema, nil
+	hydratedSchema, err = replaceRef(ctx, schema, referencedSchema, schemaRefDir, c)
+	return hydratedSchema, err
 }
 
 func hydrateFilePathRef(ctx context.Context, c *client.MassdriverClient, cwd string, hydratedSchema map[string]interface{}, schema map[string]interface{}, schemaRefValue string) (map[string]interface{}, error) {
@@ -196,21 +192,6 @@ func replaceRef(ctx context.Context, base map[string]interface{}, referenced map
 	delete(base, "$ref")
 
 	for k, v := range referenced {
-		hydratedValue, err := Hydrate(ctx, v, schemaRefDir, c)
-		if err != nil {
-			return hydratedSchema, err
-		}
-		hydratedSchema[k] = hydratedValue
-	}
-	return hydratedSchema, nil
-}
-
-func optimisticallyReplaceRef(ctx context.Context, base map[string]interface{}, referenced map[string]interface{}, schemaRefDir string, c *client.MassdriverClient) (map[string]interface{}, error) {
-	hydratedSchema := map[string]interface{}{}
-	delete(base, "$ref")
-
-	for k, v := range referenced {
-		panic(v)
 		hydratedValue, err := Hydrate(ctx, v, schemaRefDir, c)
 		if err != nil {
 			return hydratedSchema, err
