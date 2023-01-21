@@ -48,7 +48,9 @@ func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.Mass
 			var err error
 			if relativeFilePathPattern.MatchString(schemaRefValue) { //nolint:gocritic
 				// temp hack for type definitions
-				isTypeDefinition := true
+				// some definitions use a path like `./` not `../types` and that would not work here
+				// but having this switch on `../types` def feels jank
+				isTypeDefinition := strings.Contains(schemaRefValue, "../types/")
 				if isTypeDefinition {
 					refValueSlice := strings.Split(schemaRefValue, "/")
 					refValueName := refValueSlice[len(refValueSlice)-1]
