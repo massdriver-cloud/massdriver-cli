@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -51,7 +52,12 @@ func Hydrate(ctx context.Context, anyVal interface{}, cwd string, c *client.Mass
 				// some definitions use a path like `./` not `../types` and that would not work here
 				// but having this switch on `../types` def feels jank
 				isTypeDefinition := strings.Contains(schemaRefValue, "../types/")
-				if isTypeDefinition {
+				_, errStat := os.Stat(schemaRefValue)
+				// a ~weak test to protect `mass schema dereference`
+				// otherwise that would break in a baddd way by fetching
+				// http refs instead of from the local filesystem
+				noLocalFileFound := errStat != nil
+				if isTypeDefinition && noLocalFileFound {
 					refValueSlice := strings.Split(schemaRefValue, "/")
 					refValueName := refValueSlice[len(refValueSlice)-1]
 					optimisticRefValue := fmt.Sprintf("https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/%s", refValueName)
