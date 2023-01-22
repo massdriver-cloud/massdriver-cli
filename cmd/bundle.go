@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
@@ -151,7 +150,7 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	}
 
 	msg := fmt.Sprintf("%s %s '%s' published successfully", b.Access, b.Type, b.Name)
-	log.Info().Str("organizationId", conf.OrgID).Msg(strings.Title(msg))
+	log.Info().Str("organizationId", conf.OrgID).Msg(msg)
 	return nil
 }
 
