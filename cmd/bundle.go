@@ -3,9 +3,11 @@ package cmd
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/bundle"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/config"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 
 	"github.com/rs/zerolog/log"
@@ -126,6 +128,7 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 func runBundlePublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
+	conf := config.Get()
 	c, errClient := initClient(cmd)
 	if errClient != nil {
 		return errClient
@@ -147,7 +150,8 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return errPublish
 	}
 
-	fmt.Println("Bundle published successfully!")
+	msg := fmt.Sprintf("%s %s '%s' published successfully", b.Access, b.Type, b.Name)
+	log.Info().Str("organizationId", conf.OrgID).Msg(strings.Title(msg))
 	return nil
 }
 

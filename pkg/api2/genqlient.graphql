@@ -23,7 +23,7 @@ query getDeploymentById($organizationId: ID!, $id: ID!){
 mutation deployPreviewEnvironment($orgId: ID!, $projectId: ID!, $input: PreviewEnvironmentInput!) {
   deployPreviewEnvironment(projectId: $projectId, organizationId: $orgId, input: $input) {
     successful
-    result {id, slug}
+    result {id, slug, project{id}}
     messages {
       message
     }

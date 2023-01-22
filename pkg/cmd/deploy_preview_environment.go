@@ -52,11 +52,11 @@ func DoDeployPreviewEnvironment(client graphql.Client, orgID string, id string, 
 		return nil, err
 	}
 
-	url := fmt.Sprintf(urlTemplate, id, previewEnv.Slug)
+	url := fmt.Sprintf(urlTemplate, previewEnv.Project.ID, previewEnv.ID)
 	log.Info().
 		Str("project", id).
 		Str("url", url).
-		Interface("environment", previewEnv.ID).
+		Interface("environment", previewEnv.Slug).
 		Msg("Preview environment deploying.")
 
 	err = browser.OpenURL(url)

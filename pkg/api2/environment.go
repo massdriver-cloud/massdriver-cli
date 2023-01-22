@@ -27,8 +27,13 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, projectID str
 
 	if response.DeployPreviewEnvironment.Successful {
 		// TODO: is there a less obnoxious way to do this...
-		env.ID = response.DeployPreviewEnvironment.Result.Id
-		env.Slug = response.DeployPreviewEnvironment.Result.Slug
+		env = Environment{
+			ID:   response.DeployPreviewEnvironment.Result.Id,
+			Slug: response.DeployPreviewEnvironment.Result.Slug,
+			Project: Project{
+				ID: response.DeployPreviewEnvironment.Result.Project.Id,
+			},
+		}
 		return env, nil
 	}
 

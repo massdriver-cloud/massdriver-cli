@@ -299,8 +299,9 @@ func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesVa
 
 // deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget includes the requested fields of the GraphQL type Target.
 type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget struct {
-	Id   string `json:"id"`
-	Slug string `json:"slug"`
+	Id      string                                                                           `json:"id"`
+	Slug    string                                                                           `json:"slug"`
+	Project deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject `json:"project"`
 }
 
 // GetId returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Id, and is useful for accessing the field via an interface.
@@ -311,6 +312,21 @@ func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarg
 // GetSlug returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Slug, and is useful for accessing the field via an interface.
 func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetSlug() string {
 	return v.Slug
+}
+
+// GetProject returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Project, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetProject() deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject {
+	return v.Project
+}
+
+// deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject includes the requested fields of the GraphQL type Project.
+type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject struct {
+	Id string `json:"id"`
+}
+
+// GetId returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject.Id, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject) GetId() string {
+	return v.Id
 }
 
 // deployPreviewEnvironmentResponse is returned by deployPreviewEnvironment on success.
@@ -529,6 +545,9 @@ mutation deployPreviewEnvironment ($orgId: ID!, $projectId: ID!, $input: Preview
 		result {
 			id
 			slug
+			project {
+				id
+			}
 		}
 		messages {
 			message
