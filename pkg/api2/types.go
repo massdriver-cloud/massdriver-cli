@@ -21,8 +21,9 @@ type Deployment struct {
 }
 
 type Environment struct {
-	ID   string
-	Slug string
+	ID      string
+	Slug    string
+	Project Project
 }
 
 type ContainerRepository struct {

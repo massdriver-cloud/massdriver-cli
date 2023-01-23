@@ -40,6 +40,8 @@ install.linux: build.linux
 MASSDRIVER_PATH?=../massdriver
 API2_PATH?=${MKFILE_DIR}/pkg/api2
 api:
+	go get github.com/vektah/gqlparser/v2/validator@v2.5.1
+	go get github.com/Khan/genqlient/generate@v0.5.0
 	cd ${MASSDRIVER_PATH} && \
 		mix absinthe.schema.sdl ${API2_PATH}/schema.graphql && \
 		cd ${API2_PATH} && \

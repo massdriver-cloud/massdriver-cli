@@ -129,7 +129,7 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
-
+	conf := config.Get()
 	c, errClient := initClient(cmd)
 	if errClient != nil {
 		return errClient
@@ -145,7 +145,9 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	if errPub := bundle.Publish(c, app); errPub != nil {
 		return errPub
 	}
-	log.Info().Msg("Application published successfully!")
+
+	msg := fmt.Sprintf("%s %s '%s' published successfully", app.Access, app.Type, app.Name)
+	log.Info().Str("organizationId", conf.OrgID).Msg(msg)
 
 	return nil
 }
