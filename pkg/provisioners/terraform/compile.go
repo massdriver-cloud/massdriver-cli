@@ -53,7 +53,7 @@ func GenerateFiles(bundlePath string, srcDir string) error {
 	if err != nil {
 		return err
 	}
-	devParamPath := path.Join(bundlePath, "src", common.DevParamsFilename)
+	devParamPath := path.Join(bundlePath, srcDir, common.DevParamsFilename)
 	devParamsVariablesFile, err := os.OpenFile(devParamPath, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil { // fall back to create missing file
 		devParamsVariablesFile, err = os.Create(devParamPath)
