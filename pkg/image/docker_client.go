@@ -45,6 +45,8 @@ func (c *Client) BuildImage(input PushImageInput, containerRepository *api2.Cont
 		Dockerfile: input.Dockerfile,
 		Tags:       []string{imageFqn(containerRepository.RepositoryUri, input.ImageName, input.Tag)},
 		Remove:     true,
+		// Platform:   input.TargetPlatform,
+		Platform: "linux/amd64",
 	}
 
 	ctx := context.Background()
