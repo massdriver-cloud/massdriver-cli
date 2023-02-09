@@ -45,3 +45,30 @@ func DeployPreviewEnvironment(client graphql.Client, orgID string, projectID str
 
 	return env, fmt.Errorf("failed to deploy environment: %v", string(msgs))
 }
+
+func DecommissionPreviewEnvironment(client graphql.Client, orgID string, targetID string) (Environment, error) {
+	ctx := context.Background()
+	env := Environment{}
+
+	response, err := decommissionPreviewEnvironment(ctx, client, orgID, targetID)
+
+	if err != nil {
+		return env, err
+	}
+
+	if response.DecommissionPreviewEnvironment.Successful {
+		env = Environment{
+			ID:   response.DecommissionPreviewEnvironment.Result.Id,
+			Slug: response.DecommissionPreviewEnvironment.Result.Slug,
+		}
+		return env, nil
+	}
+
+	log.Error().Str("target", targetID).Msg("Preview environment decommission failed.")
+	msgs, err := json.Marshal(response.DecommissionPreviewEnvironment.Messages)
+	if err != nil {
+		return env, fmt.Errorf("failed to decommission preview environment and couldn't marshal error messages: %w", err)
+	}
+
+	return env, fmt.Errorf("failed to decommission environment: %v", string(msgs))
+}
