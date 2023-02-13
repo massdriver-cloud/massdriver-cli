@@ -114,6 +114,11 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 		OutputDir: ".",
 	}
 
+	if err := cache.RefreshAppTemplates(); err != nil {
+		return err
+	}
+	log.Info().Msg("Application templates refreshed successfully.")
+
 	err := application.RunPromptNew(&templateData)
 	if err != nil {
 		return err
