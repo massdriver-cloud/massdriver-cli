@@ -8,6 +8,7 @@ type PushImageInput struct {
 	ArtifactId         string
 	Dockerfile         string
 	DockerBuildContext string
+	TargetPlatform     string
 }
 
 type ErrorLine struct {

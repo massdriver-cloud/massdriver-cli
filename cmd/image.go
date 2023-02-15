@@ -30,6 +30,7 @@ var imagePushCmd = &cobra.Command{
 
 var dockerBuildContext string
 var dockerfileName string
+var targetPlatform string
 var tag string
 var artifactId string
 var region string
@@ -44,6 +45,7 @@ func init() {
 	imagePushCmd.MarkFlagRequired("artifact")
 	imagePushCmd.Flags().StringVarP(&region, "region", "r", "", "Cloud region to push the image to")
 	imagePushCmd.MarkFlagRequired("region")
+	imagePushCmd.Flags().StringVarP(&targetPlatform, "platform", "p", "linux/amd64", "")
 }
 
 func runImagePush(cmd *cobra.Command, args []string) error {
@@ -84,6 +86,7 @@ func validatePushInputAndAddFlags(input *image.PushImageInput, cmd *cobra.Comman
 	flagsToSet := []PushFlag{
 		{Flag: "dockerfile", Attribute: &input.Dockerfile},
 		{Flag: "build-context", Attribute: &input.DockerBuildContext},
+		{Flag: "platform", Attribute: &input.TargetPlatform},
 		{Flag: "image-tag", Attribute: &input.Tag},
 		{Flag: "artifact", Attribute: &input.ArtifactId},
 		{Flag: "region", Attribute: &input.Location},
