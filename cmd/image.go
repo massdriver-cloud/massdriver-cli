@@ -31,7 +31,7 @@ var imagePushCmd = &cobra.Command{
 var dockerBuildContext string
 var dockerfileName string
 var targetPlatform string
-var buildOnly bool
+var skipPush bool
 var tag string
 var artifactId string
 var region string
@@ -47,7 +47,7 @@ func init() {
 	imagePushCmd.Flags().StringVarP(&region, "region", "r", "", "Cloud region to push the image to")
 	imagePushCmd.MarkFlagRequired("region")
 	imagePushCmd.Flags().StringVarP(&targetPlatform, "platform", "p", "linux/amd64", "")
-	imagePushCmd.Flags().BoolVarP(&buildOnly, "build", "o", false, "")
+	imagePushCmd.Flags().BoolVarP(&skipPush, "skip-push", "s", false, "")
 }
 
 func runImagePush(cmd *cobra.Command, args []string) error {
@@ -80,8 +80,9 @@ func runImagePush(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if buildOnly {
-		return image.Build(pushInput, imageClient)
+
+	if skipPush {
+		return image.Build(gqlclient, pushInput, imageClient)
 	}
 
 	return image.Push(gqlclient, pushInput, imageClient)
