@@ -11,6 +11,18 @@ import (
 	"github.com/massdriver-cloud/massdriver-cli/pkg/api2/jsonscalar"
 )
 
+// Arguments required to get container repositories
+type ContainerRepositoryInput struct {
+	Location  string `json:"location"`
+	ImageName string `json:"imageName"`
+}
+
+// GetLocation returns ContainerRepositoryInput.Location, and is useful for accessing the field via an interface.
+func (v *ContainerRepositoryInput) GetLocation() string { return v.Location }
+
+// GetImageName returns ContainerRepositoryInput.ImageName, and is useful for accessing the field via an interface.
+func (v *ContainerRepositoryInput) GetImageName() string { return v.ImageName }
+
 type Credential struct {
 	ArtifactDefinitionType string `json:"artifactDefinitionType"`
 	ArtifactId             string `json:"artifactId"`
@@ -132,6 +144,22 @@ func (v *PreviewEnvironmentInput) __premarshalJSON() (*__premarshalPreviewEnviro
 	return &retval, nil
 }
 
+// __containerRepositoryInput is used internally by genqlient
+type __containerRepositoryInput struct {
+	OrgId      string                   `json:"orgId"`
+	ArtifactId string                   `json:"artifactId"`
+	Input      ContainerRepositoryInput `json:"input"`
+}
+
+// GetOrgId returns __containerRepositoryInput.OrgId, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetOrgId() string { return v.OrgId }
+
+// GetArtifactId returns __containerRepositoryInput.ArtifactId, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetArtifactId() string { return v.ArtifactId }
+
+// GetInput returns __containerRepositoryInput.Input, and is useful for accessing the field via an interface.
+func (v *__containerRepositoryInput) GetInput() ContainerRepositoryInput { return v.Input }
+
 // __deployPreviewEnvironmentInput is used internally by genqlient
 type __deployPreviewEnvironmentInput struct {
 	OrgId     string                  `json:"orgId"`
@@ -183,6 +211,32 @@ func (v *__getProjectByIdInput) GetOrganizationId() string { return v.Organizati
 
 // GetId returns __getProjectByIdInput.Id, and is useful for accessing the field via an interface.
 func (v *__getProjectByIdInput) GetId() string { return v.Id }
+
+// containerRepositoryContainerRepositoryContainerRepositoryAuth includes the requested fields of the GraphQL type ContainerRepositoryAuth.
+type containerRepositoryContainerRepositoryContainerRepositoryAuth struct {
+	Token   string `json:"token"`
+	RepoUri string `json:"repoUri"`
+}
+
+// GetToken returns containerRepositoryContainerRepositoryContainerRepositoryAuth.Token, and is useful for accessing the field via an interface.
+func (v *containerRepositoryContainerRepositoryContainerRepositoryAuth) GetToken() string {
+	return v.Token
+}
+
+// GetRepoUri returns containerRepositoryContainerRepositoryContainerRepositoryAuth.RepoUri, and is useful for accessing the field via an interface.
+func (v *containerRepositoryContainerRepositoryContainerRepositoryAuth) GetRepoUri() string {
+	return v.RepoUri
+}
+
+// containerRepositoryResponse is returned by containerRepository on success.
+type containerRepositoryResponse struct {
+	ContainerRepository containerRepositoryContainerRepositoryContainerRepositoryAuth `json:"containerRepository"`
+}
+
+// GetContainerRepository returns containerRepositoryResponse.ContainerRepository, and is useful for accessing the field via an interface.
+func (v *containerRepositoryResponse) GetContainerRepository() containerRepositoryContainerRepositoryContainerRepositoryAuth {
+	return v.ContainerRepository
+}
 
 // deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload includes the requested fields of the GraphQL type TargetPayload.
 type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayload struct {
@@ -245,8 +299,9 @@ func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadMessagesVa
 
 // deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget includes the requested fields of the GraphQL type Target.
 type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget struct {
-	Id   string `json:"id"`
-	Slug string `json:"slug"`
+	Id      string                                                                           `json:"id"`
+	Slug    string                                                                           `json:"slug"`
+	Project deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject `json:"project"`
 }
 
 // GetId returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Id, and is useful for accessing the field via an interface.
@@ -257,6 +312,21 @@ func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarg
 // GetSlug returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Slug, and is useful for accessing the field via an interface.
 func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetSlug() string {
 	return v.Slug
+}
+
+// GetProject returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget.Project, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTarget) GetProject() deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject {
+	return v.Project
+}
+
+// deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject includes the requested fields of the GraphQL type Project.
+type deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject struct {
+	Id string `json:"id"`
+}
+
+// GetId returns deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject.Id, and is useful for accessing the field via an interface.
+func (v *deployPreviewEnvironmentDeployPreviewEnvironmentTargetPayloadResultTargetProject) GetId() string {
+	return v.Id
 }
 
 // deployPreviewEnvironmentResponse is returned by deployPreviewEnvironment on success.
@@ -422,6 +492,43 @@ type getProjectByIdResponse struct {
 // GetProject returns getProjectByIdResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectByIdResponse) GetProject() getProjectByIdProject { return v.Project }
 
+func containerRepository(
+	ctx context.Context,
+	client graphql.Client,
+	orgId string,
+	artifactId string,
+	input ContainerRepositoryInput,
+) (*containerRepositoryResponse, error) {
+	req := &graphql.Request{
+		OpName: "containerRepository",
+		Query: `
+query containerRepository ($orgId: ID!, $artifactId: ID!, $input: ContainerRepositoryInput!) {
+	containerRepository(organizationId: $orgId, artifactId: $artifactId, input: $input) {
+		token
+		repoUri
+	}
+}
+`,
+		Variables: &__containerRepositoryInput{
+			OrgId:      orgId,
+			ArtifactId: artifactId,
+			Input:      input,
+		},
+	}
+	var err error
+
+	var data containerRepositoryResponse
+	resp := &graphql.Response{Data: &data}
+
+	err = client.MakeRequest(
+		ctx,
+		req,
+		resp,
+	)
+
+	return &data, err
+}
+
 func deployPreviewEnvironment(
 	ctx context.Context,
 	client graphql.Client,
@@ -438,6 +545,9 @@ mutation deployPreviewEnvironment ($orgId: ID!, $projectId: ID!, $input: Preview
 		result {
 			id
 			slug
+			project {
+				id
+			}
 		}
 		messages {
 			message
