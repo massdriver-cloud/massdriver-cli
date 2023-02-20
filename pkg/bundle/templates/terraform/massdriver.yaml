@@ -60,14 +60,7 @@ artifacts:
 
 # schema-ui.json
 # List of form customizations for params-schema
+# learn more about widgets & fields: https://docs.massdriver.cloud/bundles/custom-widgets-and-fields
 ui:
   ui:order:
     - "*"
-  ## set top level ui:wiget
-  # secret_key:
-  #    ui:widget: "password"
-  ## Set key in an array of objects
-  # secrets:
-  #   items:
-  #     mdKeyId:
-  #       ui:widget: "hidden"
