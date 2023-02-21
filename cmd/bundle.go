@@ -107,7 +107,7 @@ func runBundleGenerate(cmd *cobra.Command, args []string) error {
 
 	templateData := template.Data{
 		OutputDir:    outputDir,
-		Type:         "bundle",
+		Type:         "infrastructure",
 		TemplateName: "terraform",
 	}
 
