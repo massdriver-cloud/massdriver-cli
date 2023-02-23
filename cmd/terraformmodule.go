@@ -18,19 +18,41 @@ var terraformModuleNewCmd = &cobra.Command{
 	RunE:  runTerraformModuleNew,
 }
 
+// var useApplicationTemplate bool
+
 func init() {
 	rootCmd.AddCommand(terraformModuleCmd)
 
 	terraformModuleCmd.AddCommand(terraformModuleNewCmd)
+	terraformModuleNewCmd.Flags().BoolP("application", "a", false, "Is this an application Terraform module?")
 }
 
 func runTerraformModuleNew(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	templateData := template.Data{
-		Access: "private",
-		// TODO: unify bundle build and app build outputDir logic and support
-		OutputDir: ".",
+		OutputDir: "terraform-module",
+	}
+
+	useApplicationTemplate, err := cmd.Flags().GetBool("application")
+	if err != nil {
+		return err
+	}
+
+	if useApplicationTemplate {
+		// TODO: prompt for app things
+		// err := terraformmodule.RunPromptNew(&templateData)
+		// if err != nil {
+		// 	return err
+		// }
+		templateData.TemplateName = "massdriver-application"
+		templateData.OutputDir = "massdriver-application"
+
+		errGen := terraformmodule.GenerateApplication(&templateData)
+		if errGen != nil {
+			return errGen
+		}
+		return nil
 	}
 
 	// TODO: prompt for name of module, etc
