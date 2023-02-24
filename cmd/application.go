@@ -161,18 +161,9 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
-	app, err := application.Parse(common.MassdriverYamlFilename, nil)
-	if err != nil {
-		return err
-	}
-	if !app.IsApplication() {
-		return fmt.Errorf("this command can only be used with bundle type 'application'")
-	}
-	// original
 	name := args[0]
 
 	c := config.Get()
-
 	client := api.NewClient()
 	client2 := api2.NewClient(c.APIKey)
 	deployment, err := api.DeployPackage(client, &client2, c.OrgID, name)
