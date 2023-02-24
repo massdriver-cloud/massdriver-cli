@@ -39,9 +39,15 @@ func TestNewTFVariable(t *testing.T) {
 			want:  terraform.TFRequiredVariable{Type: "any"},
 		},
 		{
-			name:  "object w/ scalars",
-			input: jsonschema.Property{Type: "object", Properties: jsonschema.PropertiesMap{"street_number": jsonschema.Property{Type: "number"}, "street_name": jsonschema.Property{Type: "string"}}},
-			want:  terraform.TFRequiredVariable{Type: "any"},
+			name: "object w/ scalars",
+			input: jsonschema.Property{
+				Type: "object",
+				Properties: jsonschema.PropertiesMap{
+					"street_number": jsonschema.Property{Type: "number"},
+					"street_name":   jsonschema.Property{Type: "string"},
+				},
+			},
+			want: terraform.TFRequiredVariable{Type: "any"},
 		},
 		{
 			name: "complex objects",

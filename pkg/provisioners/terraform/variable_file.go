@@ -54,15 +54,28 @@ func convertPropertyToType(p jsonschema.Property) string {
 }
 
 func convertObject(prop jsonschema.Property) string {
-	_ = prop
-	// See: https://github.com/massdriver-cloud/xo/issues/44
-	return "any"
+	objectString := "object({"
+
+	// this comma is used to separate fields. Start it empty (no comma before first element)
+	comma := ""
+	for key, value := range prop.Properties {
+		optional := false
+		typeString := convertPropertyToType(value)
+		if optional {
+			typeString = wrapWithOptional(convertPropertyToType(value))
+		}
+		objectString += comma + key + "=" + typeString
+		comma = ","
+	}
+	objectString += "})"
+	return objectString
 }
 
 func convertArray(prop jsonschema.Property) string {
-	_ = prop
-	// See: https://github.com/massdriver-cloud/xo/issues/44
-	return "any"
+	typeString := "list("
+	typeString += convertPropertyToType(*prop.Items)
+	typeString += ")"
+	return typeString
 }
 
 func convertScalar(pType string) string {
@@ -74,4 +87,8 @@ func convertScalar(pType string) string {
 	default:
 		return pType
 	}
+}
+
+func wrapWithOptional(input string) string {
+	return "optional(" + input + ")"
 }
