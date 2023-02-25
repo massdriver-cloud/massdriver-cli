@@ -31,6 +31,13 @@ var previewDeployCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 }
 
+var previewDecommissionCmd = &cobra.Command{
+	Use:   "decommission target_id",
+	Short: "Decommissions a preview environment target in your project.",
+	RunE:  runPreviewDecommission,
+	Args:  cobra.ExactArgs(1),
+}
+
 func init() {
 	rootCmd.AddCommand(previewCmd)
 
@@ -40,6 +47,8 @@ func init() {
 	previewCmd.AddCommand(previewDeployCmd)
 	previewDeployCmd.Flags().StringVarP(&previewParamsPath, "params", "p", "./preview.json", "Path to preview params file. This file supports bash interpolation.")
 	previewDeployCmd.Flags().StringVarP(&previewCiContextPath, "ci-context", "c", "", "Path to GitHub Actions event.json")
+
+	previewCmd.AddCommand(previewDecommissionCmd)
 }
 
 func runPreviewDeploy(cmd *cobra.Command, args []string) error {
@@ -57,6 +66,24 @@ func runPreviewDeploy(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Info().Str("id", environment.ID).Str("Config", previewParamsPath).Msgf("Preview environment deploying.")
+	return nil
+}
+
+func runPreviewDecommission(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+	c := config.Get()
+
+	targetSlugOrID := args[0]
+
+	client := api2.NewClient(c.APIKey)
+	environment, err := api2.DecommissionPreviewEnvironment(client, c.OrgID, targetSlugOrID)
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to decomission preview environment")
+		return err
+	}
+
+	log.Info().Str("id", environment.ID).Msgf("Preview environment decomissioning.")
 	return nil
 }
 
