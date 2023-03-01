@@ -83,8 +83,16 @@ func getAccessLevel(t *template.Data) error {
 }
 
 func getDescription(t *template.Data) error {
+	validate := func(input string) error {
+		if len(input) == 0 {
+			return errors.New("Description cannot be empty.")
+		}
+		return nil
+	}
+
 	prompt := promptui.Prompt{
-		Label: "Description",
+		Label:    "Description",
+		Validate: validate,
 	}
 
 	result, err := prompt.Run()

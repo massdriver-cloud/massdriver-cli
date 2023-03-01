@@ -81,8 +81,16 @@ func getAccessLevel(t *template.Data) error {
 }
 
 func getDescription(t *template.Data) error {
+	validate := func(input string) error {
+		if len(input) == 0 {
+			return errors.New("Description cannot be empty.")
+		}
+		return nil
+	}
+
 	prompt := promptui.Prompt{
-		Label: "Description",
+		Label:    "Description",
+		Validate: validate,
 	}
 
 	result, err := prompt.Run()
@@ -132,7 +140,7 @@ func removeIgnoredTemplateDirectories(templates []string) []string {
 func getOutputDir(t *template.Data) error {
 	prompt := promptui.Prompt{
 		Label:   `Output directory`,
-		Default: t.Name,
+		Default: "massdriver",
 	}
 
 	result, err := prompt.Run()
