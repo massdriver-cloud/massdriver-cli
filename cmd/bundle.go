@@ -26,6 +26,13 @@ var bundleBuildCmd = &cobra.Command{
 	RunE: runBundleBuild,
 }
 
+var bundleLintCmd = &cobra.Command{
+	Use:          "lint",
+	Short:        "Check bundle configuration for common errors",
+	SilenceUsage: true,
+	RunE:         runBundleLint,
+}
+
 var bundleGenerateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
@@ -52,6 +59,8 @@ func init() {
 	bundleCmd.AddCommand(bundleBuildCmd)
 	bundleBuildCmd.Flags().StringP("output", "o", "", "Path to output directory (default is massdriver.yaml directory)")
 
+	bundleCmd.AddCommand(bundleLintCmd)
+
 	bundleCmd.AddCommand(bundleGenerateCmd)
 	bundleGenerateCmd.Flags().StringP("output-dir", "o", ".", "Directory to generate bundle in")
 	bundleCmd.AddCommand(bundleNewCmd)
@@ -59,6 +68,7 @@ func init() {
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
+	bundlePublishCmd.Flags().BoolP("force", "f", false, "Force publish even if linting fails")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -128,6 +138,11 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	conf := config.Get()
+	force, errForceGet := cmd.Flags().GetBool("force")
+	if errForceGet != nil {
+		return errForceGet
+	}
+
 	c, errClient := initClient(cmd)
 	if errClient != nil {
 		return errClient
@@ -145,12 +160,41 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
 	}
 
+	if errLint := bundle.Lint(b); errLint != nil {
+		if force {
+			msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
+			log.Warn().Msg(msg)
+		} else {
+			return errLint
+		}
+	}
+
 	if errPublish := bundle.Publish(c, b); errPublish != nil {
 		return errPublish
 	}
 
 	msg := fmt.Sprintf("%s %s '%s' published successfully", b.Access, b.Type, b.Name)
 	log.Info().Str("organizationId", conf.OrgID).Msg(msg)
+	return nil
+}
+
+// runBundleLint checks the bundle for common configuration errors
+func runBundleLint(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	b, err := bundle.Parse(common.MassdriverYamlFilename, nil)
+	if err != nil {
+		return err
+	}
+	if !b.IsInfrastructure() {
+		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
+	}
+
+	err = bundle.Lint(b)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

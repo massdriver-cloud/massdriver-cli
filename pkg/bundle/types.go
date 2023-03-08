@@ -21,7 +21,7 @@ type Bundle struct {
 	Params      map[string]interface{} `json:"params" yaml:"params"`
 	Connections map[string]interface{} `json:"connections" yaml:"connections"`
 	UI          map[string]interface{} `json:"ui" yaml:"ui"`
-	App         *AppBlock              `json:"app" yaml:"app"`
+	App         *AppBlock              `json:"app,omitempty" yaml:"app,omitempty"`
 }
 
 type AppBlock struct {

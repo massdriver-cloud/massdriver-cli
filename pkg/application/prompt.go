@@ -82,8 +82,8 @@ func getAccessLevel(t *template.Data) error {
 
 func getDescription(t *template.Data) error {
 	validate := func(input string) error {
-		if len(input) == 0 {
-			return errors.New("Description cannot be empty.")
+		if len(input) < 10 {
+			return errors.New("Description must be at least 10 characters.")
 		}
 		return nil
 	}
