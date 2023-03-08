@@ -16,8 +16,8 @@ connections:
 
   required:
   
-  - draft_node  
-  properties:  
+  - draft_node
+  properties:
   
     draft_node:
       $ref: massdriver/draft-node

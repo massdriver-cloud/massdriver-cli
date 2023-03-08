@@ -17,8 +17,8 @@ connections:
   required:
   {%- for conn in connections %}
   - {{conn[0]-}}
-  {% endfor %}  
-  properties:  
+  {% endfor %}
+  properties:
   {%- for conn in connections %}
     {{conn[0]}}:
       $ref: {{conn[1]-}}

@@ -102,7 +102,12 @@ func walkAndCompare(wantDir string, gotDir string) {
 
 			gotText, _ := readFile(gotFilePath)
 			wantText, _ := readFile(path)
+
 			if gotText != wantText {
+
+				os.WriteFile("/tmp/got", []byte(gotText), 0600)
+				os.WriteFile("/tmp/want", []byte(wantText), 0600)
+
 				fmt.Printf("File did not render correctly: %s\n", path)
 				fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
 				dmp := diffmatchpatch.New()
