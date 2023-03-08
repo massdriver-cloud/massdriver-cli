@@ -1,22 +1,31 @@
 package bundle
 
 import (
-	"embed"
 	"fmt"
-	"io/fs"
 	"path"
 	"regexp"
 	"strings"
 
+	"github.com/massdriver-cloud/massdriver-cli/pkg/cache"
+	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
+	"github.com/rs/zerolog/log"
 )
 
-// note to all: option in go 1.18 will load hidden files so we dont have to include `cp` instructions in readme for pre-commit.
-//
-//go:embed templates/* templates/terraform/.pre-commit-config.yaml templates/terraform/.gitignore templates/terraform/.github/workflows/build.yaml templates/terraform/.github/workflows/publish.yaml templates/terraform/src/_artifacts.tf templates/terraform/src/_providers.tf
-var templatesFs embed.FS
+const TerraformTemplateName = "terraform-module"
 
 func Generate(data *template.Data) error {
+	data.TemplateName = TerraformTemplateName
+	log.Info().Msgf("Generating bundle from template '%s'", data.TemplateName)
+	templates, err := cache.ApplicationTemplates()
+	if err != nil {
+		return err
+	}
+
+	if !common.Contains(templates, data.TemplateName) {
+		return fmt.Errorf("template '%s' not found, try `mass app templates refresh`", data.TemplateName)
+	}
+
 	// add cloud prefix
 	r := regexp.MustCompile("^[a-z]+-")
 	data.CloudPrefix = strings.Trim(r.FindString(data.Name), "-")
@@ -25,6 +34,7 @@ func Generate(data *template.Data) error {
 	data.RepoName = fmt.Sprintf("massdriver-cloud/%s", data.Name)
 	data.RepoNameEncoded = strings.ReplaceAll(data.RepoName, "/", "%2F")
 
-	templateDir, _ := fs.Sub(fs.FS(templatesFs), path.Join("templates", data.TemplateName))
-	return template.RenderEmbededDirectory(templateDir, data)
+	data.TemplateSource = cache.AppTemplateCacheDir()
+	templatePath := path.Join(data.TemplateSource, data.TemplateName)
+	return template.RenderDirectory(templatePath, data)
 }

@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"os"
 
@@ -28,6 +27,16 @@ func RenderDirectory(templateDir string, data *Data) error {
 		srcPath := templateDir + "/" + file.Name()
 		destPath := data.OutputDir + "/" + file.Name()
 
+		if _, err := os.Stat(destPath); err == nil {
+			fmt.Printf("%s exists. Overwrite? (y|N): ", destPath)
+			var response string
+			fmt.Scanln(&response)
+
+			if response != "y" && response != "Y" && response != "yes" {
+				continue
+			}
+		}
+
 		if file.IsDir() {
 			err := cp.Copy(srcPath, destPath)
 			if err != nil {
@@ -49,17 +58,4 @@ func RenderDirectory(templateDir string, data *Data) error {
 	}
 
 	return nil
-}
-
-func RenderEmbededDirectory(templateFS fs.FS, data *Data) error {
-	return renderEmbededDirectory(templateFS, data, readFileFromEmbededFunc(templateFS))
-}
-
-func renderEmbededDirectory(templateFiles fs.FS, data *Data, tmplFunc func(path string) ([]byte, error)) error {
-	return fs.WalkDir(templateFiles, ".", func(filePath string, info fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		return mkDirOrWriteFile(data.OutputDir, filePath, info, data, tmplFunc)
-	})
 }
