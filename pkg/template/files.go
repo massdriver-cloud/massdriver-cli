@@ -1,23 +1,33 @@
 package template
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path"
-	"text/template"
 
 	"github.com/massdriver-cloud/massdriver-cli/pkg/common"
+	"github.com/osteele/liquid"
 )
 
-func WriteToFile(filePath string, tmpl *template.Template, data *Data) error {
-	outputFile, err := os.Create(filePath)
-	if err != nil {
-		return err
+func WriteToFile(filePath string, template []byte, data *Data) error {
+	engine := liquid.NewEngine()
+
+	var bindings map[string]interface{}
+	inrec, _ := json.Marshal(data)
+	json.Unmarshal(inrec, &bindings)
+
+	out, renderErr := engine.ParseAndRender(template, bindings)
+
+	if renderErr != nil {
+		fmt.Printf("hey its here %s", filePath)
+		return renderErr
 	}
-	defer outputFile.Close()
-	return tmpl.Execute(outputFile, data)
+
+	return os.WriteFile(filePath, out, 0600)
+
 }
 
 func readFileFromEmbededFunc(templateFS fs.FS) func(filePath string) ([]byte, error) {
@@ -61,21 +71,18 @@ func mkDirOrWriteFile(outputDir string, filePath string, info fs.DirEntry, data 
 	return promptAndWrite(file, data, outputPath)
 }
 
-func promptAndWrite(file []byte, data *Data, outputPath string) error {
-	tmpl, errTmpl := template.New("tmpl").Delims(OpenPattern, ClosePattern).Parse(string(file))
-	if errTmpl != nil {
-		return errTmpl
-	}
-
+func promptAndWrite(template []byte, data *Data, outputPath string) error {
 	if _, err := os.Stat(outputPath); err == nil {
 		fmt.Printf("%s exists. Overwrite? (y|N): ", outputPath)
 		var response string
 		fmt.Scanln(&response)
 
 		if response == "y" || response == "Y" || response == "yes" {
-			return WriteToFile(outputPath, tmpl, data)
+			return WriteToFile(outputPath, template, data)
+		} else {
+			return nil
 		}
 	}
 
-	return WriteToFile(outputPath, tmpl, data)
+	return WriteToFile(outputPath, template, data)
 }

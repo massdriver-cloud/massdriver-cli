@@ -6,8 +6,6 @@ import (
 	"path"
 	"testing"
 
-	gotmpl "text/template"
-
 	"github.com/massdriver-cloud/massdriver-cli/pkg/template"
 )
 
@@ -23,9 +21,9 @@ func TestWriteTemplateToFile(t *testing.T) {
 		{
 			name: "Test name",
 			template: `# Massdriver Application Template
-# Template: <md .TemplateName md>
-title: <md .Name md>
-description: <md .Description md>
+# Template: {{ templateName }}
+title: {{ name }}
+description: {{ description }}
 `,
 			data: template.Data{
 				Name:         "App Name",
@@ -40,9 +38,9 @@ description: <md .Description md>
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tmpl, _ := gotmpl.New("tmpl").Delims(template.OpenPattern, template.ClosePattern).Parse(tc.template)
+
 			filePath := path.Join(t.TempDir(), tc.fileName)
-			err := template.WriteToFile(filePath, tmpl, &tc.data)
+			err := template.WriteToFile(filePath, []byte(tc.template), &tc.data)
 			if err != nil {
 				t.Errorf("unexpected error copying template: %v", err)
 			}

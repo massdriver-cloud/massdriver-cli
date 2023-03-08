@@ -37,7 +37,7 @@ func TestGenerate(t *testing.T) {
 
 	err := bundle.Generate(&bundleData)
 	if err != nil {
-		t.Fatalf("%d, unexpected error", err)
+		t.Fatalf("%d, unexpected error in file", err)
 	}
 
 	templatePath := bundleData.OutputDir

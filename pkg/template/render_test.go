@@ -81,7 +81,6 @@ func TestAppFromTemplate(t *testing.T) {
 }
 
 func walkAndCompare(wantDir string, gotDir string) {
-	_ = gotDir
 	err := filepath.Walk(wantDir,
 		func(path string, info os.FileInfo, err error) error {
 			isDir, _ := isDirectory(path)
@@ -105,6 +104,7 @@ func walkAndCompare(wantDir string, gotDir string) {
 				dmp := diffmatchpatch.New()
 				diffs := dmp.DiffMain(wantText, gotText, false)
 				fmt.Println(dmp.DiffToDelta(diffs))
+				fmt.Printf("==== Got ====\n%s\n==== End Got ====\n", gotText)
 			}
 
 			return nil

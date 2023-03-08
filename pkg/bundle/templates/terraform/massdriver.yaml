@@ -1,10 +1,10 @@
 # This file will be used to generate all of the schema-*.json files in a bundle
 schema: draft-07
-name: "<md .Name md>"
-description: "<md .Description md>"
-source_url: github.com/YOUR_NAME_HERE/<md .Name md>
-access: "<md .Access md>"
-type: "<md .Type md>"
+name: "{{ name }}"
+description: "{{ description }}"
+source_url: github.com/YOUR_NAME_HERE/{{ name }}
+access: "{{ access }}"
+type: "{{ type }}"
 
 # schema-params.json
 # JSON Schema sans-fields above
@@ -22,7 +22,7 @@ params:
     foo:
       type: string
       title: Foo
-      description: Name of <md .Name md>
+      description: Name of {{ name }}
       default: ""
       examples:
         - US-West 2 VPC
@@ -30,23 +30,20 @@ params:
 
 # schema-connections.json
 # Named list of input connections (artifacts) (map[name]artifact)
-<md if not .Connections md>
 connections:
-  properties: {}
-<md end -md>
-
-<md if .Connections md>
-connections:
+{%- if connections.size > 0 %}
   required:
-  <md- range $key, $art:= .Connections md>
-    - <md $key md>
-  <md- end md>
-  properties:
-  <md- range $key, $art:= .Connections md>
-    <md $key md>:
-      $ref: <md $art md>
-  <md- end md>
-<md- end md>
+  {%- for conn in connections %}
+  - {{conn[0]-}}
+  {% endfor %}  
+  properties:  
+  {%- for conn in connections %}
+    {{conn[0]}}:
+      $ref: {{conn[1]-}}
+  {% endfor %}
+{% else %}
+  properties: {}
+{% endif %}
 
 # schema-artifacts.json
 # Named list of output artifacts  (map[name]artifact)

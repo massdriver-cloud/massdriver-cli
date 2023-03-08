@@ -1,3 +1,4 @@
+{% raw %}
 name: Validate on PR Open
 on:
   pull_request:
@@ -37,3 +38,4 @@ jobs:
         id: validate
         with:
           path: src
+{% endraw %}

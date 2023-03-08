@@ -17,11 +17,6 @@ import (
 var templatesFs embed.FS
 
 func Generate(data *template.Data) error {
-	// We are replicating the liquid template logic here, from our repo-manager
-	// {{- $cloud_prefix := $bundle_name | regexMatch "^[a-z]+-" | strings.Trim "-" -}}
-	// {{- $repo_name := printf "massdriver-cloud/%s" $bundle_name -}}
-	// {{- $repo_encoded := $repo_name | regexp.Replace "/" "%2F" -}}
-
 	// add cloud prefix
 	r := regexp.MustCompile("^[a-z]+-")
 	data.CloudPrefix = strings.Trim(r.FindString(data.Name), "-")
