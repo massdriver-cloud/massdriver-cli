@@ -22,7 +22,6 @@ func WriteToFile(filePath string, template []byte, data *Data) error {
 	out, renderErr := engine.ParseAndRender(template, bindings)
 
 	if renderErr != nil {
-		fmt.Printf("hey its here %s", filePath)
 		return renderErr
 	}
 

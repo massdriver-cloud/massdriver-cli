@@ -15,6 +15,10 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
+func outputDir(t *testing.T) string {
+	return t.TempDir()
+}
+
 func TestAppFromTemplate(t *testing.T) {
 	type test struct {
 		name         string
@@ -51,7 +55,7 @@ func TestAppFromTemplate(t *testing.T) {
 				Description:    tc.description,
 				TemplateName:   tc.templateName,
 				TemplateSource: tc.templatesDir,
-				OutputDir:      t.TempDir(),
+				OutputDir:      outputDir(t),
 				// OutputDir:   "_local-test",
 				Connections: tc.connections,
 			}
