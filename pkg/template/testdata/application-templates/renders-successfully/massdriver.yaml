@@ -1,7 +1,7 @@
 schema: draft-07
-name: <md .Name md>
-description: <md .Description md>
-source_url: github.com/YOUR_ORG/<md .Name md>
+name: "{{ name }}"
+description: "{{ description }}"
+source_url: github.com/YOUR_ORG/{{ name }}
 access: private
 type: application
 

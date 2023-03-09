@@ -1,0 +1,2 @@
+# Doesn't liquid parse subdirs
+name: "{{ foobar }}"
