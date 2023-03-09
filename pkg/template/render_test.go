@@ -15,6 +15,10 @@ import (
 	"golang.org/x/mod/sumdb/dirhash"
 )
 
+func outputDir(t *testing.T) string {
+	return t.TempDir()
+}
+
 func TestAppFromTemplate(t *testing.T) {
 	type test struct {
 		name         string
@@ -51,7 +55,7 @@ func TestAppFromTemplate(t *testing.T) {
 				Description:    tc.description,
 				TemplateName:   tc.templateName,
 				TemplateSource: tc.templatesDir,
-				OutputDir:      t.TempDir(),
+				OutputDir:      outputDir(t),
 				// OutputDir:   "_local-test",
 				Connections: tc.connections,
 			}
@@ -81,7 +85,6 @@ func TestAppFromTemplate(t *testing.T) {
 }
 
 func walkAndCompare(wantDir string, gotDir string) {
-	_ = gotDir
 	err := filepath.Walk(wantDir,
 		func(path string, info os.FileInfo, err error) error {
 			isDir, _ := isDirectory(path)
@@ -99,12 +102,18 @@ func walkAndCompare(wantDir string, gotDir string) {
 
 			gotText, _ := readFile(gotFilePath)
 			wantText, _ := readFile(path)
+
 			if gotText != wantText {
+
+				os.WriteFile("/tmp/got", []byte(gotText), 0600)
+				os.WriteFile("/tmp/want", []byte(wantText), 0600)
+
 				fmt.Printf("File did not render correctly: %s\n", path)
 				fmt.Printf("Comparing (want) %s and (got) %s\n", path, gotFilePath)
 				dmp := diffmatchpatch.New()
 				diffs := dmp.DiffMain(wantText, gotText, false)
 				fmt.Println(dmp.DiffToDelta(diffs))
+				fmt.Printf("==== Got ====\n%s\n==== End Got ====\n", gotText)
 			}
 
 			return nil

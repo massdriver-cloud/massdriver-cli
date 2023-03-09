@@ -1,6 +1,6 @@
 schema: draft-07
-name: renders-successfully
-description: Renders an application config & subdirectories
+name: "renders-successfully"
+description: "Renders an application config & subdirectories"
 source_url: github.com/YOUR_ORG/renders-successfully
 access: private
 type: application
