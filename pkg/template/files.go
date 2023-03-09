@@ -15,7 +15,6 @@ func WriteToFile(filePath string, template []byte, data *Data) error {
 	json.Unmarshal(inrec, &bindings)
 
 	out, renderErr := engine.ParseAndRender(template, bindings)
-
 	if renderErr != nil {
 		return renderErr
 	}
