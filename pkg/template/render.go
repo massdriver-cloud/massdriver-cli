@@ -1,6 +1,7 @@
 package template
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,10 +18,16 @@ import (
 // helm won't provision it. This allows the user to enable migrations later w/o having to re-render.
 
 func RenderDirectory(templateDir string, data *Data) error {
-	files, err := ioutil.ReadDir(templateDir)
+	files, readDirErr := ioutil.ReadDir(templateDir)
+	if readDirErr != nil {
+		return readDirErr
+	}
 
-	if err != nil {
-		return err
+	if _, checkDirExistsErr := os.Stat(data.OutputDir); errors.Is(checkDirExistsErr, os.ErrNotExist) {
+		mkdirErr := os.MkdirAll(data.OutputDir, os.ModePerm)
+		if mkdirErr != nil {
+			return mkdirErr
+		}
 	}
 
 	for _, file := range files {
@@ -45,7 +52,6 @@ func RenderDirectory(templateDir string, data *Data) error {
 			}
 		} else {
 			contents, err := os.ReadFile(srcPath)
-
 			if err != nil {
 				return err
 			}
