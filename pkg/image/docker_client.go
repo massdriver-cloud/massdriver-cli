@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -88,8 +89,13 @@ func createAuthForCloud(containerRepository *api2.ContainerRepository, input Pus
 		return "", err
 	}
 
+	err = maybeRemoveSuffix(containerRepository, authConfig)
+
+	if err != nil {
+		return "", err
+	}
+
 	authConfig.Password = containerRepository.Token
-	authConfig.ServerAddress = containerRepository.RepositoryUri
 
 	authConfigBytes, err := json.Marshal(authConfig)
 
@@ -115,4 +121,26 @@ func setAuthUserNameByCloud(containerRepository *api2.ContainerRepository, auth 
 	}
 
 	return nil
+}
+
+func maybeRemoveSuffix(containerRepository *api2.ContainerRepository, auth *types.AuthConfig) error {
+	r, err := regexp.Compile("[a-zA-Z0-9-_]+.docker.pkg.dev")
+
+	if err != nil {
+		return err
+	}
+
+	switch identifyCloudByRepositoryUri(containerRepository.RepositoryUri) {
+	case GCP:
+		auth.ServerAddress = r.FindString(containerRepository.RepositoryUri)
+		return nil
+	case AWS:
+		auth.ServerAddress = containerRepository.RepositoryUri
+		return nil
+	case AZURE:
+		auth.ServerAddress = containerRepository.RepositoryUri
+		return nil
+	default:
+		return fmt.Errorf("container repositories are not supported for %s", containerRepository.RepositoryUri)
+	}
 }
