@@ -26,7 +26,7 @@ func TestAppFromTemplate(t *testing.T) {
 		templateName string
 		wantPath     string
 		templatesDir string
-		connections  map[string]interface{}
+		connections  []template.Connection
 	}
 	tests := []test{
 		{
@@ -42,8 +42,11 @@ func TestAppFromTemplate(t *testing.T) {
 			templateName: "renders-connections",
 			templatesDir: "testdata/application-templates/",
 			wantPath:     "testdata/application-templates-want/renders-connections",
-			connections: map[string]interface{}{
-				"draft_node": "massdriver/draft-node",
+			connections: []template.Connection{
+				{
+					Name:               "draft_node",
+					ArtifactDefinition: "massdriver/draft-node",
+				},
 			},
 		},
 	}

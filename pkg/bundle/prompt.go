@@ -136,7 +136,7 @@ func GetConnections(t *template.Data) error {
 	if err != nil {
 		return err
 	}
-	depMap := make(map[string]interface{})
+	var depMap []template.Connection
 	for i, v := range selectedDeps {
 		if v == noneDep {
 			if len(selectedDeps) > 1 {
@@ -163,7 +163,7 @@ func GetConnections(t *template.Data) error {
 			return errName
 		}
 
-		depMap[result] = selectedDeps[i]
+		depMap = append(depMap, template.Connection{Name: result, ArtifactDefinition: selectedDeps[i]})
 	}
 
 	t.Connections = depMap
