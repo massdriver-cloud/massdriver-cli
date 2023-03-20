@@ -30,6 +30,13 @@ var applicationBuildCmd = &cobra.Command{
 	RunE:  runApplicationBuild,
 }
 
+var applicationLintCmd = &cobra.Command{
+	Use:          `lint`,
+	Short:        "Check application configuration for common errors",
+	SilenceUsage: true,
+	RunE:         runApplicationLint,
+}
+
 var applicationNewCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Creates a new application from a template",
@@ -74,6 +81,7 @@ func init() {
 	rootCmd.AddCommand(applicationCmd)
 
 	applicationCmd.AddCommand(applicationBuildCmd)
+	applicationCmd.AddCommand(applicationLintCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
 	applicationCmd.AddCommand(applicationPublishCmd)
 	applicationCmd.AddCommand(applicationDeployCmd)
@@ -134,7 +142,9 @@ func runApplicationNew(cmd *cobra.Command, args []string) error {
 
 func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
+
 	conf := config.Get()
+
 	c, errClient := initClient(cmd)
 	if errClient != nil {
 		return errClient
@@ -145,6 +155,16 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	}
 	if !app.IsApplication() {
 		return fmt.Errorf("this command can only be used with bundle type 'application'")
+	}
+
+	app.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
+	if errLint := application.Lint(app); errLint != nil {
+		msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
+		log.Warn().Msg(msg)
 	}
 
 	if errPub := bundle.Publish(c, app); errPub != nil {
@@ -174,6 +194,38 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Info().Str("deploymentId", deployment.ID).Msgf("Deployment %s", strings.ToLower(deployment.Status))
+	return nil
+}
+
+// RunApplicationDeploy deploys an application to Massdriver (exported to avoid code duplication for deprecated `mass deploy` command)
+func runApplicationLint(cmd *cobra.Command, args []string) error {
+	setupLogging(cmd)
+
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
+	}
+
+	app, err := application.Parse(common.MassdriverYamlFilename, nil)
+	if err != nil {
+		return err
+	}
+	if !app.IsApplication() {
+		return fmt.Errorf("this command can only be used with bundle type 'application'")
+	}
+
+	app.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
+	err = application.Lint(app)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msg("Configuration is valid!")
+
 	return nil
 }
 
