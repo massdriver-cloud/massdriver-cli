@@ -83,10 +83,7 @@ func init() {
 	applicationCmd.AddCommand(applicationBuildCmd)
 	applicationCmd.AddCommand(applicationLintCmd)
 	applicationCmd.AddCommand(applicationNewCmd)
-
 	applicationCmd.AddCommand(applicationPublishCmd)
-	applicationPublishCmd.Flags().BoolP("force", "f", false, "Force publish even if linting fails")
-
 	applicationCmd.AddCommand(applicationDeployCmd)
 	applicationCmd.AddCommand(applicationTemplatesCmd)
 
@@ -147,10 +144,6 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	conf := config.Get()
-	force, errForceGet := cmd.Flags().GetBool("force")
-	if errForceGet != nil {
-		return errForceGet
-	}
 
 	c, errClient := initClient(cmd)
 	if errClient != nil {
@@ -164,13 +157,14 @@ func runApplicationPublish(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this command can only be used with bundle type 'application'")
 	}
 
+	app.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
 	if errLint := application.Lint(app); errLint != nil {
-		if force {
-			msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
-			log.Warn().Msg(msg)
-		} else {
-			return errLint
-		}
+		msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
+		log.Warn().Msg(msg)
 	}
 
 	if errPub := bundle.Publish(c, app); errPub != nil {
@@ -207,6 +201,11 @@ func RunApplicationDeploy(cmd *cobra.Command, args []string) error {
 func runApplicationLint(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
+	}
+
 	app, err := application.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
@@ -215,10 +214,17 @@ func runApplicationLint(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this command can only be used with bundle type 'application'")
 	}
 
+	app.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
 	err = application.Lint(app)
 	if err != nil {
 		return err
 	}
+
+	log.Info().Msg("Configuration is valid!")
 
 	return nil
 }

@@ -68,7 +68,6 @@ func init() {
 
 	bundleCmd.AddCommand(bundlePublishCmd)
 	bundlePublishCmd.Flags().String("access", "", "Override the access, useful in CI for deploying to sandboxes.")
-	bundlePublishCmd.Flags().BoolP("force", "f", false, "Force publish even if linting fails")
 }
 
 func runBundleBuild(cmd *cobra.Command, args []string) error {
@@ -138,10 +137,6 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
 	conf := config.Get()
-	force, errForceGet := cmd.Flags().GetBool("force")
-	if errForceGet != nil {
-		return errForceGet
-	}
 
 	c, errClient := initClient(cmd)
 	if errClient != nil {
@@ -160,13 +155,14 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
 	}
 
+	b.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
 	if errLint := bundle.Lint(b); errLint != nil {
-		if force {
-			msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
-			log.Warn().Msg(msg)
-		} else {
-			return errLint
-		}
+		msg := fmt.Sprintf("Warning! Bundle linting failed %s\nForce flag enabled, proceeding with publish", errLint.Error())
+		log.Warn().Msg(msg)
 	}
 
 	if errPublish := bundle.Publish(c, b); errPublish != nil {
@@ -182,6 +178,11 @@ func runBundlePublish(cmd *cobra.Command, args []string) error {
 func runBundleLint(cmd *cobra.Command, args []string) error {
 	setupLogging(cmd)
 
+	c, errClient := initClient(cmd)
+	if errClient != nil {
+		return errClient
+	}
+
 	b, err := bundle.Parse(common.MassdriverYamlFilename, nil)
 	if err != nil {
 		return err
@@ -190,10 +191,17 @@ func runBundleLint(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("this command can only be used with bundle type 'infrastructure'")
 	}
 
+	b.Hydrate(common.MassdriverYamlFilename, c)
+	if err != nil {
+		return err
+	}
+
 	err = bundle.Lint(b)
 	if err != nil {
 		return err
 	}
+
+	log.Info().Msg("Configuration is valid!")
 
 	return nil
 }

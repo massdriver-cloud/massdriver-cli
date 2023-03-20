@@ -90,5 +90,8 @@ func buildEnvsInput(b *bundle.Bundle) (map[string]interface{}, error) {
 	}
 	result["secrets"] = secrets
 
+	// by, _ := json.Marshal(b.Connections)
+	// fmt.Println(string(by))
+
 	return result, nil
 }
