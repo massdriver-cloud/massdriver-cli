@@ -13,12 +13,9 @@ params:
       type: string
 
 connections:
-
   required:
-  
   - draft_node
   properties:
-  
     draft_node:
       $ref: massdriver/draft-node
 

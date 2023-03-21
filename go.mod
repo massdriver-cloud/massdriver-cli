@@ -8,12 +8,12 @@ require (
 	github.com/charmbracelet/bubbletea v0.23.2
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/docker/docker v23.0.1+incompatible
-	github.com/go-git/go-git/v5 v5.6.0
-	github.com/hasura/go-graphql-client v0.9.1
+	github.com/go-git/go-git/v5 v5.6.1
+	github.com/hasura/go-graphql-client v0.9.2
 	github.com/itchyny/gojq v0.12.12
 	github.com/manifoldco/promptui v0.9.0
+	github.com/massdriver-cloud/liquid v1.2.4
 	github.com/massdriver-cloud/schema2json v0.0.2
-	github.com/osteele/liquid v1.3.0
 	github.com/otiai10/copy v1.9.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/rs/zerolog v1.29.0
@@ -46,7 +46,7 @@ require (
 	github.com/moby/sys/sequential v0.5.0 // indirect
 	github.com/moby/term v0.0.0-20200312100748-672ec06f55cd // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/muesli/ansi v0.0.0-20230307104941-78d3738a59f2 // indirect
+	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
@@ -71,13 +71,13 @@ require (
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7-0.20221107161134-b54ce3849e47
 	github.com/Microsoft/go-winio v0.6.0 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20230320150741-8451524ecd7e // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.4.1 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/imdario/mergo v0.3.14 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
