@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/osteele/liquid"
+	"github.com/massdriver-cloud/liquid"
 )
 
 func WriteToFile(filePath string, template []byte, data *Data) error {
