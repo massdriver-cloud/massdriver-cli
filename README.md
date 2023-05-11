@@ -1,5 +1,7 @@
 # Massdriver CLI
 
+**Deprecated. See [https://github.com/massdriver-cloud/mass](https://github.com/massdriver-cloud/mass)**
+
 A command line interface for managing Massdriver bundles and applications.
 
 ## Precommit
